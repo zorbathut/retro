@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /pdb:none /machine:I386
+# ADD LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /pdb:none /machine:I386
 # SUBTRACT LINK32 /verbose
 
 !ELSEIF  "$(CFG)" == "zem - Win32 Debug"
@@ -84,7 +84,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 libpngd.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 libpngd.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /verbose /pdb:none /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "zem - Win32 RProfile"
@@ -229,6 +229,14 @@ SOURCE=.\dx8util.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\kWritableD3D.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kWritableD3D.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\win32_hidid.cpp
 # End Source File
 # Begin Source File
@@ -262,14 +270,6 @@ SOURCE=.\kStreamtoken.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\kString.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\kString.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\minmax.h
 # End Source File
 # Begin Source File
@@ -280,14 +280,9 @@ SOURCE=.\miscfunc.h
 # Begin Group "grfx"
 
 # PROP Default_Filter ""
-# Begin Source File
+# Begin Group "font"
 
-SOURCE=.\kColor.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\kColor.h
-# End Source File
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\kGrfxFont.cpp
@@ -311,6 +306,19 @@ SOURCE=.\kGrfxFontNull.cpp
 # Begin Source File
 
 SOURCE=.\kGrfxFontNull.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxFontPropBitmap.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\kColor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kColor.h
 # End Source File
 # Begin Source File
 
@@ -455,6 +463,14 @@ SOURCE=.\kFileWrapped.cpp
 # Begin Source File
 
 SOURCE=.\kFileWrapped.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kFileWrappedNode.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kFileWrappedNode.h
 # End Source File
 # End Group
 # Begin Group "mainshell"

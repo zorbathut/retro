@@ -71,6 +71,9 @@ namespace grfx {
 		void addModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const;
 		void addDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const;
 
+		void removeModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const;
+		void removeDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const;
+
 		kRasterConst( const kPoint< INT32 > &dim, const kColor *dat, INT32 pitch, bool owned = true );
 		virtual ~kRasterConst();
 
@@ -92,7 +95,7 @@ namespace grfx {
 
 		bool owned;
 
-		mutable std::vector< zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > changeNotifies;
+		mutable std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > > changeNotifies;
 		mutable std::vector< zutil::kFunctor< RVOID, const kRasterConst * > * > destructNotifies;
 
 		// yes yes. this needs to be re-implemented :P
@@ -139,6 +142,10 @@ namespace grfx {
 		INT32 pitch;
 	};
 
+};
+
+namespace null {
+	extern grfx::kRaster raster;
 };
 
 #endif

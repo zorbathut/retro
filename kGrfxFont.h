@@ -55,6 +55,9 @@ namespace grfx {
 
 		virtual ~kFont();
 
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
 	};
 
 };

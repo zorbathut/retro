@@ -43,7 +43,7 @@ public:
 	kRect( void ) { };
 
 	kRect( const kPoint< kPrecision > &in_ul, const kPoint< kPrecision > &in_br ) : ul( in_ul ), br( in_br ) { };
-	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_d ) : ul( in_l, in_u ), br( in_r, in_d ) { };
+	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_b ) : ul( in_l, in_u ), br( in_r, in_b ) { };
 
 	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
 
@@ -56,7 +56,10 @@ template < typename kPrecision >
 std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {
 	ostr << pt.ul << "-" << pt.br;
 	return ostr; };
-
 	// See comment in kPoint.h.
+
+template < typename kPrecLhs, typename kPrecRhs >
+bool operator==( const kRect< kPrecLhs > &lhs, const kRect< kPrecRhs > &rhs ) {
+	return lhs.ul == rhs.ul && lhs.br == rhs.br; };
 
 #endif

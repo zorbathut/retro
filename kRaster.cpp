@@ -36,6 +36,8 @@
 #include "errlog.h"
 #include "minmax.h"
 
+#include <algorithm>
+
 namespace grfx {
 	
 	// TODO: improve the whole locking system :P
@@ -47,7 +49,7 @@ namespace grfx {
 	bool kRasterConst::lock( kRect< INT32 > &bounds, kLockedRead *locked, bool suppressError ) const {
 		if( disallowReadLock ) {
 			if( !suppressError ) {
-				g_errlog << "Failed readlock on " << textdesc() << " for " << bounds << std::endl;
+				g_errlog << "RASTER: Failed readlock on " << textdesc() << " for " << bounds << std::endl;
 			}
 			return true;
 		} else {
@@ -58,7 +60,7 @@ namespace grfx {
 			locked->data = data.c;
 			locked->pitch = pitch;
 #if POSTDEBUGINFO
-			g_errlog << "Succeeded readlock on " << textdesc() << " for " << bounds << " (got " << locked->bounds << ")" << std::endl;
+			g_errlog << "RASTER: (debug) Succeeded readlock on " << textdesc() << " for " << bounds << " (got " << locked->bounds << ")" << std::endl;
 #endif
 			// yeah yeah.
 			return false;
@@ -68,18 +70,34 @@ namespace grfx {
 		// TODO: more testing
 	void kRasterConst::unlock( const kLockedRead *locked ) const {
 #if POSTDEBUGINFO
-		g_errlog << "Read unlock on " << textdesc() << std::endl;
+		g_errlog << "RASTER: (debug) Read unlock on " << textdesc() << std::endl;
 #endif
 		readLockCount--; };
 	// TODO: more errorchecking 'n stuff.
 
 	void kRasterConst::addModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const {
-		changeNotifies.push_back( fptr ); };
-			// and TOTALLY IGNORE bounds! Yeah yeah. I'm lazy right now. I'll fix it up later, if there's need.
-			// For now, lazylazylazy! :)
+		changeNotifies.push_back( std::make_pair( bounds, fptr ) ); };
 
 	void kRasterConst::addDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const {
 		destructNotifies.push_back( fptr ); };
+
+	void kRasterConst::removeModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const {
+		std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > >::iterator itr;
+		itr = std::find( changeNotifies.begin(), changeNotifies.end(), std::make_pair( bounds, fptr ) );
+		if( itr != changeNotifies.end() )
+			changeNotifies.erase( itr );
+		  else
+			g_errlog << textdesc() << " tried removing a modification notification that did not exist" << std::endl;
+	};
+
+	void kRasterConst::removeDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const {
+		std::vector< zutil::kFunctor< RVOID, const kRasterConst * > * >::iterator itr;
+		itr = std::find( destructNotifies.begin(), destructNotifies.end(), fptr );
+		if( itr != destructNotifies.end() )
+			destructNotifies.erase( itr );
+		  else
+			g_errlog << textdesc() << " tried removing a destruction notification that did not exist" << std::endl;
+	};
 
 	kRasterConst::kRasterConst( const kPoint< INT32 > &dim, const kColor *dat, INT32 in_pitch, bool in_owned ) :
 			dimension( dim ), pitch( in_pitch ), owned( in_owned ), disallowReadLock( false ), readLockCount( 0 ) {
@@ -95,22 +113,18 @@ namespace grfx {
 		std::vector< zutil::kFunctor< RVOID, const kRasterConst * > * >::iterator itr;
 		for( itr = destructNotifies.begin(); itr != destructNotifies.end(); itr++ ) {
 			(**itr)( this );
-			delete *itr;
 		};
-		std::vector< zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * >::iterator it2;
-		for( it2 = changeNotifies.begin(); it2 != changeNotifies.end(); it2++ )
-			delete *it2;
 		// TODO: lock changes on traversal (high priority!)
 	};
 
 	void kRasterConst::notifyModification( const kRect< INT32 > &bounds ) const {
 		std::vector< bool > mark;
-		std::vector< zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * >::iterator itr;
+		std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > >::iterator itr;
 		std::pair< const kRect< INT32 > *, const kRasterConst * > parm( &bounds, this );
 		for( itr = changeNotifies.begin(); itr != changeNotifies.end(); itr++ ) {
-			mark.push_back( !(**itr)( parm ) );
+			mark.push_back( !(*(itr->second))( parm ) );
 		};
-		std::vector< zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > alter;
+		std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > > alter;
 		for( int i = 0; i < mark.size(); ++i ) {
 			if( mark[ i ] )
 				alter.push_back( changeNotifies[ i ] );
@@ -131,7 +145,7 @@ namespace grfx {
 	bool kRaster::writeLock( kRect< INT32 > &bounds, kLockedWrite *locked, bool suppressError ) {
 		if( disallowReadLock || readLockCount ) {
 			if( !suppressError ) {
-				g_errlog << "Failed writelock on " << textdesc() << " for " << bounds << std::endl;
+				g_errlog << "RASTER: Failed writelock on " << textdesc() << " for " << bounds << std::endl;
 			}
 			return true;
 		} else {
@@ -142,7 +156,7 @@ namespace grfx {
 			locked->data = data.nc;
 			locked->pitch = pitch;
 #if POSTDEBUGINFO
-			g_errlog << "Succeeded writelock on " << textdesc() << " for " << bounds << " (got " << locked->bounds << ")" << std::endl;
+			g_errlog << "RASTER: (debug) Succeeded writelock on " << textdesc() << " for " << bounds << " (got " << locked->bounds << ")" << std::endl;
 #endif
 			return false;
 		}
@@ -150,11 +164,11 @@ namespace grfx {
 
 		// TODO: more testing
 	void kRaster::unlock( const kLockedRead *locked ) const {
-		kRaster::unlock( locked ); };
+		kRasterConst::unlock( locked ); };
 
 	void kRaster::unlock( const kLockedWrite *locked ) {
 #if POSTDEBUGINFO
-		g_errlog << "Write unlock on " << textdesc() << std::endl;
+		g_errlog << "RASTER: (debug) Write unlock on " << textdesc() << std::endl;
 #endif
 		disallowReadLock = false;
 		notifyModification( locked->bounds ); };
@@ -182,3 +196,8 @@ namespace grfx {
 
 };
 		
+namespace null {
+
+	grfx::kRaster raster( make_point( 0, 0 ) );
+
+};

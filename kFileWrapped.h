@@ -46,29 +46,23 @@ namespace file {
 namespace file {
 
 	class kWrapped : private boost::noncopyable, public kDescribable {
-	private:
-
-		kBase *file; // better derive from kBase . . .
-
-		int activatecount;
-		int count;
-
 	public:
 
-		void init();
+		virtual void init() = 0;
 
-		void activate();
-		void deactivate();
-		void request( int ticks );
+		virtual void activate() = 0;
+		virtual void deactivate() = 0;
+		virtual void request( int ticks ) = 0;
+		virtual void urgent() = 0;
 
-		void tick();
+		virtual void tick() = 0;
 
-		void deinit();
+		virtual void deinit() = 0;
 
-		kWrapped( kBase *file );
-		~kWrapped();
+		kWrapped();
+		virtual ~kWrapped();
 
-		virtual void describe( std::ostream &ostr ) const;
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
 	protected:  void chaindown( std::ostream &ostr ) const;
 
 	};

@@ -47,7 +47,7 @@ namespace file {
 	kBase::kBase( const char *infname ) : fname( infname ), state( EMPTY ), fritz( false ), progres( 0 ), progcur( 0 ) { };
 	kBase::~kBase() { };
 
-	const zutil::kString &kBase::getFname() const {
+	const std::string &kBase::getFname() const {
 		return fname; };
 
 	void kBase::describe( std::ostream &ostr ) const {
@@ -55,7 +55,7 @@ namespace file {
 		kBase::chaindown( ostr ); };
 
 	void kBase::chaindown( std::ostream &ostr ) const {
-		ostr << " (" << fname.get() << ")";
+		ostr << " (" << fname << ")";
 		kDescribable::chaindown( ostr ); };
 
 }

@@ -67,13 +67,7 @@ namespace grfx {
 		static kColor makeMultiply( EXACTUINT32 in_argb );
 		
 
-	};	// this *better* be 32bit.
-		// info: alpha's inverted, rgb premultiplied. examples:
-		// 0x00000000: pure opaque black.
-		// 0x80000000: 50% transparent pure black.
-		// 0x00808080: opaque 50% gray.
-		// 0x807f7f7f: 50% transparent white.
-		// 0x807f807f: INVALID. ASSERT( a+g<=0xff ).
+	};	// alpha and RGB are perfectly normal in every way.
 
 	std::ostream &operator<<( std::ostream &ostr, kColor inp );
 

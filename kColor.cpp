@@ -48,9 +48,6 @@ namespace grfx {
 	kColor::kColor( const kColor &alt ) : argb( alt.argb ) { };
 	kColor::kColor( BYTE a, BYTE r, BYTE g, BYTE b ) { split.a = a; split.r = r; split.g = g; split.b = b; };
 	kColor::kColor( EXACTUINT32 in_argb ) : argb( in_argb ) { };	// todo: endian manipulation
-
-	kColor kColor::makeMultiply( BYTE a, BYTE r, BYTE g, BYTE b );
-	kColor kColor::makeMultiply( EXACTUINT32 in_argb );
 		
 	std::ostream &operator<<( std::ostream &ostr, kColor inp ) {
 		ostr << "color( " << int( inp.split.r ) << " " << int( inp.split.g ) << " " << int( inp.split.b ) << ", " << int( inp.split.a ) << " )";

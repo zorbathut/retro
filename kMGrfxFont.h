@@ -47,9 +47,9 @@ namespace module {
 	private:
 
 		virtual void specDat(
-				zutil::kString *spath,
+				std::string *spath,
 				std::map<
-					zutil::kString,		// string: the extension
+					std::string,		// string: the extension
 					zutil::kFunctor<	// the functor that creates the item that parses files
 						zutil::kFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 																// takes a manager, returns by pointer for
@@ -57,8 +57,7 @@ namespace module {
 						std::pair< const char *, file::kModule< file::kHandle< grfx::kFont > > * >
 																// the file data - needs the filename and a pointer
 																// to what-to-register-with.
-					> *,				// and it's a pointer itself for polymorphism, again.
-					zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+					> *				// and it's a pointer itself for polymorphism, again.
 				> *assoc
 		);
 

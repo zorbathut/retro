@@ -38,9 +38,10 @@ namespace file {
 
 }
 
-#include "kString.h"
 #include "butility.h"
 #include "kDescribable.h"
+
+#include <string>
 
 namespace file {
 
@@ -85,11 +86,11 @@ namespace file {
 		eState state;
 		bool fritz;
 
-		const zutil::kString &getFname() const;
+		const std::string &getFname() const;
 
 	private:
 
-		zutil::kString fname;
+		std::string fname;
 
 	};
 

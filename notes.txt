@@ -18,6 +18,11 @@ get rid of zutil::string
 add kRect
 
 
+the renderable item itself needs, lessee . . . "add dependents", "load self"? no, if it has dependents it has no
+reason to load itself, since itself should be a dependent. so we have two types. composites and singles. should be
+no way to tell them apart from the outside. handle is dumb, calls wrapper. wrapper does what?
+
+
 
 Everything below this is probably wrong.
 

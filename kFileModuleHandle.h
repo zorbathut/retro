@@ -41,6 +41,7 @@ namespace file {
 #include "kFileModule.h"
 #include "kFileHandle.h"
 #include "kFileBaseNull.h"
+#include "kFileWrappedNode.h"
 
 namespace file {
 
@@ -48,9 +49,9 @@ namespace file {
 	private:
 
 		virtual void specDat(
-				zutil::kString *spath,
+				std::string *spath,
 				std::map<
-					zutil::kString,		// string: the extension
+					std::string,		// string: the extension
 					zutil::kFunctor<	// the functor that creates the item that parses files
 						zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 																// takes a manager, returns by pointer for
@@ -58,8 +59,7 @@ namespace file {
 						std::pair< const char *, kModule< kHandle< kType > > * >
 																// the file data - needs the filename and a pointer
 																// to what-to-register-with.
-					> *,				// and it's a pointer itself for polymorphism, again.
-					zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+					> *				// and it's a pointer itself for polymorphism, again.
 				> *assoc
 		) = 0;
 
@@ -90,7 +90,7 @@ namespace file {
 		kModule< file::kHandle< kType > >::chaindown( ostr ); };
 
 	template < typename kType > kHandle< kType > kModuleHandle< kType >::createNull() {
-		kWrapped *wr = new kWrapped( new kBaseNull() );
+		kWrapped *wr = new kWrappedNode( new kBaseNull() );
 		nullses.push_back( wr );
 		return kHandle< kType >( createNullQuantity(), wr ); };
 

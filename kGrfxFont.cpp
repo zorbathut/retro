@@ -31,8 +31,17 @@
 
 #include "kGrfxFont.h"
 
+#include <iostream>
+
 namespace grfx {
 
 	kFont::~kFont() { };
+
+	void kFont::describe( std::ostream &ostr ) const {
+		ostr << "unidentified font" << std::endl;
+		kDescribable::chaindown( ostr ); };
+
+	void kFont::chaindown( std::ostream &ostr ) const {
+		kDescribable::chaindown( ostr ); };
 
 };

@@ -49,16 +49,16 @@ namespace module {
 			virtual RVOID operator()( file::kManager *inp );
 			kPLN( std::pair< const char *, file::kModule< file::kRawhandle< grfx::kRenderableFinite > > * > ind );
 		private:
-			zutil::kString fname;
+			std::string fname;
 			file::kModule< file::kRawhandle< grfx::kRenderableFinite > > *module;
 		};
 
 	};
 
 	void kGrfxRenderableFiniteRaw::specDat(
-			zutil::kString *spath,
+			std::string *spath,
 			std::map<
-				zutil::kString,		// string: the extension
+				std::string,		// string: the extension
 				zutil::kFunctor<	// the functor that creates the item that parses files
 					zutil::kFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 															// takes a manager, returns by pointer for
@@ -66,8 +66,7 @@ namespace module {
 					std::pair< const char *, file::kModule< file::kRawhandle< grfx::kRenderableFinite > > * >
 															// the file data - needs the filename and a pointer
 															// to what-to-register-with.
-				> *,				// and it's a pointer itself for polymorphism, again.
-				zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+				> *				// and it's a pointer itself for polymorphism, again.
 			> *assoc
 		) {
 
@@ -77,7 +76,7 @@ namespace module {
 
 //		*nullitem = file::kRawhandle< grfx::kRenderableFinite >( &null::grfxRenderableFinite, &null::fileBase );
 
-		(*assoc)[ zutil::kString( "pln" ) ] = new zutil::kFunctorFactory< zutil::kFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< file::kRawhandle< grfx::kRenderableFinite > > * >
+		(*assoc)[ "pln" ] = new zutil::kFunctorFactory< zutil::kFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< file::kRawhandle< grfx::kRenderableFinite > > * >
 			, rawfiniteFunctors::kPLN >; // ow.
 
 	};
@@ -108,7 +107,7 @@ namespace module {
 	namespace rawfiniteFunctors {
 
 		RVOID kPLN::operator()( file::kManager *inp ) {
-			std::ifstream ifs( fname.get() );
+			std::ifstream ifs( fname.c_str() );
 			int count;
 			std::string fname;
 			std::string ident;

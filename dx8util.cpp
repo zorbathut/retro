@@ -33,6 +33,7 @@
 
 #include <dinput.h>
 #include <stdio.h>
+#include <d3dx8core.h>
 
 void directInput8Error( HRESULT ecode, char *buf ) {
 	switch( ecode ) {
@@ -86,11 +87,24 @@ void directInput8Error( HRESULT ecode, char *buf ) {
 	}
 };
 
+void direct3D8Error( HRESULT ecode, char *buf ) {
+	D3DXGetErrorString( ecode, buf, 255 );
+};
+
 void dInputLocalbuf( std::ostream &ostr, HRESULT *dat ) {
 	char buf[ 256 ];
 	directInput8Error( *dat, buf );
 	ostr << buf;
 };
 
+void d3DLocalbuf( std::ostream &ostr, HRESULT *dat ) {
+	char buf[ 256 ];
+	direct3D8Error( *dat, buf );
+	ostr << buf;
+};
+
 zutil::kStreamtoken< HRESULT > dInput8Stream( HRESULT ecode ) {
 	return zutil::kStreamtoken< HRESULT >( ecode, dInputLocalbuf ); };
+
+zutil::kStreamtoken< HRESULT > d3D8Stream( HRESULT ecode ) {
+	return zutil::kStreamtoken< HRESULT >( ecode, d3DLocalbuf ); };

@@ -33,6 +33,7 @@
 #define RETRO_KFILEMODULE
 
 #pragma warning( disable : 4786 )
+#pragma warning( disable : 4503 )
 
 namespace file {
 
@@ -42,13 +43,15 @@ namespace file {
 
 
 #include "kFileManager.h"
-#include "kString.h"
-#include <map>
 #include "kFunctor.h"
 #include "butility.h"
-#include <io.h>
 #include "errlog.h"
 #include "kDescribable.h"
+
+#include <map>
+#include <io.h>
+#include <string>
+#include <algorithm>
 
 namespace file {			// notes: virtual isn't ideal here. The item's type should
 							// be known at all times. However, it's easy to code, and
@@ -59,7 +62,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	public:
 
 		kType get( const char *id );
-		kType get( const zutil::kString &id );
+		kType get( const std::string &id );
 		void generate( file::kManager *kfm );	// should only be called once, and attaches
 
 		void add( const char *id, const kType &hnd );
@@ -72,9 +75,9 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	private:
 
 		virtual void specDat(
-			zutil::kString *spath,
+			std::string *spath,
 			std::map<
-				zutil::kString,		// string: the extension
+				std::string,		// string: the extension
 				zutil::kFunctor<	// the functor that creates the item that parses files
 					zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 															// takes a manager, returns by pointer for
@@ -82,8 +85,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 					std::pair< const char *, kModule< kType > * >
 															// the file data - needs the filename and a pointer
 															// to what-to-register-with.
-				> *,				// and it's a pointer itself for polymorphism, again.
-				zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+				> *				// and it's a pointer itself for polymorphism, again.
 			> *assoc
 		) = 0;
 
@@ -92,9 +94,9 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	private:
 
 		void stdGenerate(
-			const char *path,
+			const std::string &path,
 			const std::map<
-				zutil::kString,		// string: the extension
+				std::string,		// string: the extension
 				zutil::kFunctor<	// the functor that creates the item that parses files
 					zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 															// takes a manager, returns by pointer for
@@ -102,25 +104,24 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 					std::pair< const char *, kModule< kType > * >
 															// the file data - needs the filename and a pointer
 															// to what-to-register-with.
-				> *,				// and it's a pointer itself for polymorphism, again.
-				zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+				> *				// and it's a pointer itself for polymorphism, again.
 			> &assoc,
 			kManager *target
 		);
 
-		std::map< zutil::kString, kType > data;
+		std::map< std::string, kType > data;
 
 	};
 
 	template < typename kType > kType kModule< kType >::get( const char *id ) {
-		return get( zutil::kString( id ) );
+		return get( std::string( id ) );
 	};
 
-	template < typename kType > kType kModule< kType >::get( const zutil::kString &id ) {
-		std::map< zutil::kString, kType >::const_iterator itr;
+	template < typename kType > kType kModule< kType >::get( const std::string &id ) {
+		std::map< std::string, kType >::const_iterator itr;
 		itr = data.find( id );
 		if( itr == data.end() ) {
-			g_errlog << "MODULE: Couldn't find item \"" << id.get() << "\" in \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "MODULE: Couldn't find item \"" << id << "\" in \"" << textdesc() << "\"" << std::endl;
 			data[ id ] = createNull();
 			return data[ id ];
 		}
@@ -129,10 +130,10 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 	template < typename kType > void kModule< kType >::generate( file::kManager *kfm ) {
 
-		zutil::kString path;
+		std::string path;
 
 		std::map<
-			zutil::kString,		// string: the extension
+			std::string,		// string: the extension
 			zutil::kFunctor<	// the functor that creates the item that parses files
 				zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 														// takes a manager, returns by pointer for
@@ -140,21 +141,19 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 				std::pair< const char *, kModule< kType > * >
 														// the file data - needs the filename and a pointer
 														// to what-to-register-with.
-			> *,				// and it's a pointer itself for polymorphism, again.
-			zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+			> *				// and it's a pointer itself for polymorphism, again.
 		> assoc;
 
 		std::map<
-			zutil::kString,
+			std::string,
 			zutil::kFunctor<
 				zutil::kFunctor< RVOID, kManager * > *,
 				std::pair< const char *, kModule< kType > * >
-			> *,
-			zutil::kString::case_insensitive_lessthan
+			> *
 		>::iterator itr; // my mind, it's exploding again!
 		
 		specDat( &path, &assoc );
-		stdGenerate( path.get(), assoc, kfm );
+		stdGenerate( path, assoc, kfm );
 
 		for( itr = assoc.begin(); itr != assoc.end(); ++itr )
 			delete itr->second;
@@ -162,11 +161,11 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	};
 
 	template < typename kType > void kModule< kType >::add( const char *id, const kType &hnd ) {
-		std::map< zutil::kString, kType >::const_iterator itr;
-		zutil::kString tmp( id );
+		std::map< std::string, kType >::const_iterator itr;
+		std::string tmp = id;
 		itr = data.find( tmp );
 		if( itr != data.end() ) {
-			g_errlog << "MODULE: \"" << id << "\" already exists as " << itr->second->textdesc() << ", replaced with " << hnd->textdesc() << std::endl;
+			g_errlog << "MODULE: \"" << tmp << "\" already exists as " << itr->second->textdesc() << ", replaced with " << hnd->textdesc() << std::endl;
 		} else {
 			g_errlog << "MODULE: \"" << textdesc() << "\" adding \"" << hnd.getHeld()->textdesc() << "\" as \"" << id << "\"" << std::endl;
 		}
@@ -174,9 +173,9 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	};
 
 	template < typename kType > void kModule< kType >::stdGenerate(
-			const char *path,
+			const std::string &path,
 			const std::map<
-				zutil::kString,		// string: the extension
+				std::string,		// string: the extension
 				zutil::kFunctor<	// the functor that creates the item that parses files
 					zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 															// takes a manager, returns by pointer for
@@ -184,8 +183,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 					std::pair< const char *, kModule< kType > * >
 															// the file data - needs the filename and a pointer
 															// to what-to-register-with.
-				> *,				// and it's a pointer itself for polymorphism, again.
-				zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+				> *				// and it's a pointer itself for polymorphism, again.
 			> &assoc,
 			kManager *target
 		) {
@@ -199,17 +197,17 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		if( handle != -1 ) {
 			do {
 				if( !( data.attrib & _A_SUBDIR ) ) {
-					zutil::kString tstr = zutil::kString( strrchr( data.name, '.' ) + 1 );
+					std::string tstr = std::string( strrchr( data.name, '.' ) + 1 );
+					std::transform( tstr.begin(), tstr.end(), tstr.begin(), std::ptr_fun< int, int >( tolower ) );
 					std::map<
-						zutil::kString,
+						std::string,
 						zutil::kFunctor<
 							zutil::kFunctor< RVOID, kManager * > *,
 							std::pair< const char *, kModule< kType > * >
-						> *,
-						zutil::kString::case_insensitive_lessthan
+						> *
 					>::const_iterator itr = assoc.find( tstr );
 					if( itr == assoc.end() ) {
-						g_errlog << "MODULE: Unidentified file " << data.name << " located in file scan" << std::endl;
+						g_errlog << "MODULE: Unidentified file " << path << data.name << " located in file scan" << std::endl;
 					} else {
 						std::string fn = path;
 						fn += data.name;

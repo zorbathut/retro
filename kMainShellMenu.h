@@ -50,6 +50,8 @@ private:
 
 	file::kHandle< grfx::kRenderableFinite > fin;
 	file::kHandle< grfx::kRenderableFinite > gn;
+	file::kHandle< grfx::kRenderableFinite > ball;
+	file::kHandle< grfx::kRenderableFinite > alph;
 	file::kHandle< grfx::kFont > fnt;
 
 	kPoint< INT32 > gp;
@@ -58,8 +60,12 @@ private:
 	int pbs[ 4 ];
 	int ulbbs[ 4 ];
 	int brbbs[ 4 ];
+	int balzac;
+	int balspam;
 
 	bool got;
+
+	std::vector< std::pair< kPoint< double >, kPoint< double > > > balls;
 
 };
 

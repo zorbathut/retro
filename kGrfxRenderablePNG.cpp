@@ -44,7 +44,10 @@ namespace grfx {
 	static void user_error_fn( png_structp png_ptr, png_const_charp error_msg ) { throw 0; }
 
 	const kRasterConst *kRenderablePNG::getRaster() const {
-		return raster; };
+		if( raster )
+			return raster;
+		  else
+			return &null::raster; };
 
 	void kRenderablePNG::loadAll() {
 
@@ -168,22 +171,22 @@ namespace grfx {
 		static const int preroll = 8;
 		png_byte header[ preroll ];
 
-		fp = fopen( getFname().get(), "rb" );
+		fp = fopen( getFname().c_str(), "rb" );
 		if( !fp ) {
-			g_errlog << "PNG: file open failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: file open failure at " << getFname() << std::endl;
 			return true;
 		}
 
 		fread( header, 1, preroll, fp );
 		if( png_sig_cmp( header, 0, preroll ) ) {
-			g_errlog << "PNG: signature mismatch in " << textdesc() << std::endl;
+			g_errlog << "PNG: signature mismatch at " << getFname() << std::endl;
 			fclose( fp );
 			return true;
 		}
 
 		png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, user_error_fn, NULL );
 		if( !png_ptr ) {
-			g_errlog << "PNG: initialization failure (stage 1) in " << textdesc() << std::endl;
+			g_errlog << "PNG: initialization failure (stage 1) at " << getFname() << std::endl;
 			fclose( fp );
 			return true;
 		}
@@ -191,7 +194,7 @@ namespace grfx {
 		info_ptr = png_create_info_struct( png_ptr );
 		if( !info_ptr ) {
 			png_destroy_read_struct( &png_ptr, NULL, NULL );
-			g_errlog << "PNG: initialization failure (stage 2) in " << textdesc() << std::endl;
+			g_errlog << "PNG: initialization failure (stage 2) at " << getFname() << std::endl;
 			fclose( fp );
 			return true;
 		}
@@ -257,7 +260,7 @@ namespace grfx {
 	};
 
 	kRenderablePNG::kRenderablePNG( const char *fname ) : file::kBase( fname ), png_ptr( NULL ), info_ptr( NULL ),
-			row_pointers( NULL ), fp( NULL ) {
+			row_pointers( NULL ), fp( NULL ), raster( NULL ) {
 		if( !preparepng() )
 			destructpngread();
 	};

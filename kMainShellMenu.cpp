@@ -35,6 +35,7 @@
 #include "kMGrfxRenderableFinite.h"
 #include "kMGrfxFont.h"
 #include "hididConsts.h"
+#include "errlog.h"
 
 #include <stdlib.h>
 
@@ -45,6 +46,8 @@ int dx[ 4 ] = {  0, 0, -1, 1 };
 int dy[ 4 ] = { -1, 1,  0, 0 };
 
 kMainShell *kMainShellMenu::clockTick( const kControls *controls ) {
+	int i;
+
 	if( !got ) {
 
 		pbs[ 0 ] = controls->findButton( hidid::kbd::arrowup );
@@ -62,11 +65,14 @@ kMainShell *kMainShellMenu::clockTick( const kControls *controls ) {
 		brbbs[ 2 ] = controls->findButton( hidid::kbd::J );
 		brbbs[ 3 ] = controls->findButton( hidid::kbd::K );
 
+		balzac = controls->findButton( hidid::kbd::B );
+		balspam = controls->findButton( hidid::kbd::N );
+
 		got = true;
 
 	}
 
-	for( int i = 0; i < 4; i++ ) {
+	for( i = 0; i < 4; i++ ) {
 
 		if( pbs[ i ] != -1 ) {
 			gp.x += ( ( controls->getButton( pbs[ i ] ) & keyis::down ) != 0 ) * dx[ i ];
@@ -85,11 +91,39 @@ kMainShell *kMainShellMenu::clockTick( const kControls *controls ) {
 
 	}
 
+	if( ( controls->getButton( balzac ) & keyis::push ) || ( controls->getButton( balspam ) & keyis::down ) ) {
+		balls.push_back( std::make_pair( kPoint< double >( 0.0, 0.0 ), kPoint< double >( rand() / ( RAND_MAX * 1000.0 ), rand() / ( RAND_MAX * 1000.0 ) ) ) );
+	}
+
+	for( i = 0; i < balls.size(); i++ ) {
+		balls[ i ].first += balls[ i ].second;
+		if( balls[ i ].first.x < 0 ) {
+			balls[ i ].first.x *= -1;
+			balls[ i ].second.x *= -1;
+		}
+		if( balls[ i ].first.y < 0 ) {
+			balls[ i ].first.y *= -1;
+			balls[ i ].second.y *= -1;
+		}
+		if( balls[ i ].first.x > 1 ) {
+			balls[ i ].first.x = 1 - ( balls[ i ].first.x - 1 );
+			balls[ i ].second.x *= -1;
+		}
+		if( balls[ i ].first.y > 1 ) {
+			balls[ i ].first.y = 1 - ( balls[ i ].first.y - 1 );
+			balls[ i ].second.y *= -1;
+		}
+	}
+
 	return this; };
 
 void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 	kPoint< INT32 > size = target->getDimensions();
+	kPoint< INT32 > bs = ball->getDimensions();
 	fin->renderTo( target, kPoint< INT32 >( 0, 0 ) );
+	for( int i = 0; i < balls.size(); i++ ) {
+		ball->renderTo( target, kPoint< INT32 >( size.x * balls[ i ].first.x - bs.x / 2, size.y * balls[ i ].first.y - bs.y / 2 ) );
+	}
 	std::stringstream foo;
 	foo << size.x << "x" << size.y;
 	std::string texxt;
@@ -100,6 +134,12 @@ void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 	std::getline( foo, texxt );
 	fnt->renderTextTo( target, texxt.c_str(), kPoint< INT32 >( 100, 0 ) );
 	gn->renderPartTo( target, gp, gb );
+	foo.clear();
+	foo << balls.size() << " giant bouncy balls";
+	std::getline( foo, texxt );
+	fnt->renderTextTo( target, texxt.c_str(), kPoint< INT32 >( 0, 16 ) );
+
+	alph->renderTo( target, kPoint< INT32 >( 200, 200 ) );
 
 /*	std::pair< kPoint< INT32 >, grfx::kColor > det[ 100 ];
 	for( int i = 0; i < 100; i++ ) {
@@ -113,14 +153,20 @@ void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 kMainShellMenu::kMainShellMenu() : fin( module::finite.get( "gnarl" ) ),
 			fnt( module::font.get( "big" ) ),
 			gn( module::finite.get( "greenity" ) ),
+			alph( module::finite.get( "alpha" ) ),
+			ball( module::finite.get( "bouncy" ) ),
 			gp( 0, 0 ), gb( 0, 0, 0, 0 ), got( false ) {
 	fin.activate();
 	fnt.activate();
+	alph.activate();
+	ball.activate();
 	gn.activate();
 };
 
 kMainShellMenu::~kMainShellMenu() {
 	fin.deactivate();
 	fnt.deactivate();
+	alph.deactivate();
+	ball.deactivate();
 	gn.deactivate();
 };

@@ -40,7 +40,6 @@ namespace file {
 
 }
 
-#include "kString.h"
 #include "kFunctor.h"
 #include "types.h"
 #include "butility.h"

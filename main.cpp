@@ -31,6 +31,9 @@
 
 #pragma warning( disable : 4786 )
 
+#include <ctime>
+#include <cstdlib>
+
 #include "kInterface.h"
 #include "kMainShellStackhead.h"
 #include "kMainShellMenu.h"
@@ -50,7 +53,8 @@ bool initManager( kInterface *inter ) {		// return 1 on failure
 	bar.loadAll();
 	// todo: ignore error bits
 
-	grfx::kWritable *target = inter->lockBuffer( grfx::kColor( 0x00000000 ) );
+	grfx::kWritable *target = inter->lockBuffer();
+	target->clear( 0x00000000 );
 	bg.renderTo( target, ( target->getDimensions() - bg.getDimensions() ) / 2 );
 	inter->unlockBuffer( target );
 
@@ -60,7 +64,8 @@ bool initManager( kInterface *inter ) {		// return 1 on failure
 	g_manager->prepare();
 
 	while( g_manager->getCurCycle() != g_manager->getCycles() ) {
-		target = inter->lockBuffer( grfx::kColor( 0x00000000 ) );
+		target = inter->lockBuffer();
+		target->clear( 0x00000000 );
 		kPoint< INT32 > pos = ( target->getDimensions() - bg.getDimensions() ) / 2;
 		bg.renderTo( target, pos );
 		pos.x += 120;
@@ -83,6 +88,8 @@ bool initManager( kInterface *inter ) {		// return 1 on failure
 
 // given here: errlog is prepared. No more. No less.
 void gameMain( kInterface *inter ) {
+
+	srand( time( NULL ) );
 
 	file::kManager manager;
 	g_manager = &manager;
@@ -132,13 +139,13 @@ void gameMain( kInterface *inter ) {
 				curframe = inter->getCounterPos();
 				skipnext = true; };
 
-			while( curframe >= inter->getCounterPos() );
-			// todo: sleep here
+			while( curframe >= inter->getCounterPos() )
+				inter->sleep( 1 );
 
-
-			grfx::kWritable *it = inter->lockBuffer( grfx::kColor( 0xffffffff ) );
+			grfx::kWritable *it = inter->lockBuffer();
+			it->clear( 0x00000000 );
 			mainstack.renderFrame( it );
-			int vert = 15;
+			int vert = 32;
 			char buf[ 1024 ];
 			int x;
 			for( x = 0; x < controls->getAxiscount(); x++ ) {

@@ -37,13 +37,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <d3d8.h>
-#include <d3dx8core.h>
 #include <dinput.h>
 #include <process.h>
 #include <assert.h>
 #include <vector>
 
-#include "kinterface.h"
+#include "kInterface.h"
 #include "kGrfxWritableRaster.h"
 #include "kGrfxWritable16bpp565.h"
 #include "errlog.h"
@@ -53,6 +52,8 @@
 #include "hididConsts.h"
 #include "win32_hidid.h"
 // There's nothing slow about this at all.
+
+#include "kWritableD3D.h"
 
 HWND hWnd; // oh bugger off :P
 const int bufferarray = 16; // size of the buffered data
@@ -89,13 +90,16 @@ private:
 class kInterfaceWin32 : public kInterface {
 public:
 
-	virtual grfx::kWritable *lockBuffer( grfx::kColor backwash );
+	virtual grfx::kWritable *lockBuffer();
 	virtual void unlockBuffer( grfx::kWritable * );
 
 	virtual const kControls *updateControls();
 
 	virtual bool shutDown( void ) const { return closing; };	// should I quit?
 	virtual void shutDownNow( void ) { SetEvent( finishedEvent ); PostQuitMessage( 0 ); };
+
+	virtual void sleep( int msec ) const {
+		Sleep( msec ); };
 
 	kInterfaceWin32( void );
 	virtual ~kInterfaceWin32( void );
@@ -120,8 +124,8 @@ public:
 
 	CRITICAL_SECTION surfaceLock;
 	
-	IDirect3DSurface8 *surf;
-	IDirect3DSurface8 *writsurf;
+	//IDirect3DSurface8 *surf;
+	//IDirect3DSurface8 *writsurf;
 
 	IDirectInput8		*dinput;
 
@@ -135,16 +139,25 @@ public:
 
 	std::vector< kInputDevice * > inputs;
 
+	kWritableD3D *wd3d;
+
 };
 
-grfx::kWritable *kInterfaceWin32::lockBuffer( grfx::kColor backwash ) {
+grfx::kWritable *kInterfaceWin32::lockBuffer() {
 
-	D3DLOCKED_RECT    lockedrect;
-	D3DSURFACE_DESC	  sd;
+/*	D3DLOCKED_RECT    lockedrect;
+	D3DSURFACE_DESC	  sd;*/
 
 	EnterCriticalSection( &surfaceLock );
 
-	surf->GetDesc( &sd );
+	//surf->GetDesc( &sd );
+
+	wd3d->start();
+
+	return wd3d;
+
+	// continue
+/*
 
 
 	switch( bbfmt ) {
@@ -193,19 +206,19 @@ grfx::kWritable *kInterfaceWin32::lockBuffer( grfx::kColor backwash ) {
 		return kwr; }
 
 	}
-
+*/
 }
 
 void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 
-	D3DLOCKED_RECT    lockedrect;
-	D3DSURFACE_DESC	  sd;
+//	D3DLOCKED_RECT    lockedrect;
+//	D3DSURFACE_DESC	  sd;
 
-	surf->GetDesc( &sd );
+//	surf->GetDesc( &sd );
 
-	//	// well . . . yes.
+	// well . . . yes.
 
-	switch( bbfmt ) {
+	/*switch( bbfmt ) {
 
 	case D3DFMT_X8R8G8B8:
 	case D3DFMT_R5G6B5: {
@@ -342,7 +355,11 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 
 		break; }
 
-	}
+	}*/
+
+	wd3d->end();
+
+	D3DDevice->Present( NULL, NULL, NULL, NULL );
 
 	LeaveCriticalSection( &surfaceLock );
 
@@ -355,7 +372,7 @@ void kInterfaceWin32::resetGraphics( void ) {
 		D3DPRESENT_PARAMETERS parms;
 
 		D3DDISPLAYMODE dev;
-		D3DSURFACE_DESC	  sd;
+//		D3DSURFACE_DESC	  sd;
 
 		D3DDevice->GetDisplayMode( &dev );
 
@@ -366,24 +383,24 @@ void kInterfaceWin32::resetGraphics( void ) {
 
 		EnterCriticalSection( &surfaceLock );
 
-		if( surf )
+/*		if( surf )
 			surf->Release();
 		if( writsurf )
-			writsurf->Release();
+			writsurf->Release();*/
 
 		D3DDevice->Reset( &parms );
 
-		D3DDevice->GetBackBuffer( 0, D3DBACKBUFFER_TYPE_MONO, &surf );
+		//D3DDevice->GetBackBuffer( 0, D3DBACKBUFFER_TYPE_MONO, &surf );
 			
-		surf->GetDesc( &sd );
+		//surf->GetDesc( &sd );
 
-		if( bbfmt != D3DFMT_X8R8G8B8 ) {
+		/*if( bbfmt != D3DFMT_X8R8G8B8 ) {
 			delete kwr;
 
 			kwr = new grfx::kWritableRaster( kPoint< INT32 >( sd.Width, sd.Height ) );
-		}
+		}*/
 
-		D3DDevice->CreateImageSurface( sd.Width, sd.Height, sd.Format, &writsurf );
+		//D3DDevice->CreateImageSurface( sd.Width, sd.Height, sd.Format, &writsurf );
 
 		LeaveCriticalSection( &surfaceLock );
 
@@ -394,8 +411,8 @@ void kInterfaceWin32::resetGraphics( void ) {
 kInterfaceWin32 *inter = NULL;
 
 kInterfaceWin32::kInterfaceWin32( void ) : D3D( NULL ), D3DDevice( NULL ), closing( false ),
-		finishedEvent( CreateEvent( NULL, FALSE, FALSE, NULL ) ), surf( NULL ), writsurf( NULL ),
-		starting( false ), kwr( NULL ), controls( 256, 0 ) {
+		finishedEvent( CreateEvent( NULL, FALSE, FALSE, NULL ) ), /*surf( NULL ), writsurf( NULL ),*/
+		starting( false ), kwr( NULL ), controls( 256, 0 ), wd3d( NULL ) {
 	InitializeCriticalSection( &surfaceLock );
 };
 kInterfaceWin32::~kInterfaceWin32( void ) {
@@ -574,7 +591,7 @@ bool kInterfaceWin32::init( void ) {
 
 		default: {
 			char foo[ 256 + 1 ];
-			D3DXGetErrorString( bort, foo, 256 );
+			direct3D8Error( bort, foo );
 			char bar[ 512 ];
 			sprintf( bar, "Unexpected error (0x%x, %s) initializing graphics card", bort, foo );
 			MessageBox( NULL, bar, "Critical error", NULL );
@@ -621,6 +638,8 @@ bool kInterfaceWin32::init( void ) {
 
 	controls.rebuildFindLists();
 
+	wd3d = new kWritableD3D( D3DDevice );
+
 	starting = false;
 
     // Device state would normally be set here
@@ -634,8 +653,10 @@ bool kInterfaceWin32::init( void ) {
 
 void kInterfaceWin32::close( void ) {
 
-	surf->Release();
-	writsurf->Release();
+	delete wd3d;
+
+//	surf->Release();
+//	writsurf->Release();
     D3DDevice->Release();
     D3D->Release();
 	for( std::vector< kInputDevice * >::iterator itr = inputs.begin(); itr != inputs.end(); ++itr )
@@ -658,7 +679,7 @@ void __cdecl mainThread( void *parameter ) {
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR, int ) {
 
-	_chdir( "c:\\win98se\\desktop\\werk\\sea\\zem\\datadog" );
+	//_chdir( "c:\\win98se\\desktop\\werk\\sea\\zem\\datadog" );
 
 	g_errlog.open( "errlog.txt" );
 	g_errlog.setf( std::ios::unitbuf );	// whee, autoflush!
@@ -733,9 +754,13 @@ BOOL CALLBACK ncback( const DIDEVICEOBJECTINSTANCE *lpddoi, void *pvRef ) {
 		(*det->first.first)->dev = det->second;
 		if( !(*det->first.first)->hidid.valid() ) {
 			(*det->first.first)->hidid = getHidid( det->second->name.c_str(), lpddoi->tszName );
+#if POSTDEBUGINFO
 			g_errlog << "CONTROL: Found HIDID for button \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
+#endif
 		} else {
+#if POSTDEBUGINFO
 			g_errlog << "CONTROL: Provided HIDID for button \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
+#endif
 		}
 		(*det->first.first)++;
 	};
@@ -748,9 +773,13 @@ BOOL CALLBACK ncback( const DIDEVICEOBJECTINSTANCE *lpddoi, void *pvRef ) {
 		(*det->first.second)->dev = det->second;
 		if( !(*det->first.second)->hidid.valid() ) {
 			(*det->first.second)->hidid = getHidid( det->second->name.c_str(), lpddoi->tszName );
+#if POSTDEBUGINFO
 			g_errlog << "CONTROL: Found HIDID for axis \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
+#endif
 		} else {
+#if POSTDEBUGINFO
 			g_errlog << "CONTROL: Provided HIDID for axis \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
+#endif
 		}
 		(*det->first.second)++;
 	};

@@ -40,8 +40,9 @@ namespace grfx {
 
 #include "kGrfxFont.h"
 #include "kGrfxRenderableFinite.h"
-#include "kString.h"
 #include "kFileRawhandle.h"
+
+#include <string>
 
 namespace grfx {
 
@@ -73,7 +74,7 @@ namespace grfx {
 	private:
 
 		file::kRawhandle< kRenderableFinite > fnt;
-		zutil::kString fontname;
+		std::string fontname;
 
 	};
 

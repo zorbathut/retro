@@ -36,7 +36,7 @@
 
 #include "iostream_mini.h"
 
-#ifdef STRICT_DESCRIPTIONS
+#if STRICT_DESCRIPTIONS
 #define VAGUEDESC = 0
 #else
 #define VAGUEDESC

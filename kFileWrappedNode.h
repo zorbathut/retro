@@ -29,59 +29,52 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef ZUTIL_KSTRING
-#define ZUTIL_KSTRING
 
-namespace zutil {
+#ifndef RETRO_KFILEWRAPPEDNODE
+#define RETRO_KFILEWRAPPEDNODE
 
-	class kString;
+namespace file {
 
-};
+	class kWrappedNode;
 
-namespace zutil {
+}
 
-	class kString {
-	public:
+#include "kFileWrapped.h"
 
-		const char *get() const;
-		void set( const char *dat );
+#include "kFileBase.h"
+#include "butility.h"
 
-		bool operator< ( const kString &rhs ) const;
-		bool operator<=( const kString &rhs ) const;
-		bool operator> ( const kString &rhs ) const;
-		bool operator>=( const kString &rhs ) const;
-		bool operator==( const kString &rhs ) const;
-		bool operator!=( const kString &rhs ) const;
+namespace file {
 
-		const kString &operator=( const kString &rhs );
-		const kString &operator=( const char *rhs );
-
-		kString();
-		explicit kString( const char *dat );
-		kString( const kString &in );
-		~kString();
-
-		class case_insensitive_lessthan {
-		public:
-			bool operator()( const kString &lhs, const kString &rhs ) const;
-		};
-
+	class kWrappedNode : public kWrapped {
 	private:
 
-		char *str;
+		kBase *file;
 
-	};
+		int activatecount;
+		int count;
 
-	int strlen( const char *str );
-	void strcpy( char *dst, const char *src );
-	int strcmp( const char *a, const char *b );
-
-	class strpred {
 	public:
-		bool operator()( const char *a, const char *b ) const;
+
+		virtual void init();
+
+		virtual void activate();
+		virtual void deactivate();
+		virtual void request( int ticks );
+		virtual void urgent();
+
+		virtual void tick();
+
+		virtual void deinit();
+
+		kWrappedNode( kBase *file );
+		virtual ~kWrappedNode();
+
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
 	};
 
 };
 
 #endif
-

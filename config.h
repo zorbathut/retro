@@ -39,6 +39,12 @@ static const int tickspersec = 60;
 
 #define POSTDEBUGINFO 0
 
+#define STRICT_DESCRIPTIONS 0
+
+// Stuff you should not touch below this line.
+
+
+
 #ifndef POSTDEBUGINFO
 
 #ifdef _DEBUG
@@ -48,7 +54,5 @@ static const int tickspersec = 60;
 #endif
 
 #endif
-
-#define STRICT_DESCRIPTIONS
 
 #endif

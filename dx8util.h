@@ -37,7 +37,9 @@
 #include "kStreamtoken.h"
 
 void directInput8Error( HRESULT ecode, char *buf );
+void direct3D8Error( HRESULT ecode, char *buf );
 
 zutil::kStreamtoken< HRESULT > dInput8Stream( HRESULT ecode );
+zutil::kStreamtoken< HRESULT > d3D8Stream( HRESULT ecode );
 
 #endif

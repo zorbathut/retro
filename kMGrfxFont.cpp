@@ -34,7 +34,7 @@
 #include "kMGrfxFont.h"
 
 #include "kFileManager.h"
-#include "kFileWrapped.h"
+#include "kFileWrappedNode.h"
 #include "kGrfxFontFile.h"
 #include "kGrfxFontNull.h"
 
@@ -51,16 +51,16 @@ namespace module {
 			virtual RVOID operator()( file::kManager *inp );
 			kFGF( std::pair< const char *, file::kModule< file::kHandle< grfx::kFont > > * > ind );
 		private:
-			zutil::kString fname;
+			std::string fname;
 			file::kModule< file::kHandle< grfx::kFont > > *module;
 		};
 
 	};
 
 	void kGrfxFont::specDat(
-			zutil::kString *spath,
+			std::string *spath,
 					std::map<
-						zutil::kString,		// string: the extension
+						std::string,		// string: the extension
 						zutil::kFunctor<	// the functor that creates the item that parses files
 							zutil::kFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 																	// takes a manager, returns by pointer for
@@ -68,8 +68,7 @@ namespace module {
 							std::pair< const char *, file::kModule< file::kHandle< grfx::kFont > > * >
 																	// the file data - needs the filename and a pointer
 																	// to what-to-register-with.
-						> *,				// and it's a pointer itself for polymorphism, again.
-						zutil::kString::case_insensitive_lessthan			// sorted case-insensitive.
+						> *				// and it's a pointer itself for polymorphism, again.
 					> *assoc
 			) {
 
@@ -77,7 +76,7 @@ namespace module {
 
 		*spath = "font\\";
 
-		(*assoc)[ zutil::kString( "fgf" ) ] = new zutil::kFunctorFactory< zutil::kFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< file::kHandle< grfx::kFont > > * >
+		(*assoc)[ "fgf" ] = new zutil::kFunctorFactory< zutil::kFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< file::kHandle< grfx::kFont > > * >
 			, fontFunctors::kFGF >; // ow.
 
 	};
@@ -101,7 +100,7 @@ namespace module {
 	namespace fontFunctors {
 
 		RVOID kFGF::operator()( file::kManager *inp ) {
-			std::ifstream ifs( fname.get() );
+			std::ifstream ifs( fname.c_str() );
 			int count;
 			std::string curfname;
 			std::string infname;
@@ -111,13 +110,13 @@ namespace module {
 			for( int i = 0; i < count; ++i ) {
 				std::getline( ifs, ident );
 				std::getline( ifs, infname );
-				curfname = fname.get();
+				curfname = fname;
 				curfname += ":";
 				char boof[ 20 ];
 				sprintf( boof, "%d", i );
 				curfname += boof;		// TODO: fix
 				grfx::kFontFile *dat = new grfx::kFontFile( curfname.c_str(), infname.c_str() );
-				file::kWrapped *wrp = new file::kWrapped( dat );
+				file::kWrapped *wrp = new file::kWrappedNode( dat );
 				inp->addInterface( wrp );
 				module->add( ident.c_str(), file::kHandle< grfx::kFontFile >( dat, wrp ) );
 			}

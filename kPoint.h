@@ -55,15 +55,28 @@ public:
 
 };
 
+template< typename kPrecision > kPoint< kPrecision > make_point( const kPrecision &x, const kPrecision &y ) {
+	return kPoint< kPrecision >( x, y ); };
+
 template < typename kPrecision >
 std::ostream &operator<<( std::ostream &ostr, const kPoint< kPrecision > &pt ) {
 	ostr << "( " << pt.x << ", " << pt.y << " )";
 	return ostr; };
-
 	// this works. It's weird, but it works. It only works, however, if the thing
 	// that's trying to use this has also included iostream.
 	// Funky, huh?
 	// Not sure if it's supposed to work by ANSI :)
 	// I'll change it if compilers don't support it, I suppose.
+
+template < typename kPrecLhs, typename kPrecRhs >
+bool operator==( const kPoint< kPrecLhs > &lhs, const kPoint< kPrecRhs > &rhs ) {
+	return lhs.x == rhs.x && lhs.y == rhs.y; };
+
+template < typename kPrecLhs, typename kPrecRhs >
+const kPoint< kPrecLhs > &operator+=( kPoint< kPrecLhs > &lhs, const kPoint< kPrecRhs > &rhs ) {
+	lhs.x += rhs.x;
+	lhs.y += rhs.y;
+	return lhs; };
+
 
 #endif

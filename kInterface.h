@@ -49,10 +49,7 @@ private:
 
 public:
 
-	virtual grfx::kWritable *lockBuffer( grfx::kColor backwash ) = 0;
-																// pure transparency means "don't wash".
-																// pure opacity means "wash with this".
-																// everything else undefined.
+	virtual grfx::kWritable *lockBuffer() = 0;
 	virtual void unlockBuffer( grfx::kWritable *buf ) = 0;
 
 	virtual const kControls *updateControls() = 0;
@@ -62,6 +59,8 @@ public:
 
 	virtual UINT64 getCounterFreq() const = 0;
 	virtual UINT64 getCounterPos() const = 0;
+
+	virtual void sleep( int msec ) const = 0; // or, alternatively, just pause
 
 	virtual ~kInterface() { };
 	kInterface() { };

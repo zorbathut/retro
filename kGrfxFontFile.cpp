@@ -64,7 +64,7 @@ namespace grfx {
 
 	void kFontFile::init() {
 		if( fnt.isEmpty() ) {
-			fnt = module::rawfinite.get( fontname.get() );
+			fnt = module::rawfinite.get( fontname.c_str() );
 			fnt.init();
 			progres = fnt.getProgressiveResolution();
 		};
@@ -135,11 +135,11 @@ namespace grfx {
 	kFontFile::kFontFile( const char *fname, const char *fntname ) : kBase( fname ), fontname( fntname ) { };
 
 	void kFontFile::describe( std::ostream &ostr ) const {
-		ostr << "File font referencing \"" << fontname.get() << "\"";
+		ostr << "File font referencing \"" << fontname << "\"";
 		kFont::chaindown( ostr ); }
 
 	void kFontFile::chaindown( std::ostream &ostr ) const {
-		ostr << " (fontfile, \"" << fontname.get() << "\")";
+		ostr << " (fontfile, \"" << fontname << "\")";
 		kFont::chaindown( ostr ); }
 
 };

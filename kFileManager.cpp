@@ -41,7 +41,13 @@ namespace file {
 		curl = loador.begin(); };		// this is certainly minimal.
 
 	int kManager::getCycles( void ) const { return loador.size(); };
-	int kManager::getCurCycle( void ) const { return curl - loador.begin(); };
+	int kManager::getCurCycle( void ) const {
+		return std::distance(
+			loador.begin(),
+			static_cast< std::vector< zutil::kFunctor< RVOID, kManager * > * >::const_iterator >( curl )
+		);
+	};
+
 	void kManager::doCycles( int count ) {
 		while( count > 0 ) {
 			(*curl)->go( this );

@@ -60,6 +60,7 @@ namespace file {
 		void activate() const { wrp->activate(); };	// can you say "delegation"?
 		void deactivate() const { wrp->deactivate(); };
 		void request( int ticks ) const { wrp->request( ticks ); }; // De-le-ga-tion.
+		void urgent() const { wrp->urgent(); };
 
 		kHandle() : held( NULL ), wrp( NULL ) { };
 		template < typename kAlter >
