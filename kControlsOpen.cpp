@@ -29,59 +29,24 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KCONTROLS
-#define RETRO_KCONTROLS
+#include "kControlsOpen.h"
 
-class kControls;
+BYTE *kControlsOpen::accessButtons() {
+	return kControls::accessButtons(); };
+INT32 *kControlsOpen::accessAxes() {
+	return kControls::accessAxes(); };
 
-#include "types.h"
-#include "butility.h"
-#include "kString.h"
+void kControlsOpen::setButtoncount( int newcount ) {
+	kControls::setButtoncount( newcount ); };
+void kControlsOpen::setAxiscount( int newcount ) {
+	kControls::setAxiscount( newcount ); };
 
-const BYTE CONTROL_KEYDOWN = 0x01;
-const BYTE CONTROL_KEYUP = 0x02;
-const BYTE CONTROL_KEYPUSH = 0x04;
-const BYTE CONTROL_KEYRELEASE = 0x08;
-const BYTE CONTROL_KEYCHANGE = 0x10;
+zutil::kString *kControlsOpen::accessButtonlabels() {
+	return kControls::accessButtonlabels(); };
+zutil::kString *kControlsOpen::accessAxislabels() {
+	return kControls::accessAxislabels(); };
 
-class kControls : private boost::noncopyable {
-public:
+kControlsOpen::kControlsOpen( int buttons, int axes ) :
+		kControls( buttons, axes )
+	{ };
 
-	const BYTE *getButtons() const;
-	const INT32 *getAxes() const;
-
-	int getButtoncount() const;
-	int getAxiscount() const;
-
-	const zutil::kString *getButtonlabels() const;
-	const zutil::kString *getAxislabels() const;
-
-protected:
-
-	BYTE *accessButtons();
-	INT32 *accessAxes();	// yes, I realize I should be using set functions here, but this lets me
-							// change the data in place.
-
-	void setButtoncount( int newcount );
-	void setAxiscount( int newcount );
-
-	zutil::kString *accessButtonlabels() const;
-	zutil::kString *accessAxislabels() const;
-
-	kControls( int buttons, int axes );
-	virtual ~kControls();
-
-private:
-
-	BYTE *buttons;
-	INT32 *axes;
-
-	zutil::kString *buttonlabels;
-	zutil::kString *axislabels;
-
-	int buttoncount;
-	int axiscount;
-
-};
-
-#endif

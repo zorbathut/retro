@@ -33,6 +33,7 @@
 
 #include "errlog.h"
 #include <algorithm>
+#include "config.h"
 
 namespace file {
 
@@ -69,7 +70,9 @@ namespace file {
 			if( find == active.end() )
 				g_errlog << "Couldn't find \"" << (*ritr)->textdesc() << "\" in activated list" << std::endl;
 			  else {
+#if POSTDEBUGINFO
 				g_errlog << "Removing \"" << (*ritr)->textdesc() << "\" from activated list" << std::endl;
+#endif
 				active.erase( find );
 			}
 		}
@@ -105,17 +108,22 @@ namespace file {
 		return completed; };
 
 	void kManager::activateWrapped( file::kWrapped *wrp ) {
-		// TODO: remove this check
+#if POSTDEBUGINFO
 		if( std::find( active.begin(), active.end(), wrp ) != active.end() ) {
 			g_errlog << "Already found \"" << wrp->textdesc() << "\" in activated list" << std::endl;
 		} else {
 			g_errlog << "Adding \"" << wrp->textdesc() << "\" to activated list" << std::endl;
+#endif
 			active.push_back( wrp );
+#if POSTDEBUGINFO
 		}
+#endif
 	};
 
 	void kManager::removeWrapped( file::kWrapped *wrp ) {
+#if POSTDEBUGINFO
 		g_errlog << "Adding removal for \"" << wrp->textdesc() << "\"" << std::endl;
+#endif
 		removals.push_back( wrp );
 	};
 

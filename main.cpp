@@ -108,6 +108,8 @@ void gameMain( kInterface *inter ) {
 	bool skip = false;
 	bool skipnext = false;
 
+	inter->updateControls(); // just to flush
+
 	file::kHandle< grfx::kFont > fnt;
 
 	while( !inter->shutDown() && mainstack.ready() ) {
@@ -122,6 +124,8 @@ void gameMain( kInterface *inter ) {
 
 		outofnext++;
 
+		const kControls *controls = inter->updateControls();
+
 		if( curframe + freq >= inter->getCounterPos() || skipped >= 14 ) {
 
 			if( skipped >= 14 ) {
@@ -131,13 +135,21 @@ void gameMain( kInterface *inter ) {
 			while( curframe >= inter->getCounterPos() );
 			// todo: sleep here
 
-			char buf[ 8 ];
-			sprintf( buf, "%2d/%2d", curl, outof );
-			if( skip )
-				strcat( buf, " S" );
 
 			grfx::kWritable *it = inter->lockBuffer( grfx::kColor( 0xffffffff ) );
 			mainstack.renderFrame( it );
+			int vert = 15;
+			char buf[ 8 ];
+			for( int x = 0; x < controls->getButtoncount(); x++ ) {
+				if( controls->getButtons()[ x ] & CONTROL_KEYDOWN ) {
+					sprintf( buf, "%d", x );
+					fnt->renderText( it, buf, kPoint< INT32 >( 0, vert ) );
+					vert += fnt->getVerticalOffset();
+				}
+			}
+			sprintf( buf, "%2d/%2d", curl, outof );
+			if( skip )
+				strcat( buf, " S" );
 			fnt->renderText( it, buf, kPoint< INT32 >( 0, it->getDimensions().y - fnt->getVerticalOffset() ) );
 			inter->unlockBuffer( it );
 

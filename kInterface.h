@@ -39,6 +39,7 @@ class kInterface;
 #include "kGrfxWritable.h"
 #include "kColor.h"
 #include "butility.h"
+#include "kControls.h"
 
 class kInterface : private boost::noncopyable {
 private:
@@ -54,7 +55,7 @@ public:
 																// everything else undefined.
 	virtual void unlockBuffer( grfx::kWritable *buf ) = 0;
 
-//	virtual kControls *getControls() = 0;
+	virtual const kControls *updateControls() = 0;
 
 	virtual bool shutDown() const = 0;	// should I quit?
 	virtual void shutDownNow() = 0;		// Yes, yes you should.

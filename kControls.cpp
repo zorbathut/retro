@@ -29,59 +29,62 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KCONTROLS
-#define RETRO_KCONTROLS
+#include "kControls.h"
 
-class kControls;
+const BYTE *kControls::getButtons() const {
+	return buttons; };
+const INT32 *kControls::getAxes() const {
+	return axes; };
 
-#include "types.h"
-#include "butility.h"
-#include "kString.h"
+int kControls::getButtoncount() const {
+	return buttoncount; };
+int kControls::getAxiscount() const {
+	return axiscount; };
 
-const BYTE CONTROL_KEYDOWN = 0x01;
-const BYTE CONTROL_KEYUP = 0x02;
-const BYTE CONTROL_KEYPUSH = 0x04;
-const BYTE CONTROL_KEYRELEASE = 0x08;
-const BYTE CONTROL_KEYCHANGE = 0x10;
+const zutil::kString *kControls::getButtonlabels() const {
+	return buttonlabels; };
+const zutil::kString *kControls::getAxislabels() const {
+	return axislabels; };
 
-class kControls : private boost::noncopyable {
-public:
+BYTE *kControls::accessButtons() {
+	return buttons; };
+INT32 *kControls::accessAxes() {
+	return axes; };
 
-	const BYTE *getButtons() const;
-	const INT32 *getAxes() const;
-
-	int getButtoncount() const;
-	int getAxiscount() const;
-
-	const zutil::kString *getButtonlabels() const;
-	const zutil::kString *getAxislabels() const;
-
-protected:
-
-	BYTE *accessButtons();
-	INT32 *accessAxes();	// yes, I realize I should be using set functions here, but this lets me
-							// change the data in place.
-
-	void setButtoncount( int newcount );
-	void setAxiscount( int newcount );
-
-	zutil::kString *accessButtonlabels() const;
-	zutil::kString *accessAxislabels() const;
-
-	kControls( int buttons, int axes );
-	virtual ~kControls();
-
-private:
-
-	BYTE *buttons;
-	INT32 *axes;
-
-	zutil::kString *buttonlabels;
-	zutil::kString *axislabels;
-
-	int buttoncount;
-	int axiscount;
-
+void kControls::setButtoncount( int newcount ) {
+	delete [] buttons;
+	delete [] buttonlabels;
+	buttons = new BYTE[ newcount ];
+	buttonlabels = new zutil::kString[ newcount ];
+	buttoncount = newcount;
 };
 
-#endif
+void kControls::setAxiscount( int newcount ) {
+	delete [] axes;
+	delete [] axislabels;
+	axes = new INT32[ newcount ];
+	axislabels = new zutil::kString[ newcount ];
+	axiscount = newcount;
+};
+
+zutil::kString *kControls::accessButtonlabels() const {
+	return buttonlabels; }
+zutil::kString *kControls::accessAxislabels() const {
+	return axislabels; };
+
+kControls::kControls( int in_buttons, int in_axes ) :
+		buttons( new BYTE[ in_buttons ] ),
+		buttonlabels( new zutil::kString[ in_buttons ] ),
+		buttoncount( in_buttons ),
+		axes( new INT32[ in_axes ] ),
+		axislabels( new zutil::kString[ in_axes ] ),
+		axiscount( in_axes )
+	{ };
+
+		
+kControls::~kControls() {
+	delete [] buttons;
+	delete [] buttonlabels;
+	delete [] axes;
+	delete [] axislabels;
+};

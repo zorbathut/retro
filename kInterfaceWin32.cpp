@@ -34,22 +34,28 @@
 #pragma warning( disable : 4786 )
 
 #define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <d3d8.h>
 #include <d3dx8core.h>
+#include <dinput.h>
 #include <process.h>
 #include <assert.h>
+// There's nothing slow about this at all.
 
 #include "kinterface.h"
 #include "kGrfxWritableOwnedraster.h"
 #include "kGrfxWritable16bpp565.h"
 #include "errlog.h"
 #include "config.h"
+#include "kControlsOpen.h"
 
 class kInterfaceWin32 : public kInterface {
 public:
 
 	virtual grfx::kWritable *lockBuffer( grfx::kColor backwash );
 	virtual void unlockBuffer( grfx::kWritable * );
+
+	virtual const kControls *updateControls();
 
 	virtual bool shutDown( void ) const { return closing; };	// should I quit?
 	virtual void shutDownNow( void ) { SetEvent( finishedEvent ); PostQuitMessage( 0 ); };
@@ -82,11 +88,16 @@ public:
 	IDirect3DSurface8 *surf;
 	IDirect3DSurface8 *writsurf;
 
+	IDirectInput8		*dinput;
+	IDirectInputDevice8 *kbd;
+
 	bool starting;
 
 	D3DFORMAT bbfmt;
 
 	grfx::kWritableOwnedraster *kwr;
+
+	kControlsOpen controls;
 
 };
 
@@ -340,7 +351,7 @@ kInterfaceWin32 *inter = NULL;
 
 kInterfaceWin32::kInterfaceWin32( void ) : D3D( NULL ), D3DDevice( NULL ), closing( false ),
 		finishedEvent( CreateEvent( NULL, FALSE, FALSE, NULL ) ), surf( NULL ), writsurf( NULL ),
-		starting( false ), kwr( NULL ) {
+		starting( false ), kwr( NULL ), controls( 256, 0 ) {
 	InitializeCriticalSection( &surfaceLock );
 };
 kInterfaceWin32::~kInterfaceWin32( void ) {
@@ -474,18 +485,14 @@ bool kInterfaceWin32::init( void ) {
 							  config_ymin + GetSystemMetrics( SM_CYSIZEFRAME ) * 2 + GetSystemMetrics( SM_CYMENU ),
                               GetDesktopWindow(), NULL, wc.hInstance, NULL );
 
-    // Create the Direct3D device. Here we are using the default adapter (most
-    // systems only have one, unless they have multiple graphics hardware cards
-    // installed) and requesting the HAL (which is saying we want the hardware
-    // device rather than a software one). Software vertex processing is 
-    // specified since we know it will work on all cards. On cards that support 
-    // hardware vertex processing, though, we would see a big performance gain 
-    // by specifying hardware vertex processing.
+    // Create the Direct3D device. Here we are using the default adapter and
+	// choosing the HAL we figured out above.
  
 	HRESULT bort;
-    if( FAILED( bort = D3D->CreateDevice( D3DADAPTER_DEFAULT, hal ? D3DDEVTYPE_HAL : D3DDEVTYPE_REF, hWnd,
+	bort = D3D->CreateDevice( D3DADAPTER_DEFAULT, hal ? D3DDEVTYPE_HAL : D3DDEVTYPE_REF, hWnd,
                                       D3DCREATE_MIXED_VERTEXPROCESSING,
-                                      &d3dpp, &D3DDevice ) ) ) {
+                                      &d3dpp, &D3DDevice );
+    if( FAILED( bort ) ) {
 		switch( bort ) {  
 		case D3DERR_INVALIDCALL  :
 			MessageBox( NULL, "Unexpected error (invalid call) initializing graphics card", "Critical error", NULL );
@@ -512,6 +519,60 @@ bool kInterfaceWin32::init( void ) {
 		return true;
 	}
 
+	HRESULT hr; 
+ 
+    // Create the DirectInput object. 
+    hr = DirectInput8Create( GetModuleHandle( NULL ), DIRECTINPUT_VERSION, 
+                            IID_IDirectInput8, ( void** )&dinput, NULL); 
+ 
+    if( FAILED(hr) ) {
+		D3DDevice->Release();
+		D3D->Release();
+		MessageBox( NULL, "Error creating DirectInput8 object", "Critical error", NULL );
+		return true;
+	};
+		
+ 
+    // Retrieve a pointer to an IDirectInputDevice8 interface 
+    hr = dinput->CreateDevice(GUID_SysKeyboard, &kbd, NULL); 
+ 
+    if( FAILED(hr) ) { 
+		MessageBox( NULL, "Error creating keyboard", "Critical error", NULL );
+		D3DDevice->Release();
+		D3D->Release();
+		dinput->Release();
+        return true; 
+    } 
+ 
+    // Now that you have an IDirectInputDevice8 interface, get 
+    // it ready to use. 
+ 
+    // Set the data format using the predefined keyboard data 
+    // format provided by the DirectInput object for keyboards. 
+    
+    hr = kbd->SetDataFormat(&c_dfDIKeyboard); 
+ 
+    if( FAILED(hr) ) { 
+		MessageBox( NULL, "Error setting keyboard mode", "Critical error", NULL );
+		D3DDevice->Release();
+		D3D->Release();
+		kbd->Release();
+		dinput->Release();
+        return true; 
+    } 
+ 
+    // Set the cooperative level 
+    hr = kbd->SetCooperativeLevel( hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE ); 
+    if( FAILED(hr) )
+    { 
+		MessageBox( NULL, "Error setting keyboard cooperation", "Critical error", NULL );
+		D3DDevice->Release();
+		D3D->Release();
+		kbd->Release();
+		dinput->Release();
+        return true; 
+    } 
+ 
 	starting = false;
 
     // Device state would normally be set here
@@ -529,6 +590,10 @@ void kInterfaceWin32::close( void ) {
 	writsurf->Release();
     D3DDevice->Release();
     D3D->Release();
+	kbd->Unacquire();
+	kbd->Release();
+	dinput->Release();
+
     UnregisterClass( "D3D Tutorial", GetModuleHandle( NULL ) );
 
 };
@@ -584,3 +649,39 @@ UINT64 kInterfaceWin32::getCounterPos() const {
 	LARGE_INTEGER foo;
 	QueryPerformanceCounter( &foo );
 	return foo.QuadPart; }
+
+const kControls *kInterfaceWin32::updateControls() {
+
+    char     buffer[256]; 
+    HRESULT  hr; 
+ 
+    hr = kbd->GetDeviceState( sizeof(buffer), (LPVOID)&buffer ); 
+    if( FAILED( hr ) ) { 
+
+		if( hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED ) {
+			kbd->Acquire();
+		    hr = kbd->GetDeviceState( sizeof(buffer), (LPVOID)&buffer );
+			if( FAILED( hr ) ) {
+				memset( controls.accessButtons(), CONTROL_KEYUP, 256 );
+				return &controls;
+			}
+		} else {
+			memset( controls.accessButtons(), CONTROL_KEYUP, 256 );
+			return &controls;
+		}
+    }
+
+	char *buf = buffer;
+	BYTE *oot = controls.accessButtons();
+
+	char *ned = buf + 256;
+
+	do {
+
+		*oot = ( *buf & 0x80 ) ? CONTROL_KEYDOWN : CONTROL_KEYUP;
+
+	} while( ++oot, ++buf != ned );
+
+	return &controls;
+
+}
