@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=zem - Win32 Debug
+CFG=zem - Win32 DProfile
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=zem - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "zem.mak" CFG="zem - Win32 Debug"
+!MESSAGE NMAKE /f "zem.mak" CFG="zem - Win32 DProfile"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "zem - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "zem - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "zem - Win32 RProfile" (based on "Win32 (x86) Application")
+!MESSAGE "zem - Win32 DProfile" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -43,7 +45,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FR /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -84,12 +87,76 @@ LINK32=link.exe
 # ADD LINK32 libpngd.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /verbose /pdb:none /nodefaultlib
 
+!ELSEIF  "$(CFG)" == "zem - Win32 RProfile"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "zem___Win32_RProfile"
+# PROP BASE Intermediate_Dir "zem___Win32_RProfile"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "zem___Win32_RProfile"
+# PROP Intermediate_Dir "zem___Win32_RProfile"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
+# SUBTRACT BASE CPP /Fr
+# ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
+# SUBTRACT CPP /Fr
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /pdb:none /machine:I386
+# SUBTRACT BASE LINK32 /verbose
+# ADD LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /profile /machine:I386
+# SUBTRACT LINK32 /verbose
+
+!ELSEIF  "$(CFG)" == "zem - Win32 DProfile"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "zem___Win32_DProfile"
+# PROP BASE Intermediate_Dir "zem___Win32_DProfile"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "zem___Win32_DProfile"
+# PROP Intermediate_Dir "zem___Win32_DProfile"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FD /GZ /c
+# SUBTRACT BASE CPP /YX
+# ADD CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FD /GZ /c
+# SUBTRACT CPP /YX
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 libpngd.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# SUBTRACT BASE LINK32 /verbose /pdb:none /nodefaultlib
+# ADD LINK32 libpngd.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /profile /debug /machine:I386
+# SUBTRACT LINK32 /verbose /nodefaultlib
+
 !ENDIF 
 
 # Begin Target
 
 # Name "zem - Win32 Release"
 # Name "zem - Win32 Debug"
+# Name "zem - Win32 RProfile"
+# Name "zem - Win32 DProfile"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -136,6 +203,10 @@ SOURCE=.\kInterface.h
 # Begin Source File
 
 SOURCE=.\kPoint.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kRect.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -211,6 +282,10 @@ SOURCE=.\miscfunc.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\kColor.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\kColor.h
 # End Source File
 # Begin Source File
@@ -263,14 +338,6 @@ SOURCE=.\kGrfxRenderableFiniteNull.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\kGrfxRenderableOwnedraster.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\kGrfxRenderableOwnedraster.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\kGrfxRenderablePNG.cpp
 # End Source File
 # Begin Source File
@@ -316,14 +383,6 @@ SOURCE=.\kGrfxWritable16bpp565.cpp
 # Begin Source File
 
 SOURCE=.\kGrfxWritable16bpp565.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\kGrfxWritableOwnedraster.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\kGrfxWritableOwnedraster.h
 # End Source File
 # Begin Source File
 

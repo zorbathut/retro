@@ -40,7 +40,7 @@
 class kMainShellMenu : public kMainShell {
 public:
 
-	virtual kMainShell *clockTick();
+	virtual kMainShell *clockTick( const kControls *controls );
 	virtual void renderFrame( grfx::kWritable *target );
 
 	kMainShellMenu();
@@ -49,7 +49,17 @@ public:
 private:
 
 	file::kHandle< grfx::kRenderableFinite > fin;
+	file::kHandle< grfx::kRenderableFinite > gn;
 	file::kHandle< grfx::kFont > fnt;
+
+	kPoint< INT32 > gp;
+	kRect< INT32 > gb;
+
+	int pbs[ 4 ];
+	int ulbbs[ 4 ];
+	int brbbs[ 4 ];
+
+	bool got;
 
 };
 

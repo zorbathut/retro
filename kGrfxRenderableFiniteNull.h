@@ -48,11 +48,11 @@ namespace grfx {
 		virtual const kPoint< INT32 > &getDimensions() const;
 
 		virtual void renderTo( kWritable *target, const kPoint< INT32 > &pos ) const;
-		virtual void renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) const;
+		virtual void renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kRect< INT32 > &bounds ) const;
 
 		kRenderableFiniteNull();
 
-		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+		virtual void describe( std::ostream &ostr ) const;
 	protected:  void chaindown( std::ostream &ostr ) const;
 
 	private:

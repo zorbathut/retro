@@ -49,6 +49,38 @@ const control::kObjectspecs &kControls::getButtoninfo( int num ) const {
 const control::kObjectspecs &kControls::getAxisinfo( int num ) const {
 	return axisinfos[ num ]; };
 
+int kControls::findAxis( const kUniqueKeyDevId &devid ) const {
+	std::map< kUniqueKeyDevId, int >::const_iterator itr = axisDevid.find( devid );
+	if( itr == axisDevid.end() )
+		return -1;
+	  else
+		return itr->second;
+};
+
+int kControls::findAxis( const kHidid &hidid ) const {
+	std::map< kHidid, int >::const_iterator itr = axisHidid.find( hidid );
+	if( itr == axisHidid.end() )
+		return -1;
+	  else
+		return itr->second;
+};
+
+int kControls::findButton( const kUniqueKeyDevId &devid ) const {
+	std::map< kUniqueKeyDevId, int >::const_iterator itr = buttonDevid.find( devid );
+	if( itr == buttonDevid.end() )
+		return -1;
+	  else
+		return itr->second;
+}
+
+int kControls::findButton( const kHidid &hidid ) const {
+	std::map< kHidid, int >::const_iterator itr = buttonHidid.find( hidid );
+	if( itr == buttonHidid.end() )
+		return -1;
+	  else
+		return itr->second;
+};
+
 BYTE *kControls::accessButtons() {
 	return buttons; };
 INT32 *kControls::accessAxes() {
@@ -88,12 +120,12 @@ void kControls::rebuildFindLists() {
 		if( getAxisinfo( i ).hidid.valid() ) {
 			if( axisHidid.find( getAxisinfo( i ).hidid ) != axisHidid.end() ) {
 				int old = axisHidid[ getAxisinfo( i ).hidid ];
-				g_errlog << "CONTROL: Axis HIDID conflict for \"" << getAxisinfo( old ).dev->name.get() << "," << getAxisinfo( old ).name.get() << "\" and \"" << getAxisinfo( i ).dev->name.get() << "," << getAxisinfo( i ).name.get() << "\"" << std::endl;
+				g_errlog << "CONTROL: Axis HIDID conflict for \"" << getAxisinfo( old ).dev->name << "," << getAxisinfo( old ).name << "\" and \"" << getAxisinfo( i ).dev->name << "," << getAxisinfo( i ).name << "\"" << std::endl;
 			}
 			axisHidid[ getAxisinfo( i ).hidid ] = i;
 		} else {
 #if POSTDEBUGINFO
-			g_errlog << "CONTROL: (debug) No provided HIDID for axis \"" << getAxisinfo( i ).dev->name.get() << "," << getAxisinfo( i ).name.get() << "\"" << std::endl;
+			g_errlog << "CONTROL: (debug) No provided HIDID for axis \"" << getAxisinfo( i ).dev->name << "," << getAxisinfo( i ).name << "\"" << std::endl;
 #endif
 		}
 		axisDevid[ getButtoninfo( i ).getKeyDevId() ] = i;
@@ -103,12 +135,12 @@ void kControls::rebuildFindLists() {
 		if( getButtoninfo( i ).hidid.valid() ) {
 			if( buttonHidid.find( getButtoninfo( i ).hidid ) != buttonHidid.end() ) {
 				int old = buttonHidid[ getButtoninfo( i ).hidid ];
-				g_errlog << "CONTROL: Button HIDID conflict for \"" << getButtoninfo( old ).dev->name.get() << "," << getButtoninfo( old ).name.get() << "\" and \"" << getButtoninfo( i ).dev->name.get() << "," << getButtoninfo( i ).name.get() << "\"" << std::endl;
+				g_errlog << "CONTROL: Button HIDID conflict for \"" << getButtoninfo( old ).dev->name << "," << getButtoninfo( old ).name << "\" and \"" << getButtoninfo( i ).dev->name << "," << getButtoninfo( i ).name << "\"" << std::endl;
 			}
 			buttonHidid[ getButtoninfo( i ).hidid ] = i;
 		} else {
 #if POSTDEBUGINFO
-			g_errlog << "CONTROL: (debug) No provided HIDID for button \"" << getButtoninfo( i ).dev->name.get() << "," << getButtoninfo( i ).name.get() << "\"" << std::endl;
+			g_errlog << "CONTROL: (debug) No provided HIDID for button \"" << getButtoninfo( i ).dev->name << "," << getButtoninfo( i ).name << "\"" << std::endl;
 #endif
 		}
 		buttonDevid[ getButtoninfo( i ).getKeyDevId() ] = i;

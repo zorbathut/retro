@@ -46,18 +46,20 @@ namespace grfx {
 	public:
 
 		// drawing functions
-		virtual void drawRaster( const kRasterConst &rstr, const kPoint< INT32 > &loc );
-		virtual void drawRasterPart( const kRasterConst &rstr, const kPoint< INT32 > &loc,
-									 const kPoint< INT32 > &start, const kPoint< INT32 > &end );
+		virtual void drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &loc );
+		virtual void drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
 		virtual void drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count );
 		virtual void clear( kColor color );
 
 		// setup functions
 		kWritable16bpp565( int width, int height, EXACTUINT16 *data, int pitch );
 
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
 	private:
 
-		void drawRasterGo( const kRasterConst &rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
+		void drawRasterGo( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
 
 	};
 

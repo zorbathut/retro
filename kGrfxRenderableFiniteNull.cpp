@@ -40,7 +40,7 @@ namespace grfx {
 		return dim; };
 
 	void kRenderableFiniteNull::renderTo( kWritable *target, const kPoint< INT32 > &pos ) const { };
-	void kRenderableFiniteNull::renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) const { };
+	void kRenderableFiniteNull::renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kRect< INT32 > &bounds ) const { };
 
 	kRenderableFiniteNull::kRenderableFiniteNull() : dim( 1, 1 ) { };
 

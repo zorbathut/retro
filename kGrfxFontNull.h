@@ -47,7 +47,10 @@ namespace grfx {
 
 		virtual int getVerticalOffset() const;
 
-		virtual void renderText( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const;
+		virtual void renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const;
+
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
 
 	};
 

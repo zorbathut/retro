@@ -32,6 +32,8 @@
 #ifndef RETRO_KGRFXWRITEABLE
 #define RETRO_KGRFXWRITEABLE
 
+#pragma warning( disable : 4786 )
+
 namespace grfx {
 
 	class kWritable;
@@ -56,8 +58,8 @@ namespace grfx {
 		virtual const kPoint< INT32 > &getDimensions( void ) const = 0;	// the dimensions it's pretending to have?
 
 		// drawing functions
-		virtual void drawRaster( const kRasterConst &rstr, const kPoint< INT32 > &loc ) = 0;
-		virtual void drawRasterPart( const kRasterConst &rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) = 0;
+		virtual void drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &loc ) = 0;
+		virtual void drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) = 0;
 		virtual void drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count ) = 0;
 		virtual void clear( kColor color ) = 0;
 

@@ -43,6 +43,9 @@ namespace grfx {
 
 	static void user_error_fn( png_structp png_ptr, png_const_charp error_msg ) { throw 0; }
 
+	const kRasterConst *kRenderablePNG::getRaster() const {
+		return raster; };
+
 	void kRenderablePNG::loadAll() {
 
 		assert( state == EMPTY );
@@ -150,9 +153,9 @@ namespace grfx {
 
 		assert( state == READY );
 
-		delete raster.getData();
+		delete raster;
 
-		raster.setData( NULL );
+		raster = NULL;
 
 		fritz = false;
 		state = EMPTY;
@@ -205,7 +208,8 @@ namespace grfx {
 		png_read_info( png_ptr, info_ptr );
 		png_get_IHDR( png_ptr, info_ptr, &width, &height, &colordepth, &colortype, NULL, NULL, NULL );
 
-		raster.setDimensions( kPoint< INT32 >( width, height ) );
+		raster = new kRaster( kPoint< INT32 >( width, height ) );
+
 		progres = height;
 
 		return false;
@@ -215,7 +219,6 @@ namespace grfx {
 	bool kRenderablePNG::initpngread() {
 
 		if( preparepng() ) { // well, we're screwed, really.
-			raster.setData( new kColor[ raster.getDimensions().x * raster.getDimensions().y ] );
 			// todo: some unmistakable hash pattern.
 			return true;
 		}
@@ -230,13 +233,10 @@ namespace grfx {
 
 		png_read_update_info( png_ptr, info_ptr );
 
-		kColor *data = new kColor[ raster.getDimensions().x * raster.getDimensions().y ];
-		row_pointers = new png_byte*[ raster.getDimensions().y ];
-		for( int i = 0; i < raster.getDimensions().y; i++ )
-			row_pointers[ i ] = reinterpret_cast< png_byte * >( &data[ i * raster.getDimensions().x ] );
-
-		raster.setData( data );
-		raster.setPitch( raster.getDimensions().x );
+		raster->writeLock( kRect< INT32 >( 0, 0, raster->getDimensions().x, raster->getDimensions().y ), &lock );
+		row_pointers = new png_byte*[ raster->getDimensions().y ];
+		for( int i = 0; i < raster->getDimensions().y; i++ )
+			row_pointers[ i ] = reinterpret_cast< png_byte * >( &lock.data[ i * lock.pitch ] );
 
 		return false;
 
@@ -244,6 +244,7 @@ namespace grfx {
 
 	void kRenderablePNG::destructpngread() {
 
+		raster->unlock( &lock );
 		delete [] row_pointers;
 		png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
 		fclose( fp );
@@ -263,7 +264,10 @@ namespace grfx {
 
 	kRenderablePNG::~kRenderablePNG() {
 
-		delete [] row_pointers;
+		if( row_pointers ) {
+			raster->unlock( &lock );
+			delete [] row_pointers;
+		};
 
 		if( png_ptr || info_ptr )
 			png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
@@ -278,11 +282,11 @@ namespace grfx {
 		kRenderablePNG::chaindo( ostr ); };
 
 	void kRenderablePNG::chaindown( std::ostream &ostr ) const {
-		ostr << " (*final*-PNG)";
+		ostr << " (PNG)";
 		kRenderablePNG::chaindo( ostr ); };
 
 	void kRenderablePNG::chaindo( std::ostream &ostr ) const {
-		kRenderableOwnedraster::chaindown( ostr );
+		kRenderableRaster::chaindown( ostr );
 		kBase::chaindown( ostr ); };
 
 	kOutputtoken kRenderablePNG::textdesc() const {

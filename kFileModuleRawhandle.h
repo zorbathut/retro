@@ -43,7 +43,7 @@ namespace file {
 
 namespace file {
 
-	template < class kType > class kModuleRawhandle : public kModule< kRawhandle< kType > > {
+	template < typename kType > class kModuleRawhandle : public kModule< kRawhandle< kType > > {
 	private:
 
 		virtual void specDat(
@@ -71,10 +71,10 @@ namespace file {
 
 	};
 
-	template < class kType > void kModuleRawhandle< kType >::describe( std::ostream &ostr ) const {
+	template < typename kType > void kModuleRawhandle< kType >::describe( std::ostream &ostr ) const {
 		ostr << "unidentified modulerawhandle";
 		kModule< file::kRawhandle< kType > >::chaindown( ostr ); };
-	template < class kType > void kModuleRawhandle< kType >::chaindown( std::ostream &ostr ) const {
+	template < typename kType > void kModuleRawhandle< kType >::chaindown( std::ostream &ostr ) const {
 		kModule< file::kRawhandle< kType > >::chaindown( ostr ); };
 
 

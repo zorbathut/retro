@@ -29,6 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
+#pragma warning( disable : 4786 )
+
 #ifndef RETRO_KRASTER
 #define RETRO_KRASTER
 
@@ -41,70 +43,100 @@ namespace grfx {
 	class kRasterConst;
 	class kRaster;
 
+	class kLockedRead;
+	class kLockedWrite;
+
 }
 
 #include <utility>
+#include <vector>
 
-#include "kPoint.h"
+#include "kRect.h"
 #include "kColor.h"
+#include "butility.h"
+#include "kFunctor.h"
+#include "kDescribable.h"
 
 namespace grfx {
 
-	class kRasterConst {
+	class kRasterConst : private boost::noncopyable, public kDescribable {
 	public:
 
 		const kPoint< INT32 > &getDimensions() const;
-		const kColor *getData() const;
-		INT32 getPitch() const;
 
-	    void setDimensions( const kPoint< INT32 > &ind );
-		void setData( const kColor *ind );
-		void setPitch( int ind );
+		bool lock( kRect< INT32 > &bounds, kLockedRead *locked, bool suppressError = false ) const;
 
-		kRasterConst( const kPoint< INT32 > &dim, const kColor *dat, INT32 pitch );
-		kRasterConst( INT32 x, INT32 y, const kColor *dat, INT32 pitch );
+		void unlock( const kLockedRead *locked ) const;
 
-		kRasterConst( const kRaster &in );
-		kRasterConst( const kRasterConst &in );
-		void operator=( const kRaster & );
-		void operator=( const kRasterConst & );
+		void addModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const;
+		void addDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const;
 
+		kRasterConst( const kPoint< INT32 > &dim, const kColor *dat, INT32 pitch, bool owned = true );
+		virtual ~kRasterConst();
+
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
+	protected:
+
+		void notifyModification( const kRect< INT32 > &bounds ) const;
+		
 	private:
 
 		kPoint< INT32 > dimension;
-		const kColor *data;
+		union {
+			const kColor *c;
+			kColor *nc;
+		} data;
 		INT32 pitch;
+
+		bool owned;
+
+		mutable std::vector< zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > changeNotifies;
+		mutable std::vector< zutil::kFunctor< RVOID, const kRasterConst * > * > destructNotifies;
+
+		// yes yes. this needs to be re-implemented :P
+		bool disallowReadLock;
+		mutable int readLockCount;
+
+		kRasterConst();
+
+		friend kRaster;
 
 	}; // raster is defined as 32bit ARGB. Whether A matters or not depends on context.
 
-	class kRaster {
+	class kRaster : public kRasterConst {
 	public:
 
-		const kPoint< INT32 > &getDimensions() const;
-		kColor *getData() const;
-		INT32 getPitch() const;
+		bool writeLock( kRect< INT32 > &bounds, kLockedWrite *locked, bool suppressError = false );
 
-	    void setDimensions( const kPoint< INT32 > &ind );
-		void setData( kColor *ind );
-		void setPitch( int ind );
+		void unlock( const kLockedRead *locked ) const;
+		void unlock( const kLockedWrite *locked );
 
-		void drawRasterPart( const kRasterConst &in, const kPoint< INT32 > &pos, const kPoint< INT32 > &start,
-							 const kPoint< INT32 > &end ) const;
-		void drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count ) const;
-		void clear( kColor color ) const;
+		kRaster( const kPoint< INT32 > &dim );
+		kRaster( const kPoint< INT32 > &dim, kColor *dat, INT32 pitch, bool owned = true );
 
-		kRaster( const kPoint< INT32 > &dim, kColor *dat, INT32 pitch );
-		kRaster( INT32 x, INT32 y, kColor *dat, INT32 pitch );
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
 
-		kRaster( const kRaster &in );
-		void operator=( const kRaster & );
-			
 	private:
 
-		kPoint< INT32 > dimension;
+		kColor *getData();
+
+	};
+
+	class kLockedRead {
+	public:
+		kRect< INT32 > bounds;
+		const kColor *data;
+		INT32 pitch;
+	};
+
+	class kLockedWrite {
+	public:
+		kRect< INT32 > bounds;
 		kColor *data;
 		INT32 pitch;
-
 	};
 
 };

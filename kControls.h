@@ -35,13 +35,13 @@
 #pragma warning( disable : 4786 )
 
 #include "kHIDID.h"
-#include "kString.h"
 #include "kUniqueID.h"
 
 #include "types.h"
 #include "butility.h"
 
 #include <map>
+#include <string>
 
 namespace keyis {
 
@@ -58,7 +58,7 @@ namespace control {
 	class kDevicespecs  {
 	public:
 
-		zutil::kString name;
+		std::string name;
 		kUniqueDevId uid;
 		int axes;
 		int buttons;
@@ -68,7 +68,7 @@ namespace control {
 	class kObjectspecs {
 	public:
 
-		zutil::kString name;
+		std::string name;
 		kHidid hidid;
 		kUniqueKeyId uid;
 		const kDevicespecs *dev;

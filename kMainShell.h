@@ -33,11 +33,12 @@
 #define RETRO_KMAINSHELL
 
 #include "kGrfxWritable.h"
+#include "kControls.h"
 
 class kMainShell {
 public:
 
-	virtual kMainShell *clockTick() = 0; // stuff goes here. Returns what to replace this with.
+	virtual kMainShell *clockTick( const kControls *controls ) = 0; // stuff goes here. Returns what to replace this with.
 	virtual void renderFrame( grfx::kWritable *target ) = 0;
 
 	kMainShell();

@@ -36,7 +36,7 @@
 
 namespace zutil {
 
-	template < class kData > class kStreamtoken {
+	template < typename kData > class kStreamtoken {
 	private:
 
 		kData data;
@@ -53,7 +53,7 @@ namespace zutil {
 
 	};
 
-	template< class foo > std::ostream &operator<<( std::ostream &str, kStreamtoken< foo > &alter ) {
+	template< typename foo > std::ostream &operator<<( std::ostream &str, kStreamtoken< foo > &alter ) {
 		alter.go( str );
 		return str;
 	};

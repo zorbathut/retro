@@ -31,13 +31,22 @@
 
 #include "kGrfxFontNull.h"
 
+#include <iostream>
+
 namespace grfx {
 
 	int kFontNull::getVerticalOffset() const {
 		return 1; };
 
-	void kFontNull::renderText( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const {
+	void kFontNull::renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const {
 		return; };
+
+	void kFontNull::describe( std::ostream &ostr ) const {
+		ostr << "NULL grfxFont";
+		kFont::chaindown( ostr ); };
+
+	void kFontNull::chaindown( std::ostream &ostr ) const {
+		kFont::chaindown( ostr ); };
 
 };
 

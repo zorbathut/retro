@@ -38,7 +38,7 @@ namespace grfx {
 
 };
 
-#include "kGrfxRenderableOwnedraster.h"
+#include "kGrfxRenderableRaster.h"
 #include "kFileBase.h"
 
 // png typedefs so I can get away with not includeing png.h, which is big and stuff
@@ -54,8 +54,10 @@ typedef _iobuf FILE;
 
 namespace grfx {
 
-	class kRenderablePNG : public kRenderableOwnedraster, public file::kBase {
+	class kRenderablePNG : public kRenderableRaster, public file::kBase {
 	public:
+
+		virtual const kRasterConst *getRaster() const;
 
 		virtual void loadAll();
 
@@ -88,6 +90,9 @@ namespace grfx {
 		png_info *info_ptr;
 		png_byte **row_pointers;
 		FILE *fp;
+
+		kRaster *raster;
+		kLockedWrite lock;
 
 		bool preparepng();	// returns dimensions
 		bool initpngread();

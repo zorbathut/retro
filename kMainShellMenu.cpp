@@ -34,23 +34,73 @@
 #include "kMainShellMenu.h"
 #include "kMGrfxRenderableFinite.h"
 #include "kMGrfxFont.h"
+#include "hididConsts.h"
 
 #include <stdlib.h>
 
-#include <strstream>
+#include <sstream>
 #include <string>
 
-kMainShell *kMainShellMenu::clockTick() {
+int dx[ 4 ] = {  0, 0, -1, 1 };
+int dy[ 4 ] = { -1, 1,  0, 0 };
+
+kMainShell *kMainShellMenu::clockTick( const kControls *controls ) {
+	if( !got ) {
+
+		pbs[ 0 ] = controls->findButton( hidid::kbd::arrowup );
+		pbs[ 1 ] = controls->findButton( hidid::kbd::arrowdown );
+		pbs[ 2 ] = controls->findButton( hidid::kbd::arrowleft );
+		pbs[ 3 ] = controls->findButton( hidid::kbd::arrowright );
+
+		ulbbs[ 0 ] = controls->findButton( hidid::kbd::W );
+		ulbbs[ 1 ] = controls->findButton( hidid::kbd::Z );
+		ulbbs[ 2 ] = controls->findButton( hidid::kbd::A );
+		ulbbs[ 3 ] = controls->findButton( hidid::kbd::S );
+
+		brbbs[ 0 ] = controls->findButton( hidid::kbd::I );
+		brbbs[ 1 ] = controls->findButton( hidid::kbd::M );
+		brbbs[ 2 ] = controls->findButton( hidid::kbd::J );
+		brbbs[ 3 ] = controls->findButton( hidid::kbd::K );
+
+		got = true;
+
+	}
+
+	for( int i = 0; i < 4; i++ ) {
+
+		if( pbs[ i ] != -1 ) {
+			gp.x += ( ( controls->getButton( pbs[ i ] ) & keyis::down ) != 0 ) * dx[ i ];
+			gp.y += ( ( controls->getButton( pbs[ i ] ) & keyis::down ) != 0 ) * dy[ i ];
+		}
+
+		if( ulbbs[ i ] != -1 ) {
+			gb.ul.x += ( ( controls->getButton( ulbbs[ i ] ) & keyis::down ) != 0 ) * dx[ i ];
+			gb.ul.y += ( ( controls->getButton( ulbbs[ i ] ) & keyis::down ) != 0 ) * dy[ i ];
+		}
+
+		if( brbbs[ i ] != -1 ) {
+			gb.br.x += ( ( controls->getButton( brbbs[ i ] ) & keyis::down ) != 0 ) * dx[ i ];
+			gb.br.y += ( ( controls->getButton( brbbs[ i ] ) & keyis::down ) != 0 ) * dy[ i ];
+		}
+
+	}
+
 	return this; };
 
 void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 	kPoint< INT32 > size = target->getDimensions();
 	fin->renderTo( target, kPoint< INT32 >( 0, 0 ) );
-	std::strstream foo;
+	std::stringstream foo;
 	foo << size.x << "x" << size.y;
 	std::string texxt;
 	std::getline( foo, texxt );
-	fnt->renderText( target, texxt.c_str(), kPoint< INT32 >( 0, 0 ) );
+	fnt->renderTextTo( target, texxt.c_str(), kPoint< INT32 >( 0, 0 ) );
+	foo.clear();
+	foo << gp << ", " << gb;
+	std::getline( foo, texxt );
+	fnt->renderTextTo( target, texxt.c_str(), kPoint< INT32 >( 100, 0 ) );
+	gn->renderPartTo( target, gp, gb );
+
 /*	std::pair< kPoint< INT32 >, grfx::kColor > det[ 100 ];
 	for( int i = 0; i < 100; i++ ) {
 		det[ i ].first.x = rand() % target->getDimensions().x;
@@ -61,12 +111,16 @@ void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 };
 
 kMainShellMenu::kMainShellMenu() : fin( module::finite.get( "gnarl" ) ),
-			fnt( module::font.get( "big" ) ) {
-	fin.request( 600 );
+			fnt( module::font.get( "big" ) ),
+			gn( module::finite.get( "greenity" ) ),
+			gp( 0, 0 ), gb( 0, 0, 0, 0 ), got( false ) {
+	fin.activate();
 	fnt.activate();
+	gn.activate();
 };
 
 kMainShellMenu::~kMainShellMenu() {
 	fin.deactivate();
 	fnt.deactivate();
+	gn.deactivate();
 };

@@ -50,8 +50,7 @@ namespace file {
 	const zutil::kString &kBase::getFname() const {
 		return fname; };
 
-
-	void kBase::describe( std::ostream &ostr ) const VAGUEDESC {
+	void kBase::describe( std::ostream &ostr ) const {
 		ostr << "unidentified filebase";
 		kBase::chaindown( ostr ); };
 

@@ -1,6 +1,9 @@
 
 much of what's in here is obsolete or worse. Read at your own risk.
 
+line 659 in the windows interface - needed to add due to problems with profiling
+REMOVE
+
 turbo nutter bastard todo:
 
 add HIDs for all devices (or as many as I can manage)
@@ -11,6 +14,8 @@ require all graphics to be returned! only keep track in debug. null function in 
 more descriptions :P
 gfx engine mark 3 - run over 3d
 file engine mark 3 - set priorities for requests (muchmuch later)
+get rid of zutil::string
+add kRect
 
 
 

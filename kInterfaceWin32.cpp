@@ -44,7 +44,7 @@
 #include <vector>
 
 #include "kinterface.h"
-#include "kGrfxWritableOwnedraster.h"
+#include "kGrfxWritableRaster.h"
 #include "kGrfxWritable16bpp565.h"
 #include "errlog.h"
 #include "config.h"
@@ -129,7 +129,7 @@ public:
 
 	D3DFORMAT bbfmt;
 
-	grfx::kWritableOwnedraster *kwr;
+	grfx::kWritableRaster *kwr;
 
 	kControlsOpen controls;
 
@@ -160,7 +160,7 @@ grfx::kWritable *kInterfaceWin32::lockBuffer( grfx::kColor backwash ) {
 		// todo: error on pitch % 4
 		assert( ( lockedrect.Pitch % 4 ) == 0 );
 
-		return new grfx::kWritableRaster( grfx::kRaster( sd.Width, sd.Height, static_cast< grfx::kColor * >( lockedrect.pBits ), lockedrect.Pitch / 4 ) ); }
+		return new grfx::kWritableRaster( kPoint< INT32 >( sd.Width, sd.Height ), static_cast< grfx::kColor * >( lockedrect.pBits ), lockedrect.Pitch / 4, false ); }
 
 	case D3DFMT_R5G6B5: {
 
@@ -227,17 +227,19 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 
 		writsurf->LockRect( &lockedrect, NULL, D3DLOCK_NOSYSLOCK );
 		// todo: errorchecking for pitch%4
-		EXACTUINT32 *linesrc = reinterpret_cast< EXACTUINT32 * >( rast->getRaster().getData() );
+		grfx::kLockedRead lock;
+		rast->getRaster()->lock( kRect< INT32 >( 0, 0, rast->getDimensions().x, rast->getDimensions().y ), &lock );
+		const EXACTUINT32 *linesrc = reinterpret_cast< const EXACTUINT32 * >( lock.data );
 		EXACTUINT32 *linedst = reinterpret_cast< EXACTUINT32 * >( lockedrect.pBits );
 
 		for( int y = 0; y < sd.Height; y++ ) {
-			EXACTUINT32 *src = linesrc;
+			const EXACTUINT32 *src = linesrc;
 			EXACTUINT32 *dst = linedst;
 			int x = sd.Width;
 			while( x > 0 ) {
 				switch( x ) {
 				case 1: {
-					BYTE *minisrc = reinterpret_cast< BYTE * >( src );
+					const BYTE *minisrc = reinterpret_cast< const BYTE * >( src );
 					BYTE *minidst = reinterpret_cast< BYTE * >( dst );
 					minidst[ 0 ] = minisrc[ 0 ];
 					minidst[ 1 ] = minisrc[ 1 ];
@@ -246,7 +248,7 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 					break; }
 				case 2: {
 					dst[ 0 ] = ( src[ 0 ] & 0x00FFFFFF       ) | ( src[ 1 ] & 0x000000FF << 24 );
-					BYTE *minisrc = reinterpret_cast< BYTE * >( src );
+					const BYTE *minisrc = reinterpret_cast< const BYTE * >( src );
 					BYTE *minidst = reinterpret_cast< BYTE * >( dst );
 					minidst[ 4 ] = minisrc[ 5 ];
 					minidst[ 5 ] = minisrc[ 6 ];
@@ -255,7 +257,7 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 				case 3: {
 					dst[ 0 ] = ( src[ 0 ] & 0x00FFFFFF       ) | ( src[ 1 ] & 0x000000FF << 24 );
 					dst[ 1 ] = ( src[ 1 ] & 0x00FFFF00 >>  8 ) | ( src[ 2 ] & 0x0000FFFF << 16 );
-					BYTE *minisrc = reinterpret_cast< BYTE * >( src );
+					const BYTE *minisrc = reinterpret_cast< const BYTE * >( src );
 					BYTE *minidst = reinterpret_cast< BYTE * >( dst );
 					minidst[ 8 ] = minisrc[ 10 ];
 					x -= 3;
@@ -270,9 +272,11 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 					break; }
 				}
 			}
-			linesrc += rast->getRaster().getPitch();
+			linesrc += lock.pitch;
 			linedst += lockedrect.Pitch / 4;
 		}
+
+		rast->getRaster()->unlock( &lock );
 
 		writsurf->UnlockRect();
 
@@ -289,11 +293,13 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 
 		writsurf->LockRect( &lockedrect, NULL, D3DLOCK_NOSYSLOCK );
 		// todo: errorchecking for pitch%4
-		BYTE *linesrc = reinterpret_cast< BYTE * >( rast->getRaster().getData() );
+		grfx::kLockedRead lock;
+		rast->getRaster()->lock( kRect< INT32 >( 0, 0, rast->getDimensions().x, rast->getDimensions().y ), &lock );
+		const BYTE *linesrc = reinterpret_cast< const BYTE * >( lock.data );
 		EXACTUINT32 *linedst = reinterpret_cast< EXACTUINT32 * >( lockedrect.pBits );
 
 		for( int y = 0; y < sd.Height; y++ ) {
-			BYTE *src = linesrc;
+			const BYTE *src = linesrc;
 			EXACTUINT32 *dst = linedst;
 			int x = sd.Width;
 			while( x > 0 ) {
@@ -313,9 +319,11 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 					// todo: unroll a little.
 				}
 			}
-			linesrc += rast->getRaster().getPitch() * sizeof( grfx::kColor );
+			linesrc += lock.pitch * sizeof( grfx::kColor );
 			linedst += lockedrect.Pitch / 4;
 		}
+
+		rast->getRaster()->unlock( &lock );
 
 		writsurf->UnlockRect();
 
@@ -372,7 +380,7 @@ void kInterfaceWin32::resetGraphics( void ) {
 		if( bbfmt != D3DFMT_X8R8G8B8 ) {
 			delete kwr;
 
-			kwr = new grfx::kWritableOwnedraster( grfx::kRaster( sd.Width, sd.Height, new grfx::kColor[ sd.Width * sd.Height ], sd.Width ) );
+			kwr = new grfx::kWritableRaster( kPoint< INT32 >( sd.Width, sd.Height ) );
 		}
 
 		D3DDevice->CreateImageSurface( sd.Width, sd.Height, sd.Format, &writsurf );
@@ -646,7 +654,11 @@ void __cdecl mainThread( void *parameter ) {
 
 }
 
+#include <direct.h>
+
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR, int ) {
+
+	_chdir( "c:\\win98se\\desktop\\werk\\sea\\zem\\datadog" );
 
 	g_errlog.open( "errlog.txt" );
 	g_errlog.setf( std::ios::unitbuf );	// whee, autoflush!
@@ -715,30 +727,30 @@ BOOL CALLBACK ncback( const DIDEVICEOBJECTINSTANCE *lpddoi, void *pvRef ) {
 
 	if( lpddoi->dwType & DIDFT_BUTTON ) {
 		unsigned short uid = DIDFT_GETINSTANCE( lpddoi->dwType );
-		(*det->first.first)->name.set( lpddoi->tszName );
+		(*det->first.first)->name = lpddoi->tszName;
 		(*det->first.first)->hidid = kHidid( lpddoi->wUsagePage, lpddoi->wUsage );
 		(*det->first.first)->uid = kUniqueKeyId( (const char *)&uid );
 		(*det->first.first)->dev = det->second;
 		if( !(*det->first.first)->hidid.valid() ) {
-			(*det->first.first)->hidid = getHidid( det->second->name.get(), lpddoi->tszName );
-			g_errlog << "CONTROL: Found HIDID for button \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
+			(*det->first.first)->hidid = getHidid( det->second->name.c_str(), lpddoi->tszName );
+			g_errlog << "CONTROL: Found HIDID for button \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
 		} else {
-			g_errlog << "CONTROL: Provided HIDID for button \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
+			g_errlog << "CONTROL: Provided HIDID for button \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
 		}
 		(*det->first.first)++;
 	};
 
 	if( lpddoi->dwType & DIDFT_AXIS ) {
 		unsigned short uid = DIDFT_GETINSTANCE( lpddoi->dwType );
-		(*det->first.second)->name.set( lpddoi->tszName );
+		(*det->first.second)->name = lpddoi->tszName;
 		(*det->first.second)->hidid = kHidid( lpddoi->wUsagePage, lpddoi->wUsage );
 		(*det->first.second)->uid = kUniqueKeyId( (const char *)&uid );
 		(*det->first.second)->dev = det->second;
 		if( !(*det->first.second)->hidid.valid() ) {
-			(*det->first.second)->hidid = getHidid( det->second->name.get(), lpddoi->tszName );
-			g_errlog << "CONTROL: Found HIDID for axis \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
+			(*det->first.second)->hidid = getHidid( det->second->name.c_str(), lpddoi->tszName );
+			g_errlog << "CONTROL: Found HIDID for axis \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
 		} else {
-			g_errlog << "CONTROL: Provided HIDID for axis \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
+			g_errlog << "CONTROL: Provided HIDID for axis \"" << det->second->name << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
 		}
 		(*det->first.second)++;
 	};
@@ -792,7 +804,7 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 
 		char boof[ MAX_PATH * 2 + 10 ];
 		sprintf( boof, "%s", ddi.tszInstanceName );
-		devspecs.name.set( boof );
+		devspecs.name = boof;
 		devspecs.uid = kUniqueDevId( (const char *)&ddi.guidInstance );
 
 		if( ddi.dwDevType & 0xff == DI8DEVTYPE_MOUSE )
@@ -864,7 +876,7 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 	};
 
     HRESULT hr = dev->SetCooperativeLevel( hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE ); 
-	g_errlog << "WIN32: Mode set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
+	g_errlog << "WIN32: Mode set for " << devspecs.name << " (" << dInput8Stream( hr ) << ")" << std::endl;
 
 	DIPROPDWORD prop;
 	prop.diph.dwHeaderSize = sizeof( DIPROPHEADER );
@@ -874,10 +886,10 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 	prop.dwData = bufferarray;
 
 	hr = dev->SetProperty( DIPROP_BUFFERSIZE, &prop.diph );
-	g_errlog << "WIN32: Buffered-property set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
+	g_errlog << "WIN32: Buffered-property set for " << devspecs.name << " (" << dInput8Stream( hr ) << ")" << std::endl;
 
 	hr = dev->SetDataFormat( &ddf );
-	g_errlog << "WIN32: Format set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
+	g_errlog << "WIN32: Format set for " << devspecs.name << " (" << dInput8Stream( hr ) << ")" << std::endl;
 	// todo: error checking 'n stuff.
 
 	delete [] ddf.rgodf;
@@ -895,14 +907,13 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
     hr = dev->GetDeviceState( fullsize, buffer ); 
     if( FAILED( hr ) ) { 
 		if( acquired ) {
-			g_errlog << "WIN32: " << devspecs.name.get() << " lost (error " << dInput8Stream( hr ) << ")" << std::endl;
+			g_errlog << "WIN32: " << devspecs.name << " lost (error " << dInput8Stream( hr ) << ")" << std::endl;
 			acquired = false;
 		}
 		if( hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED ) {
 			hr = dev->Acquire();
 		    hr = dev->GetDeviceState( fullsize, buffer );
 			if( FAILED( hr ) ) {
-//				g_errlog << "WIN32: " << devspecs.name.get() << " still unacquired" << std::endl;
 				delete [] buffer;
 				memset( *buttons, keyis::up, butcount );
 				memset( *axes, 0, axicount * 4 );
@@ -910,7 +921,7 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
 				*axes += axicount;
 				return;
 			} else {
-				g_errlog << "WIN32: " << devspecs.name.get() << " acquired" << std::endl;
+				g_errlog << "WIN32: " << devspecs.name << " acquired" << std::endl;
 				acquired = true;
 			}
 		} else {
@@ -942,7 +953,7 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
 	DWORD datsize = bufferarray;
 	hr = dev->GetDeviceData( sizeof( DIDEVICEOBJECTDATA ), buff, &datsize, 0 );
 	if( FAILED( hr ) ) {
-		g_errlog << "WIN32: Data snag failed " << devspecs.name.get() << " (error " << dInput8Stream( hr ) << ")" << std::endl;
+		g_errlog << "WIN32: Data snag failed " << devspecs.name << " (error " << dInput8Stream( hr ) << ")" << std::endl;
 		// shazbot. I give up.
 		return;
 	}

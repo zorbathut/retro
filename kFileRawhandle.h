@@ -43,7 +43,7 @@ namespace file {
 
 namespace file {
 
-	template < class kHeld > class kRawhandle {
+	template < typename kHeld > class kRawhandle {
 	public:		// these have to be public. But I'm not happy about that one bit.
 				// They *should* be private, with this a template friend of itself.
 		const kHeld *held;

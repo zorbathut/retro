@@ -56,6 +56,9 @@ namespace file {
 
 		kBaseNull();
 
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
 	};
 
 };	// this is stateful, so it's not globalizable.

@@ -43,7 +43,7 @@ namespace grfx {
 		return fnt->getDimensions().y;
 	};
 
-	void kFontFile::renderText( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const {
+	void kFontFile::renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const {
 		const unsigned char *rt = reinterpret_cast< const unsigned char * >( text );
 		kPoint< INT32 > dim = fnt->getDimensions();
 		kPoint< INT32 > cloc = loc;
@@ -52,8 +52,10 @@ namespace grfx {
 			fnt->renderPartTo(
 				writ,
 				cloc,
-				kPoint< INT32 >( dim.x * *rt, 0 ),
-				kPoint< INT32 >( dim.x * ( *rt + 1 ), dim.y )
+				kRect< INT32 > (
+					kPoint< INT32 >( dim.x * *rt, 0 ),
+					kPoint< INT32 >( dim.x * ( *rt + 1 ), dim.y )
+				)
 			);
 			cloc.x += dim.x;
 			rt++;
@@ -132,25 +134,12 @@ namespace grfx {
 
 	kFontFile::kFontFile( const char *fname, const char *fntname ) : kBase( fname ), fontname( fntname ) { };
 
-/*	class kFontFile : public kFont, public file::kBase {
-	public:
+	void kFontFile::describe( std::ostream &ostr ) const {
+		ostr << "File font referencing \"" << fontname.get() << "\"";
+		kFont::chaindown( ostr ); }
 
-
-		virtual void renderText( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const;
-
-		virtual void init();
-
-		virtual void loadAll();
-
-		virtual void beginProgressive();
-		virtual void continueProgressive( int steps );	// return true on error
-		virtual void cancelProgressive();
-		virtual void completeProgressive();
-
-		virtual void unload();
-
-		kFontFile( const char *fname );
-
-	};*/
+	void kFontFile::chaindown( std::ostream &ostr ) const {
+		ostr << " (fontfile, \"" << fontname.get() << "\")";
+		kFont::chaindown( ostr ); }
 
 };

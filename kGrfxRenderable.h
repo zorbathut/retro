@@ -32,6 +32,8 @@
 #ifndef RETRO_KGRFXRENDERABLE
 #define RETRO_KGRFXRENDERABLE
 
+#pragma warning( disable : 4786 )
+
 namespace grfx {
 
 	class kRenderable;
@@ -54,7 +56,7 @@ namespace grfx {
 		virtual ~kRenderable();
 
 		virtual void renderTo( kWritable *target, const kPoint< INT32 > &pos ) const = 0;
-		virtual void renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) const = 0;
+		virtual void renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kRect< INT32 > &bounds ) const = 0;
 
 		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
 	protected:  void chaindown( std::ostream &ostr ) const;

@@ -36,7 +36,7 @@
 
 namespace file {
 
-	template < class kType > class kModule;
+	template < typename kType > class kModule;
 
 };
 
@@ -55,7 +55,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 							// the only virtual functions are those that basically never
 							// get called. So it's adequate.
 
-	template < class kType > class kModule : public boost::noncopyable, public kDescribable {
+	template < typename kType > class kModule : public boost::noncopyable, public kDescribable {
 	public:
 
 		kType get( const char *id );
@@ -112,11 +112,11 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 	};
 
-	template < class kType > kType kModule< kType >::get( const char *id ) {
+	template < typename kType > kType kModule< kType >::get( const char *id ) {
 		return get( zutil::kString( id ) );
 	};
 
-	template < class kType > kType kModule< kType >::get( const zutil::kString &id ) {
+	template < typename kType > kType kModule< kType >::get( const zutil::kString &id ) {
 		std::map< zutil::kString, kType >::const_iterator itr;
 		itr = data.find( id );
 		if( itr == data.end() ) {
@@ -127,7 +127,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		return itr->second;
 	};
 
-	template < class kType > void kModule< kType >::generate( file::kManager *kfm ) {
+	template < typename kType > void kModule< kType >::generate( file::kManager *kfm ) {
 
 		zutil::kString path;
 
@@ -161,7 +161,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 	};
 
-	template < class kType > void kModule< kType >::add( const char *id, const kType &hnd ) {
+	template < typename kType > void kModule< kType >::add( const char *id, const kType &hnd ) {
 		std::map< zutil::kString, kType >::const_iterator itr;
 		zutil::kString tmp( id );
 		itr = data.find( tmp );
@@ -173,7 +173,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		data[ tmp ] = hnd;
 	};
 
-	template < class kType > void kModule< kType >::stdGenerate(
+	template < typename kType > void kModule< kType >::stdGenerate(
 			const char *path,
 			const std::map<
 				zutil::kString,		// string: the extension
@@ -230,13 +230,13 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 	};
 
-	template < class kType > void kModule< kType >::describe( std::ostream &ostr ) const {
+	template < typename kType > void kModule< kType >::describe( std::ostream &ostr ) const {
 		ostr << "unidentified module";
 		kDescribable::chaindown( ostr ); };
-	template < class kType > void kModule< kType >::chaindown( std::ostream &ostr ) const {
+	template < typename kType > void kModule< kType >::chaindown( std::ostream &ostr ) const {
 		kDescribable::chaindown( ostr ); };
 
-	template < class kType > kModule< kType >::~kModule() { };
+	template < typename kType > kModule< kType >::~kModule() { };
 
 };
 

@@ -34,7 +34,7 @@
 
 namespace zutil {
 
-	template < class kClass > kClass zmin( kClass a, kClass b ) {
+	template < typename kClass > kClass zmin( kClass a, kClass b ) {
 
 		if( a < b )
 			return a;
@@ -43,7 +43,7 @@ namespace zutil {
 
 	}
 
-	template < class kClass > kClass zmax( kClass a, kClass b ) {
+	template < typename kClass > kClass zmax( kClass a, kClass b ) {
 
 		if( a > b )
 			return a;

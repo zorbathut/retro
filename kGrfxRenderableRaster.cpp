@@ -34,14 +34,15 @@
 #include <iostream>
 
 namespace grfx {
-/*
-	const kPoint< INT32 > &kRenderableRaster::getDimensions( void ) const {
-		return raster.getDimensions(); };
 
-	const kRasterConst &kRenderableRaster::getRaster() const {
-		return raster; };
-*/
-	kRenderableRaster::kRenderableRaster() { };
+	const kPoint< INT32 > &kRenderableRaster::getDimensions( void ) const {
+		return getRaster()->getDimensions(); };
+
+	void kRenderableRaster::renderTo( kWritable *target, const kPoint< INT32 > &pos ) const {
+		target->drawRaster( getRaster(), pos ); };
+
+	void kRenderableRaster::renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kRect< INT32 > &bounds ) const {
+		target->drawRasterPart( getRaster(), pos, bounds.ul, bounds.br ); };
 
 	void kRenderableRaster::describe( std::ostream &ostr ) const {
 		ostr << "unidentified renderableRaster";

@@ -41,6 +41,7 @@ namespace grfx {
 };
 
 #include "types.h"
+#include "iostream_mini.h"
 
 namespace grfx {
 
@@ -55,12 +56,12 @@ namespace grfx {
 			BYTE b;
 		} split;
 
-		bool checkConsistency();	// evaluates to noop when not in debug. might never implement :)
+		bool checkConsistency();	// evaluates to noop when not in debug, returns true
 
-		kColor() { };
-		kColor( const kColor &alt ) : argb( alt.argb ) { };
-		kColor( BYTE a, BYTE r, BYTE g, BYTE b ) { split.a = a; split.r = r; split.g = g; split.b = b; };
-		kColor( EXACTUINT32 in_argb ) : argb( in_argb ) { };	// todo: endian manipulation
+		kColor();
+		kColor( const kColor &alt );
+		kColor( BYTE a, BYTE r, BYTE g, BYTE b );
+		kColor( EXACTUINT32 in_argb );
 
 		static kColor makeMultiply( BYTE a, BYTE r, BYTE g, BYTE b );
 		static kColor makeMultiply( EXACTUINT32 in_argb );
@@ -72,7 +73,9 @@ namespace grfx {
 		// 0x80000000: 50% transparent pure black.
 		// 0x00808080: opaque 50% gray.
 		// 0x807f7f7f: 50% transparent white.
-		// 0x807f807f: INVALID. ASSERT( a+g>=0xff ).
+		// 0x807f807f: INVALID. ASSERT( a+g<=0xff ).
+
+	std::ostream &operator<<( std::ostream &ostr, kColor inp );
 
 };
 

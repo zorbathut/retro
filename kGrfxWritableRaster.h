@@ -49,23 +49,29 @@ namespace grfx {
 		virtual const kPoint< INT32 > &getDimensions() const;
 
 		// drawing functions
-		virtual void drawRaster( const kRasterConst &rstr, const kPoint< INT32 > &pos );
-		virtual void drawRasterPart( const kRasterConst &rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
+		virtual void drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &pos );
+		virtual void drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
 		virtual void drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count );
 		virtual void clear( kColor color );
 
-		const kRaster      &getRaster();
-		const kRasterConst &getRaster() const;
+		kRaster      *getRaster();
+		kRasterConst *getRaster() const;
 
 		static void getUncroppedDimensions( const kPoint< INT32 > &offset, const kPoint< INT32 > &sourcesize, const kPoint< INT32 > &targetsize, kPoint< INT32 > *start, kPoint< INT32 > *end );
 		static void getCroppedDimensions( const kPoint< INT32 > &offset, const kPoint< INT32 > &sourcesize, const kPoint< INT32 > &targetsize, kPoint< INT32 > *start, kPoint< INT32 > *end );
 
 		// setup functions
-		kWritableRaster( const kRaster &inrast );
+		kWritableRaster( const kPoint< INT32 > &dim );
+		kWritableRaster( const kPoint< INT32 > &dim, kColor *dat, INT32 pitch, bool owned = true );
+
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
 
 	private:
 
-		kRaster raster;
+		kRaster *raster;
+
+		void doDraw( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
 
 	};
 

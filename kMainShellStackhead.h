@@ -37,7 +37,7 @@
 class kMainShellStackhead {
 public:
 
-	void clockTick(); // stuff goes here. Returns what to replace this with.
+	void clockTick( const kControls *controls ); // stuff goes here. Returns what to replace this with.
 	void renderFrame( grfx::kWritable *target );
 
 	bool ready();

@@ -67,7 +67,7 @@ bool initManager( kInterface *inter ) {		// return 1 on failure
 		pos.y += 120 + 360;
 		int curp = ( g_manager->getCurCycle() * 360 ) / g_manager->getCycles();
 		pos.y -= curp;
-		bar.renderPartTo( target, pos, kPoint< INT32 >( 0, 360 - curp ), bar.getDimensions() );
+		bar.renderPartTo( target, pos, kRect< INT32 >( kPoint< INT32 >( 0, 360 - curp ), bar.getDimensions() ) );
 		inter->unlockBuffer( target );
 		g_manager->doCycles( 1 );
 	}
@@ -118,13 +118,13 @@ void gameMain( kInterface *inter ) {
 			fnt = module::font.get( "small" );
 			fnt.activate(); }
 
-		mainstack.clockTick();
+		const kControls *controls = inter->updateControls();
+
+		mainstack.clockTick( controls );
 		
 		g_manager->tick();
 
 		outofnext++;
-
-		const kControls *controls = inter->updateControls();
 
 		if( curframe + freq >= inter->getCounterPos() || skipped >= 14 ) {
 
@@ -142,16 +142,16 @@ void gameMain( kInterface *inter ) {
 			char buf[ 1024 ];
 			int x;
 			for( x = 0; x < controls->getAxiscount(); x++ ) {
-				sprintf( buf, "%s: %s (%d, %d): %d", controls->getAxisinfo( x ).dev->name.get(), controls->getAxisinfo( x ).name.get(), controls->getAxisinfo( x ).hidid.getPage(), controls->getAxisinfo( x ).hidid.getItem(), controls->getAxis( x ) );
-				fnt->renderText( it, buf, kPoint< INT32 >( 0, vert ) );
+				sprintf( buf, "%s: %s (%d, %d): %d", controls->getAxisinfo( x ).dev->name.c_str(), controls->getAxisinfo( x ).name.c_str(), controls->getAxisinfo( x ).hidid.getPage(), controls->getAxisinfo( x ).hidid.getItem(), controls->getAxis( x ) );
+				fnt->renderTextTo( it, buf, kPoint< INT32 >( 0, vert ) );
 				vert += fnt->getVerticalOffset();
 			};
 			vert += fnt->getVerticalOffset();
 			for( x = 0; x < controls->getButtoncount(); x++ ) {
 				if( controls->getButton( x ) != keyis::up ) {
 					sprintf( buf, "%s: %s (%c%c%c%c%c) (%d, %d)",
-						controls->getButtoninfo( x ).dev->name.get(),
-						controls->getButtoninfo( x ).name.get(),
+						controls->getButtoninfo( x ).dev->name.c_str(),
+						controls->getButtoninfo( x ).name.c_str(),
 						( controls->getButton( x ) & keyis::up ) ? 'U' : ' ',
 						( controls->getButton( x ) & keyis::down ) ? 'D' : ' ',
 						( controls->getButton( x ) & keyis::push ) ? 'P' : ' ',
@@ -159,14 +159,14 @@ void gameMain( kInterface *inter ) {
 						( controls->getButton( x ) & keyis::change ) ? 'C' : ' ',
 						controls->getButtoninfo( x ).hidid.getPage(),
 						controls->getButtoninfo( x ).hidid.getItem() );
-					fnt->renderText( it, buf, kPoint< INT32 >( 0, vert ) );
+					fnt->renderTextTo( it, buf, kPoint< INT32 >( 0, vert ) );
 					vert += fnt->getVerticalOffset();
 				}
 			}
 			sprintf( buf, "%2d/%2d", curl, outof );
 			if( skip )
 				strcat( buf, " S" );
-			fnt->renderText( it, buf, kPoint< INT32 >( 0, it->getDimensions().y - fnt->getVerticalOffset() ) );
+			fnt->renderTextTo( it, buf, kPoint< INT32 >( 0, it->getDimensions().y - fnt->getVerticalOffset() ) );
 			inter->unlockBuffer( it );
 
 			done++;

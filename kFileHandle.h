@@ -34,7 +34,7 @@
 
 namespace file {
 
-	template < class kHeld > class kHandle;
+	template < typename kHeld > class kHandle;
 
 }
 
@@ -43,7 +43,7 @@ namespace file {
 
 namespace file {
 
-	template < class kHeld > class kHandle {
+	template < typename kHeld > class kHandle {
 	public:		// these have to be public. But I'm not happy about that one bit.
 				// They *should* be private, with this a template friend of itself.
 		const kHeld *held;
@@ -62,11 +62,11 @@ namespace file {
 		void request( int ticks ) const { wrp->request( ticks ); }; // De-le-ga-tion.
 
 		kHandle() : held( NULL ), wrp( NULL ) { };
-		template < class kAlter >
+		template < typename kAlter >
 			kHandle( const kHandle< kAlter > &in ) : held( in.held ), wrp( in.wrp ) { };
 		kHandle( const kHeld *in_held, kWrapped *in_wrp ) : held( in_held ), wrp( in_wrp ) { };
 
-		template < class kAlter >
+		template < typename kAlter >
 			const kHandle< kHeld > &operator=( const kHandle< kAlter > &in ) { held = in.held; wrp = in.wrp; return *this; };
 		~kHandle() { }; // right . . .
 

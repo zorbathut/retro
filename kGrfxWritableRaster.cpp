@@ -34,67 +34,93 @@
 #include "minmax.h"
 #include "kGrfxUtil.h"
 
+#include <iostream>
+
 namespace grfx {
 
-	const kPoint< INT32 > &kWritableRaster::getDimensions( void ) const {
-		return raster.getDimensions(); };
+	const kPoint< INT32 > &kWritableRaster::getDimensions() const {
+		return raster->getDimensions(); };
 
-	void kWritableRaster::drawRaster( const kRasterConst &rstr, const kPoint< INT32 > &loc ) {
+	void kWritableRaster::drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &loc ) {
 
 		kPoint< INT32 > nloc( loc );
 		kPoint< INT32 > start( 0, 0 );
-		kPoint< INT32 > end( rstr.getDimensions() );
-		if( calcDrawrect( rstr.getDimensions(), raster.getDimensions(), &nloc, &start, &end ) )
-			raster.drawRasterPart( rstr, nloc, start, end );
+		kPoint< INT32 > end( rstr->getDimensions() );
+		if( calcDrawrect( rstr->getDimensions(), raster->getDimensions(), &nloc, &start, &end ) )
+			doDraw( rstr, nloc, start, end );
 	
 	};
 
-	void kWritableRaster::drawRasterPart( const kRasterConst &rstr, const kPoint< INT32 > &loc,
+	void kWritableRaster::drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc,
 										  const kPoint< INT32 > &start, const kPoint< INT32 > &end ) {
 
 		kPoint< INT32 > nloc( loc );
 		kPoint< INT32 > nstart( start );
 		kPoint< INT32 > nend( end );
-		if( calcDrawrect( rstr.getDimensions(), raster.getDimensions(), &nloc, &nstart, &nend ) )
-			raster.drawRasterPart( rstr, nloc, nstart, nend );
+		if( calcDrawrect( rstr->getDimensions(), raster->getDimensions(), &nloc, &nstart, &nend ) )
+			doDraw( rstr, nloc, nstart, nend );
 	
 	};
 
-	void kWritableRaster::drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count ) {
-		bool bad = false;;
-		const std::pair< kPoint< INT32 >, kColor > *mpt = pointArray;
-		for( int cur = 0; cur < count; cur++ ) {
-			if( mpt->first.x < 0 || mpt->first.x >= raster.getDimensions().x ||
-				mpt->first.y < 0 || mpt->first.x >= raster.getDimensions().y ) {
-				bad = true;
-				break;
-			}
-			mpt++;
-		}
-		if( !bad ) {
-			raster.drawPoints( pointArray, count );
-		} else {
-			std::pair< kPoint< INT32 >, kColor > *nptarr = new std::pair< kPoint< INT32 >, kColor >[ count ];
-			std::pair< kPoint< INT32 >, kColor > *npt = nptarr;
-			mpt = pointArray;
-			for( int curg = 0; curg < count; curg++ ) {
-				if( mpt->first.x >= 0 && mpt->first.x < raster.getDimensions().x &&
-					mpt->first.y >= 0 && mpt->first.x < raster.getDimensions().y ) {
-					*npt = *mpt;
-					npt++;
-				}
-				mpt++;
-			}
-			raster.drawPoints( nptarr, npt - nptarr );
-		}
+	void kWritableRaster::drawPoints( const std::pair< kPoint< INT32 >, kColor > *pdat, int count ) {
+		kLockedWrite lock;
+		raster->writeLock( kRect< INT32 >( kPoint< INT32 >( 0, 0 ), raster->getDimensions() ), &lock );
+		// 'tis easier.
+		for( int i = 0; i < count; i++ )
+			lock.data[ pdat[ i ].first.x + pdat[ i ].first.y * lock.pitch ] = pdat[ i ].second;
+		raster->unlock( &lock );
 	};
 
 	void kWritableRaster::clear( kColor color ) {
-		raster.clear( color ); };
+		kLockedWrite lock;
+		raster->writeLock( kRect< INT32 >( kPoint< INT32 >( 0, 0 ), raster->getDimensions() ), &lock );
+		kColor *arr;
+		arr = new kColor[ lock.bounds.br.x ]; // will this always work?
+		int i;
+		for( i = 0; i < lock.bounds.br.x; i++ )
+			arr[ i ] = color;
+		for( i = 0; i < lock.bounds.br.y; i++ )
+			memcpy( lock.data + i * lock.pitch, arr, lock.bounds.br.x * sizeof( kColor ) );
+		delete [] arr;
+		raster->unlock( &lock );
+	};
 
-	const kRaster &kWritableRaster::getRaster() {
+	kRaster      *kWritableRaster::getRaster() {
+		return raster; };
+	kRasterConst *kWritableRaster::getRaster() const {
 		return raster; };
 
-	kWritableRaster::kWritableRaster( const kRaster &inrast ) : raster( inrast ) { };
+	kWritableRaster::kWritableRaster( const kPoint< INT32 > &dim ) : raster( new kRaster( dim ) ) { };
+	kWritableRaster::kWritableRaster( const kPoint< INT32 > &dim, kColor *dat, INT32 pitch, bool owned ) :
+			raster( new kRaster( dim, dat, pitch, owned ) ) { };
 
-}
+	void kWritableRaster::doDraw( const kRasterConst *rstr, const kPoint< INT32 > &pos,
+								  const kPoint< INT32 > &start, const kPoint< INT32 > &end ) {
+
+		kLockedWrite klw;
+		kLockedRead klr;
+
+		rstr->lock( kRect< INT32 >( start, end ), &klr );
+		raster->writeLock( kRect< INT32 >( pos, pos + ( end - start ) ), &klw );
+
+		int len = ( end.x - start.x ) * sizeof( kColor );
+
+		for( int i = start.y; i < end.y; i++ )
+			memcpy( klw.data + pos.x + ( i + pos.y - start.y ) * klw.pitch,
+				    klr.data + start.x + ( i ) * klr.pitch, 
+					len );
+
+		rstr->unlock( &klr );
+		raster->unlock( &klw );
+
+	}
+
+	void kWritableRaster::describe( std::ostream &ostr ) const {
+		ostr << "writable raster (" << raster->textdesc() << ")";
+		kWritable::chaindown( ostr ); };
+
+	void kWritableRaster::chaindown( std::ostream &ostr ) const {
+		ostr << "(writable raster - " << raster->textdesc() << ")";
+		kWritable::chaindown( ostr ); };
+
+};

@@ -31,8 +31,8 @@
 
 #include "kMainShellStackhead.h"
 
-void kMainShellStackhead::clockTick() {
-	cursh = cursh->clockTick(); };
+void kMainShellStackhead::clockTick( const kControls *controls ) {
+	cursh = cursh->clockTick( controls ); };
 void kMainShellStackhead::renderFrame( grfx::kWritable *target ) {
 	cursh->renderFrame( target ); };
 

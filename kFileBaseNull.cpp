@@ -31,6 +31,7 @@
 
 #include "kFileBaseNull.h"
 
+#include <iostream>
 #include <assert.h>
 
 namespace file {
@@ -89,6 +90,14 @@ namespace file {
 
 	kBaseNull::kBaseNull() : kBase( "null" ) {
 		progres = 1; };
+
+		
+	void kBaseNull::describe( std::ostream &ostr ) const {
+		ostr << "NULL base file";
+		kBase::chaindown( ostr ); };
+
+	void kBaseNull::chaindown( std::ostream &ostr ) const {
+		kBase::chaindown( ostr ); };
 
 };
 

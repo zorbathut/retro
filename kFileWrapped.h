@@ -68,7 +68,7 @@ namespace file {
 		kWrapped( kBase *file );
 		~kWrapped();
 
-		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+		virtual void describe( std::ostream &ostr ) const;
 	protected:  void chaindown( std::ostream &ostr ) const;
 
 	};

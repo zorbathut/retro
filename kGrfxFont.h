@@ -32,6 +32,8 @@
 #ifndef RETRO_KGRFXFONT
 #define RETRO_KGRFXFONT
 
+#pragma warning( disable : 4786 )
+
 namespace grfx {
 
 	class kFont;
@@ -49,7 +51,7 @@ namespace grfx {
 
 		virtual int getVerticalOffset() const = 0;
 
-		virtual void renderText( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const = 0;
+		virtual void renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const = 0;
 
 		virtual ~kFont();
 

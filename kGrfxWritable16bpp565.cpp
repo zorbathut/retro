@@ -34,43 +34,96 @@
 #include "kGrfxUtil.h"
 #include "minmax.h"
 
-#include <assert.h>
+#include <cassert>
+#include <iostream>
+#include <fstream>
+#include <set>
 
 namespace grfx {
 
-		void calcDrawrect( const kPoint< INT32 > &loc, const kPoint< INT32 > &srcsize, const kPoint< INT32 > &dstsize, kPoint< INT32 > *start, kPoint< INT32 > *end );
+	std::ofstream yakanor;
+	bool ope = false;
 
-	void kWritable16bpp565::drawRaster( const kRasterConst &rstr, const kPoint< INT32 > &loc ) {
+	class kRostaMan {
+	public:
+
+		std::set< const kRasterConst * > rosta;
+
+		~kRostaMan() {
+			std::set< const kRasterConst * >::iterator itr;
+			for( itr = rosta.begin(); itr != rosta.end(); itr++ )
+				yakanor << "*** MAJOR: " << *itr << " not removed!" << std::endl;
+		}
+
+	};
+
+	kRostaMan roasta;
+
+	class k565ChaNoti : public zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > {
+	public:
+
+		bool operator()( std::pair< const kRect< INT32 > *, const kRasterConst * > inp ) {
+			yakanor << "*** MAJOR: " << inp.second->textdesc() << " (" << inp.second << ") changed at " << inp.first << ", removing" << std::endl;
+			roasta.rosta.erase( inp.second );
+			return false;
+		};
+
+	};
+
+	class k565DelNoti : public zutil::kFunctor< RVOID, const kRasterConst * > {
+	public:
+
+		RVOID operator()( const kRasterConst *inp ) {
+			yakanor << "*** MAJOR: " << inp->textdesc() << " (" << inp << ") deleted, removing" << std::endl;
+			roasta.rosta.erase( inp );
+			return RVOIDVAL;
+		};
+
+	};
+
+	void kWritable16bpp565::drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &loc ) {
 
 		kPoint< INT32 > nloc( loc );
 		kPoint< INT32 > start( 0, 0 );
-		kPoint< INT32 > end( rstr.getDimensions() );
+		kPoint< INT32 > end( rstr->getDimensions() );
 
-		if( calcDrawrect( rstr.getDimensions(), dimensions, &nloc, &start, &end ) )
+		if( calcDrawrect( rstr->getDimensions(), dimensions, &nloc, &start, &end ) )
 			drawRasterGo( rstr, nloc, start, end );
 
 	};
 
-	void kWritable16bpp565::drawRasterPart( const kRasterConst &rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) {
+	void kWritable16bpp565::drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) {
 
 		kPoint< INT32 > nloc( loc );
 		kPoint< INT32 > nstart( start );
 		kPoint< INT32 > nend( end );
 
-		if( calcDrawrect( rstr.getDimensions(), dimensions, &nloc, &nstart, &nend ) )
+		if( calcDrawrect( rstr->getDimensions(), dimensions, &nloc, &nstart, &nend ) )
 			drawRasterGo( rstr, nloc, nstart, nend );
 
 	};
 
-	void kWritable16bpp565::drawRasterGo( const kRasterConst &rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) {
+	void kWritable16bpp565::drawRasterGo( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) {
+
+//		yakanor << "MINOR: Drawing raster " << rstr->textdesc() << " (" << rstr << ") at " << loc << " from " << start << "-" << end << std::endl;
+
+		if( roasta.rosta.find( rstr ) == roasta.rosta.end() ) {
+			yakanor << "*** MAJOR: Adding raster " << rstr->textdesc() << " (" << rstr << ")" << std::endl;
+			roasta.rosta.insert( rstr );
+			rstr->addDestructionNotification( new k565DelNoti() );
+			rstr->addModifyNotification( kRect< INT32 >::makeBounds( rstr->getDimensions() ), new k565ChaNoti() );
+		}
 
 		assert( ( pitch % 2 ) == 0 );
 		// todo: better pitch%2 test
 
-		const BYTE *linesrc = reinterpret_cast< const BYTE * >( rstr.getData() );
+		kLockedRead lock;
+		rstr->lock( kRect< INT32 >( start, end ), &lock );
+
+		const BYTE *linesrc = reinterpret_cast< const BYTE * >( lock.data );
 		EXACTUINT16 *linedst = data;
 
-		linesrc += ( rstr.getPitch() * start.y + start.x ) * sizeof( grfx::kColor );
+		linesrc += ( lock.pitch * start.y + start.x ) * sizeof( grfx::kColor );
 		linedst += pitch * ( loc.y ) + loc.x;
 
 		for( int cy = start.y; cy < end.y; cy++ ) {
@@ -82,13 +135,16 @@ namespace grfx {
 				src += sizeof( grfx::kColor );
 				dst++;
 			}
-			linesrc += rstr.getPitch() * sizeof( grfx::kColor );
+			linesrc += lock.pitch * sizeof( grfx::kColor );
 			linedst += pitch;
 		}
+
+		rstr->unlock( &lock );
 
 	}
 
 	void kWritable16bpp565::drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count ) {
+//		yakanor << "MINOR: Drawing " << count << " points" << std::endl;
 		for( int i = 0; i < count; i++ ) {
 			if( pointArray[ i ].first.x >= 0 && pointArray[ i ].first.y >= 0 &&
 				pointArray[ i ].first.x < dimensions.x && pointArray[ i ].first.y < dimensions.y )
@@ -100,6 +156,7 @@ namespace grfx {
 	};
 
 	void kWritable16bpp565::clear( kColor col ) {
+//		yakanor << "MINOR: Clearing with color " << col << std::endl;
 		int i;
 		EXACTUINT16 ncol = ( col.split.r >> 3 ) | ( ( col.split.g & 0xFC ) << 3 ) | ( ( col.split.b & 0xF8 ) << 8 );
 		EXACTUINT16 *pre = data;
@@ -115,6 +172,18 @@ namespace grfx {
 
 	kWritable16bpp565::kWritable16bpp565( int width, int height, EXACTUINT16 *data, int pitch ) :
 			kWritable16bpp( width, height, data, pitch ) {
+		if( !ope ) {
+			yakanor.open( "drawlog.txt" );
+			ope = true;
+		}
 	};
+
+	void kWritable16bpp565::describe( std::ostream &ostr ) const {
+		ostr << "565 renderable target";
+		kWritable16bpp::chaindown( ostr ); }
+
+	void kWritable16bpp565::chaindown( std::ostream &ostr ) const {
+		ostr << " (565)";
+		kWritable16bpp::chaindown( ostr ); }
 
 }

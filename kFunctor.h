@@ -100,19 +100,19 @@ namespace zutil {
 
 	};
 
-	template < class kReturnclass, class kInputclass >
+	template < typename kReturnclass, typename kInputclass >
 	kReturnclass kFunctorSimple< kReturnclass, kInputclass >::operator()( kInputclass inp ) {
 		return (*fptr)( inp ); }
 
-	template < class kReturnclass, class kInputclass >
+	template < typename kReturnclass, typename kInputclass >
 	kFunctorSimple< kReturnclass, kInputclass >::kFunctorSimple( kReturnclass (*in_fptr)( kInputclass ) ) {
 		fptr = in_fptr; }
 
-	template < class kReturnclass, class kInputclass, class kTargetclass >
+	template < typename kReturnclass, typename kInputclass, typename kTargetclass >
 	kReturnclass kFunctorFull< kReturnclass, kInputclass, kTargetclass >::operator()( kInputclass inp ) {
 		return tgc->*fptr( inp ); }
 
-	template < class kReturnclass, class kInputclass, class kTargetclass >
+	template < typename kReturnclass, typename kInputclass, typename kTargetclass >
 	kFunctorFull< kReturnclass, kInputclass, kTargetclass >::kFunctorFull(
 			kTargetclass *in_tgc, kReturnclass (kTargetclass::*in_fptr)( kInputclass ) ) {
 

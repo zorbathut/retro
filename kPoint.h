@@ -34,7 +34,7 @@
 
 #include "iostream_mini.h"
 
-template < class kPrecision > class kPoint {
+template < typename kPrecision > class kPoint {
 public:
 
 	kPrecision x;
@@ -55,7 +55,7 @@ public:
 
 };
 
-template < class kPrecision >
+template < typename kPrecision >
 std::ostream &operator<<( std::ostream &ostr, const kPoint< kPrecision > &pt ) {
 	ostr << "( " << pt.x << ", " << pt.y << " )";
 	return ostr; };
@@ -64,5 +64,6 @@ std::ostream &operator<<( std::ostream &ostr, const kPoint< kPrecision > &pt ) {
 	// that's trying to use this has also included iostream.
 	// Funky, huh?
 	// Not sure if it's supposed to work by ANSI :)
+	// I'll change it if compilers don't support it, I suppose.
 
 #endif

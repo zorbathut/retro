@@ -29,34 +29,34 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#include "kGrfxRenderableOwnedraster.h"
+#ifndef RETRO_KRECT
+#define RETRO_KRECT
 
-#include <iostream>
+#include "kPoint.h"
 
-namespace grfx {
+template < typename kPrecision > class kRect {
+public:
 
-	const kRasterConst kRenderableOwnedraster::getRaster() const {
-		return raster; };
+	kPoint< kPrecision > ul;
+	kPoint< kPrecision > br;
 
-	const kPoint< INT32 > &kRenderableOwnedraster::getDimensions() const {
-		return raster.getDimensions(); };
+	kRect( void ) { };
 
-	void kRenderableOwnedraster::renderTo( kWritable *target, const kPoint< INT32 > &loc ) const {
-		target->drawRaster( raster, loc ); };
+	kRect( const kPoint< kPrecision > &in_ul, const kPoint< kPrecision > &in_br ) : ul( in_ul ), br( in_br ) { };
+	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_d ) : ul( in_l, in_u ), br( in_r, in_d ) { };
 
-	void kRenderableOwnedraster::renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) const {
-		target->drawRasterPart( raster, pos, start, end ); };
+	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
 
-	kRenderableOwnedraster::kRenderableOwnedraster( const kRaster &inrast ) : raster( inrast ) { };
-	kRenderableOwnedraster::kRenderableOwnedraster() : raster( kRaster( 0, 0, NULL, 0 ) ) { };
-	kRenderableOwnedraster::~kRenderableOwnedraster() { 
-		delete [] raster.getData(); };
+	static kRect< kPrecision > makeBounds( kPoint< kPrecision > inp ) {
+		return kRect< kPrecision >( kPoint< kPrecision >( 0, 0 ), inp ); }
 
-	void kRenderableOwnedraster::describe( std::ostream &ostr ) const {
-		ostr << "unidentified renderableOwnedraster";
-		kRenderableOwnedraster::chaindown( ostr ); };
+};
 
-	void kRenderableOwnedraster::chaindown( std::ostream &ostr ) const {
-		kRenderableRaster::chaindown( ostr ); };
+template < typename kPrecision >
+std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {
+	ostr << pt.ul << "-" << pt.br;
+	return ostr; };
 
-}
+	// See comment in kPoint.h.
+
+#endif

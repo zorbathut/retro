@@ -34,7 +34,7 @@
 
 namespace file {
 
-	template < class kType > class kModuleHandle;
+	template < typename kType > class kModuleHandle;
 
 };
 
@@ -44,7 +44,7 @@ namespace file {
 
 namespace file {
 
-	template < class kType > class kModuleHandle : public kModule< kHandle< kType > > {
+	template < typename kType > class kModuleHandle : public kModule< kHandle< kType > > {
 	private:
 
 		virtual void specDat(
@@ -83,13 +83,13 @@ namespace file {
 
 	};
 
-	template < class kType > void kModuleHandle< kType >::describe( std::ostream &ostr ) const {
+	template < typename kType > void kModuleHandle< kType >::describe( std::ostream &ostr ) const {
 		ostr << "unidentified modulehandle";
 		kModule< file::kHandle< kType > >::chaindown( ostr ); };
-	template < class kType > void kModuleHandle< kType >::chaindown( std::ostream &ostr ) const {
+	template < typename kType > void kModuleHandle< kType >::chaindown( std::ostream &ostr ) const {
 		kModule< file::kHandle< kType > >::chaindown( ostr ); };
 
-	template < class kType > kHandle< kType > kModuleHandle< kType >::createNull() {
+	template < typename kType > kHandle< kType > kModuleHandle< kType >::createNull() {
 		kWrapped *wr = new kWrapped( new kBaseNull() );
 		nullses.push_back( wr );
 		return kHandle< kType >( createNullQuantity(), wr ); };
