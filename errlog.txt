@@ -1,1 +1,0 @@
-file open failure in renderablePNG (*final*-PNG) ( 0, 0 ) (hardcode\loadingbg.png)

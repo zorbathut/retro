@@ -32,8 +32,8 @@
 #ifndef RETRO_KFILEMODULE
 #define RETRO_KFILEMODULE
 
-#pragma warning( disable : 4786 )
-#pragma warning( disable : 4503 )
+#pragma warning( disable : 4355 )
+// TODO: remove.
 
 namespace file {
 
@@ -47,6 +47,7 @@ namespace file {
 #include "errlog.h"
 #include "kDescribable.h"
 #include "kFileHandle.h"
+#include "kFileWrappedNull.h"
 
 #include <map>
 #include <io.h>
@@ -64,10 +65,14 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 		kHandle< kType > get( const char *id );
 		kHandle< kType > get( const std::string &id );
+		kHandle< kType > getExisting( const std::string &id );
 		void generate( kManager *kfm );	// should only be called once, and attaches
 
 		void addKey( const std::string &id, const kHandle< kType > &hnd );
 		void addWrapped( kWrapped *wrp );
+
+		void attachChild( zutil::kIOFunctor< kHandle< kType >, const std::string & > *handle );
+		void detachChild( zutil::kIOFunctor< kHandle< kType >, const std::string & > *handle );
 
 		virtual ~kModule(); // might not be necessary, but it's safer this way.
 
@@ -91,7 +96,11 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 			> *assoc
 		) = 0;
 
-		virtual kHandle< kType > createNull( void ) = 0;
+		virtual kType *createNull() = 0;
+
+		virtual void linkup();
+
+		void doPoll();
 
 	private:
 
@@ -115,6 +124,8 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 		std::vector< kWrapped * > wrps;
 
+		std::vector< zutil::kIOFunctor< kHandle< kType >, const std::string & > * > children;
+
 	};
 
 	template< typename kType > class kModuleStdfunctor : public zutil::kIOFunctor< RVOID, file::kManager * > {
@@ -131,12 +142,24 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	};
 
 	template < typename kType > kHandle< kType > kModule< kType >::get( const std::string &id ) {
+		kHandle< kType > oot = getExisting( id );
+		size_t i = 0;
+		while( oot.isEmpty() && i < children.size() ) {
+			oot = children[ i++ ]->go( id );
+		}
+		if( oot.isEmpty() ) {
+			g_errlog << "MODULE: Couldn't find item \"" << id << "\" in \"" << textdesc() << "\"" << std::endl;
+			data[ id ] = kHandle< kType >( createNull(), &null::wrapped );
+			return data[ id ];
+		}
+		return oot;
+	};
+
+	template < typename kType > kHandle< kType > kModule< kType >::getExisting( const std::string &id ) {
 		std::map< std::string, kHandle< kType > >::const_iterator itr;
 		itr = data.find( id );
 		if( itr == data.end() ) {
-			g_errlog << "MODULE: Couldn't find item \"" << id << "\" in \"" << textdesc() << "\"" << std::endl;
-			data[ id ] = createNull();
-			return data[ id ];
+			return kHandle< kType >();
 		}
 		return itr->second;
 	};
@@ -171,6 +194,10 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		for( itr = assoc.begin(); itr != assoc.end(); ++itr )
 			delete itr->second;
 
+		kfm->addInitter( new zutil::kNFunctorFull< kModule< kType > >( this, &kModule< kType >::doPoll ) );
+
+		linkup();
+
 	};
 
 	template < typename kType > void kModule< kType >::addKey( const std::string &id, const kHandle< kType > &hnd ) {
@@ -186,6 +213,14 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 	template < typename kType > void kModule< kType >::addWrapped( kWrapped *wrp ) {
 		wrps.push_back( wrp ); };
+
+	template < typename kType >
+	void kModule< kType >::attachChild( zutil::kIOFunctor< kHandle< kType >, const std::string & > *handle ) {
+		children.push_back( handle ); };
+	
+	template < typename kType >
+	void kModule< kType >::detachChild( zutil::kIOFunctor< kHandle< kType >, const std::string & > *handle ) {
+		children.erase( children.find( handle ) ); };
 
 	template < typename kType > void kModule< kType >::stdGenerate(
 			const std::string &path,
@@ -243,16 +278,35 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 	};
 
+	template < typename kType > void kModule< kType >::doPoll() {
+#if EXTRACHECK
+		g_errlog << "ERRCHECK: MODULE: Starting scan of " << textdesc() << std::endl;
+		if( !children.size() )
+			return;
+		std::map< std::string, kHandle< kType > >::iterator itr;
+		for( itr = data.begin(); itr != data.end(); itr++ ) {
+			for( size_t i = 0; i < children.size(); i++ ) {
+				kHandle< kType > hnd = children[ i ]->go( itr->first );
+				if( !hnd.isEmpty() ) {
+						g_errlog << "ERRCHECK: MODULE: Possible duplicate of item named \"" << itr->first << "\", parent in " << textdesc() << ", between " << itr->second->textdesc() << " and " << hnd->textdesc() << std::endl;
+				}
+			}
+		}
+#endif
+	};
+
+	template < typename kType > kModule< kType >::~kModule() {
+		for( std::vector< kWrapped * >::iterator itr = wrps.begin(); itr != wrps.end(); itr++ )
+			delete *itr;
+	};
+
 	template < typename kType > void kModule< kType >::describe( std::ostream &ostr ) const {
 		ostr << "unidentified module";
 		kDescribable::chaindown( ostr ); };
 	template < typename kType > void kModule< kType >::chaindown( std::ostream &ostr ) const {
 		kDescribable::chaindown( ostr ); };
 
-	template < typename kType > kModule< kType >::~kModule() {
-		for( std::vector< kWrapped * >::iterator itr = wrps.begin(); itr != wrps.end(); itr++ )
-			delete *itr;
-	};
+	template < typename kType > void kModule< kType >::linkup() { };
 
 	template< typename kType > 
 	kModuleStdfunctor< kType >::kModuleStdfunctor< kType >( std::pair< const char *, file::kModule< kType > * > ind ) :

@@ -50,7 +50,7 @@ namespace grfx {
 		virtual const font::kBoundaries &getBounds() const = 0;
 		virtual const kRenderable &getRenderable() const = 0;
 
-		virtual int getVerticalOffset() const = 0;
+		virtual int getVerticalOffset() const;
 
 		virtual void renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const;
 

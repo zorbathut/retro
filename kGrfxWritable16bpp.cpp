@@ -29,7 +29,7 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#include "kGrfxWritable16bpp565.h"
+#include "kGrfxWritable16bpp.h"
 
 #include "minmax.h"
 

@@ -57,7 +57,7 @@ namespace grfx {
 			fritz = true;
 			state = READY;
 			progcur = progres;
-			g_errlog << "PNG: instant initpngread failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: instant initpngread failure in " << descr( this ) << std::endl;
 			return;
 		}
 
@@ -72,7 +72,7 @@ namespace grfx {
 			fritz = true;
 			state = READY;
 			progcur = progres;
-			g_errlog << "PNG: png_read_image failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: png_read_image failure in " << descr( this ) << std::endl;
 			return;
 
 		}
@@ -93,7 +93,7 @@ namespace grfx {
 			fritz = true;
 			state = DONE;
 			progcur = progres;
-			g_errlog << "PNG: progressive initpngread failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: progressive initpngread failure in " << descr( this ) << std::endl;
 			return;
 		} else {
 			state = LOADING;
@@ -116,7 +116,7 @@ namespace grfx {
 			fritz = true;
 			state = DONE;
 			progcur = progres;
-			g_errlog << "PNG: png_read_rows failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: png_read_rows failure in " << descr( this ) << std::endl;
 			return;
 
 		}
@@ -291,9 +291,5 @@ namespace grfx {
 	void kRenderablePNG::chaindo( std::ostream &ostr ) const {
 		kRenderableRaster::chaindown( ostr );
 		kBase::chaindown( ostr ); };
-
-	kOutputtoken kRenderablePNG::textdesc() const {
-		return kBase::textdesc(); };
-
 
 };

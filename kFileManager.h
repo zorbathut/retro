@@ -32,8 +32,6 @@
 #ifndef RETRO_KFILEMANAGER
 #define RETRO_KFILEMANAGER
 
-#pragma warning( disable : 4786 )
-
 namespace file {
 
 	class kManager;

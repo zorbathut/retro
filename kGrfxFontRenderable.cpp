@@ -33,6 +33,9 @@
 
 namespace grfx {
 
+	int kFontRenderable::getVerticalOffset() const {
+		return getBounds().getVoffs(); };
+
 	void kFontRenderable::renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const {
 
 		const font::kBoundaries &bnd = getBounds();
@@ -40,10 +43,11 @@ namespace grfx {
 
 		int cx = loc.x;
 
-		for( ; *text; text++ ) {
+		while( *text ) {
 			const font::kBoundariesSpot &pt = bnd.getBound( *text );
 			rnd.renderPartTo( writ, makePoint( cx + pt.offset.x, loc.y + pt.offset.y ), pt.bounds );
 			cx += pt.spacing;
+			++text;
 		}
 
 	};

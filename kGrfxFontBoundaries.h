@@ -32,8 +32,6 @@
 #ifndef RETRO_KGRFXFONTBOUNDARIES
 #define RETRO_KGRFXFONTBOUNDARIES
 
-#pragma warning( disable : 4786 )
-
 namespace grfx {
 
 	namespace font {

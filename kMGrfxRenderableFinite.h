@@ -61,7 +61,7 @@ namespace module {
 				> *assoc
 		);
 
-		virtual file::kHandle< grfx::kRenderableFinite > createNull();
+		virtual grfx::kRenderableFinite *createNull();
 
 	public:
 

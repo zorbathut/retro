@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #include "kMGrfxFontBoundaries.h"
 
 #include "kGrfxFontBoundariesFile.h"
@@ -79,10 +77,8 @@ namespace module {
 
 
 // TODO: wrap a little further down.
-	file::kHandle< grfx::font::kBoundaries > kGrfxFontBoundaries::createNull() {
-		file::kWrapped *wr = new file::kWrappedNode( new file::kBaseNull() );
-		addWrapped( wr );
-		return file::kHandle< grfx::font::kBoundaries >( &null::fontboundaries, wr ); };
+    grfx::font::kBoundaries *kGrfxFontBoundaries::createNull() {
+		return &null::fontboundaries; };
 
 // TODO: dehack.
 using file::kModule;

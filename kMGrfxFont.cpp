@@ -81,10 +81,8 @@ namespace module {
 	};
 
 // TODO: wrap a little further down.
-	file::kHandle< grfx::kFont > kGrfxFont::createNull() {
-		file::kWrapped *wr = new file::kWrappedNode( new file::kBaseNull() );
-		addWrapped( wr );
-		return file::kHandle< grfx::kFont >( &null::grfxFont, wr ); };
+	grfx::kFont *kGrfxFont::createNull() {
+		return &null::grfxFont; };
 
 // TODO: dehack
 using file::kModule;

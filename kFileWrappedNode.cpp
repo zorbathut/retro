@@ -296,7 +296,7 @@ namespace file {
 		}
 	};
 
-	kWrappedNode::kWrappedNode( kBase *in_file ) : file( in_file ), activatecount( 0 ),
+	kWrappedNode::kWrappedNode( kGeneratable *in_file ) : file( in_file ), activatecount( 0 ),
 			count( 0 ) { };
 	kWrappedNode::~kWrappedNode() {
 		if( activatecount != 0 ) {

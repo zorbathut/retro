@@ -28,7 +28,7 @@
    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
-
+/*
 #include "kGrfxWritableRaster.h"
 
 #include "minmax.h"
@@ -62,25 +62,17 @@ namespace grfx {
 	
 	};
 
-	void kWritableRaster::drawPoints( const std::pair< kPoint< INT32 >, kColor > *pdat, int count ) {
-		kLockedWrite lock;
-		raster->writeLock( kRect< INT32 >( kPoint< INT32 >( 0, 0 ), raster->getDimensions() ), &lock );
-		// 'tis easier.
-		for( int i = 0; i < count; i++ )
-			lock.data[ pdat[ i ].first.x + pdat[ i ].first.y * lock.pitch ] = pdat[ i ].second;
-		raster->unlock( &lock );
-	};
-
 	void kWritableRaster::clear( kColor color ) {
 		kLockedWrite lock;
-		raster->writeLock( kRect< INT32 >( kPoint< INT32 >( 0, 0 ), raster->getDimensions() ), &lock );
+		kPoint< INT32 > dim = raster->getDimensions();
+		raster->writeLock( kRect< INT32 >( kPoint< INT32 >( 0, 0 ), dim ), &lock );
 		kColor *arr;
-		arr = new kColor[ lock.bounds.br.x ]; // will this always work?
+		arr = new kColor[ dim.x ]; // will this always work?
 		int i;
-		for( i = 0; i < lock.bounds.br.x; i++ )
+		for( i = 0; i < dim.x; i++ )
 			arr[ i ] = color;
-		for( i = 0; i < lock.bounds.br.y; i++ )
-			memcpy( lock.data + i * lock.pitch, arr, lock.bounds.br.x * sizeof( kColor ) );
+		for( i = 0; i < dim.y; i++ )
+			memcpy( lock.data + i * lock.pitch, arr, dim.x * sizeof( kColor ) );
 		delete [] arr;
 		raster->unlock( &lock );
 	};
@@ -105,9 +97,9 @@ namespace grfx {
 
 		int len = ( end.x - start.x ) * sizeof( kColor );
 
-		for( int i = start.y; i < end.y; i++ )
-			memcpy( klw.data + pos.x + ( i + pos.y - start.y ) * klw.pitch,
-				    klr.data + start.x + ( i ) * klr.pitch, 
+		for( int i = 0; i < end.y - start.y; i++ )
+			memcpy( klw.data + i * klw.pitch,
+				    klr.data + i * klr.pitch, 
 					len );
 
 		rstr->unlock( &klr );
@@ -124,3 +116,4 @@ namespace grfx {
 		kWritable::chaindown( ostr ); };
 
 };
+*/

@@ -29,6 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
+#if 0   // this whole thing is currently disabled
+
 #include "kGrfxWritable16bpp565.h"
 
 #include "kGrfxUtil.h"
@@ -143,7 +145,7 @@ namespace grfx {
 
 	}
 
-	void kWritable16bpp565::drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count ) {
+/*	void kWritable16bpp565::drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count ) {
 //		yakanor << "MINOR: Drawing " << count << " points" << std::endl;
 		for( int i = 0; i < count; i++ ) {
 			if( pointArray[ i ].first.x >= 0 && pointArray[ i ].first.y >= 0 &&
@@ -153,7 +155,7 @@ namespace grfx {
 					( ( pointArray[ i ].second.split.g & 0xFC ) << 3 ) |
 					( ( pointArray[ i ].second.split.b & 0xF8 ) << 8 );
 		}
-	};
+	};*/
 
 	void kWritable16bpp565::clear( kColor col ) {
 //		yakanor << "MINOR: Clearing with color " << col << std::endl;
@@ -187,3 +189,5 @@ namespace grfx {
 		kWritable16bpp::chaindown( ostr ); }
 
 }
+
+#endif

@@ -33,8 +33,8 @@
 
 #include <iostream>
 
-kOutputtoken kDescribable::textdesc() const {
-	return kOutputtoken( this ); };
+kOutputtoken< kDescribable > kDescribable::textdesc() const {
+	return kOutputtoken< kDescribable >( this ); };
 
 void kDescribable::describe( std::ostream &ostr ) const {
 	ostr << "undescribed item"; };
@@ -42,9 +42,3 @@ void kDescribable::describe( std::ostream &ostr ) const {
 kDescribable::~kDescribable() { };
 
 void kDescribable::chaindown( std::ostream &ostr ) const { };
-
-std::ostream &operator<<( std::ostream &ostr, const kOutputtoken &kot ) {
-	kot.target->describe( ostr );
-	return ostr; }
-
-kOutputtoken::kOutputtoken( const kDescribable *in_target ) : target( in_target ) { };

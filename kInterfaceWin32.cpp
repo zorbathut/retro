@@ -31,9 +31,6 @@
 
 // this file is one colossal hack.
 
-#pragma warning( disable : 4786 )
-#pragma warning( disable : 4800 )	// bool performance warning
-
 #define DIRECTINPUT_VERSION 0x0800
 
 #define WIN32_LEAN_AND_MEAN
@@ -46,8 +43,6 @@
 #include <cstdio>
 
 #include "kInterface.h"
-#include "kGrfxWritableRaster.h"
-#include "kGrfxWritable16bpp565.h"
 #include "errlog.h"
 #include "config.h"
 #include "kControlsOpen.h"
@@ -60,6 +55,7 @@
 
 HWND hWnd; // oh bugger off :P
 const int bufferarray = 16; // size of the buffered data
+kStartupData sdd;
 
 class kInputDevice : private boost::noncopyable {
 public:
@@ -127,16 +123,12 @@ public:
 
 	CRITICAL_SECTION surfaceLock;
 	
-	//IDirect3DSurface8 *surf;
-	//IDirect3DSurface8 *writsurf;
-
 	IDirectInput8		*dinput;
 
 	bool starting;
+	bool acquired;
 
 	D3DFORMAT bbfmt;
-
-	grfx::kWritableRaster *kwr;
 
 	kControlsOpen controls;
 
@@ -362,7 +354,13 @@ void kInterfaceWin32::unlockBuffer( grfx::kWritable *ret ) {
 
 	wd3d->end();
 
-	D3DDevice->Present( NULL, NULL, NULL, NULL );
+	if( FAILED( D3DDevice->Present( NULL, NULL, NULL, NULL ) ) ) {
+		if( acquired )
+			g_errlog << "WIN32: Device lost" << std::endl;
+		acquired = false;
+		wd3d->cleartexes();
+		PostMessage( hWnd, WM_USER, 0, 0 );
+	};
 
 	LeaveCriticalSection( &surfaceLock );
 
@@ -375,8 +373,6 @@ void kInterfaceWin32::resetGraphics( void ) {
 		D3DPRESENT_PARAMETERS parms;
 
 		D3DDISPLAYMODE dev;
-//		D3DSURFACE_DESC	  sd;
-
 		D3DDevice->GetDisplayMode( &dev );
 
 		ZeroMemory( &parms, sizeof( parms ) );
@@ -386,24 +382,18 @@ void kInterfaceWin32::resetGraphics( void ) {
 
 		EnterCriticalSection( &surfaceLock );
 
-/*		if( surf )
-			surf->Release();
-		if( writsurf )
-			writsurf->Release();*/
-
-		D3DDevice->Reset( &parms );
-
-		//D3DDevice->GetBackBuffer( 0, D3DBACKBUFFER_TYPE_MONO, &surf );
-			
-		//surf->GetDesc( &sd );
-
-		/*if( bbfmt != D3DFMT_X8R8G8B8 ) {
-			delete kwr;
-
-			kwr = new grfx::kWritableRaster( kPoint< INT32 >( sd.Width, sd.Height ) );
-		}*/
-
-		//D3DDevice->CreateImageSurface( sd.Width, sd.Height, sd.Format, &writsurf );
+		if( FAILED( D3DDevice->Reset( &parms ) ) ) {
+			if( acquired ) {
+				g_errlog << "WIN32: Device reset failed" << std::endl;
+			} else {
+			}
+		} else {
+			if( acquired ) {
+			} else {
+				g_errlog << "WIN32: Device re-acquired" << std::endl;
+				acquired = true;
+			}
+		}
 
 		LeaveCriticalSection( &surfaceLock );
 
@@ -415,12 +405,11 @@ kInterfaceWin32 *inter = NULL;
 
 kInterfaceWin32::kInterfaceWin32( void ) : D3D( NULL ), D3DDevice( NULL ), closing( false ),
 		finishedEvent( CreateEvent( NULL, FALSE, FALSE, NULL ) ), /*surf( NULL ), writsurf( NULL ),*/
-		starting( false ), kwr( NULL ), controls( 256, 0 ), wd3d( NULL ) {
+		starting( false ), controls( 256, 0 ), wd3d( NULL ), acquired( false ) {
 	InitializeCriticalSection( &surfaceLock );
 };
 kInterfaceWin32::~kInterfaceWin32( void ) {
 	DeleteCriticalSection( &surfaceLock );
-	delete kwr;
 };
 
 LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -432,13 +421,20 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
             return 0;
 
 		case WM_SIZE:
+		case WM_USER:
 			inter->resetGraphics();
 			return 0;
 
 		case WM_GETMINMAXINFO: {
 			MINMAXINFO *memi = (MINMAXINFO *)lParam;
-			memi->ptMinTrackSize.x = config_xmin + GetSystemMetrics( SM_CXSIZEFRAME ) * 2;
-			memi->ptMinTrackSize.y = config_ymin + GetSystemMetrics( SM_CYSIZEFRAME ) * 2 + GetSystemMetrics( SM_CYMENU );
+			if( sdd.minWindow.x )
+				memi->ptMinTrackSize.x = sdd.minWindow.x + GetSystemMetrics( SM_CXSIZEFRAME ) * 2;
+			if( sdd.minWindow.y )
+				memi->ptMinTrackSize.y = sdd.minWindow.y + GetSystemMetrics( SM_CYSIZEFRAME ) * 2 + GetSystemMetrics( SM_CYMENU );
+			if( sdd.maxWindow.x )
+				memi->ptMaxTrackSize.x = sdd.maxWindow.x + GetSystemMetrics( SM_CXSIZEFRAME ) * 2;
+			if( sdd.maxWindow.y )
+				memi->ptMaxTrackSize.y = sdd.maxWindow.y + GetSystemMetrics( SM_CYSIZEFRAME ) * 2 + GetSystemMetrics( SM_CYMENU );
 			return 0; }
 
         case WM_PAINT:
@@ -560,11 +556,16 @@ bool kInterfaceWin32::init( void ) {
                       "Timespace", NULL };
     RegisterClassEx( &wc );
 
+	int cx = CW_USEDEFAULT;
+	int cy = CW_USEDEFAULT;
+	if( sdd.startWindow.x )
+		cx = sdd.startWindow.x + GetSystemMetrics( SM_CXSIZEFRAME ) * 2;
+	if( sdd.startWindow.y )
+		cy = sdd.startWindow.y + GetSystemMetrics( SM_CYSIZEFRAME ) * 2 + GetSystemMetrics( SM_CYMENU );
     // Create the application's window
     hWnd = CreateWindow( "Timespace", "Timespace",
-                              WS_OVERLAPPEDWINDOW, 0, 0, config_xmin + GetSystemMetrics( SM_CXSIZEFRAME ) * 2,
-							  config_ymin + GetSystemMetrics( SM_CYSIZEFRAME ) * 2 + GetSystemMetrics( SM_CYMENU ),
-                              GetDesktopWindow(), 0, wc.hInstance, NULL );
+                              WS_OVERLAPPEDWINDOW, 0, 0, cx,
+							  cy, GetDesktopWindow(), 0, wc.hInstance, NULL );
 
     // Create the Direct3D device. Here we are using the default adapter and
 	// choosing the HAL we figured out above.
@@ -682,6 +683,12 @@ int WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR, int ) {
 	g_errlog.open( "errlog.txt" );
 	g_errlog.setf( std::ios::unitbuf );	// whee, autoflush!
 	// todo: THREADSAFETY! or just be careful not to use it while the main thread is open.
+
+	sdd.maxWindow = makePoint( 0, 0 );
+	sdd.minWindow = makePoint( 0, 0 );
+	sdd.startWindow = makePoint( 0, 0 );
+	sdd.minWindow.y = 1;	// todo: dehackify.
+	gameInit( &sdd );
 
 	assert( sizeof( grfx::kColor ) == 4 );	// good god I hope so . . .
 	
@@ -834,7 +841,7 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 		devspecs.name = boof;
 		devspecs.uid = kUniqueDevId( (const char *)&ddi.guidInstance );
 
-		if( ddi.dwDevType & 0xff == DI8DEVTYPE_MOUSE )
+		if( ( ddi.dwDevType & 0xff ) == DI8DEVTYPE_MOUSE )
 			relative = true;
 		  else
 			relative = false;
@@ -845,7 +852,7 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 
 		dev->GetCapabilities( &ddc );
 
-		polling = ddc.dwFlags & DIDC_POLLEDDEVICE;
+		polling = (ddc.dwFlags & DIDC_POLLEDDEVICE) != 0;
 
 
 	}		// moved it, left it in brackets so it was obvious
@@ -964,14 +971,13 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
 	BYTE *butorig = *buttons;
 
 	char *btemp = buffer;
-	int i;
-	for( i = 0; i < butcount; i++ )
+	for( int i = 0; i < butcount; i++ )
 		*((*buttons)++) = ( *(btemp++) & 0x80 ) ? keyis::down : keyis::up;
 	// todo: the push/release/change stuff.
 
 	INT32 *atemp = reinterpret_cast< INT32 * >( buffer + axioffs );
 
-	for( i = 0; i < axicount; i++ )
+	for( int i = 0; i < axicount; i++ )
 		*((*axes)++) = *(atemp++);
 
 	delete [] buffer;
@@ -985,7 +991,7 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
 		return;
 	}
 
-	for( i = 0; i < datsize; i++ ) {
+	for( size_t i = 0; i < datsize; i++ ) {
 		butorig[ buff[ i ].dwOfs ] |= ( buff[ i ].dwData & 0x80 ? ( keyis::push | keyis::change ) : ( keyis::release | keyis::change ) );
 	};	// shut up :P
 

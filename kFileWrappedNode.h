@@ -49,7 +49,7 @@ namespace file {
 	class kWrappedNode : public kWrapped {
 	private:
 
-		kBase *file;
+		kGeneratable *file;
 
 		int activatecount;
 		int count;
@@ -63,7 +63,7 @@ namespace file {
 
 		virtual void tick();
 
-		kWrappedNode( kBase *file );
+		kWrappedNode( kGeneratable *file );
 		virtual ~kWrappedNode();
 
 		virtual void describe( std::ostream &ostr ) const;

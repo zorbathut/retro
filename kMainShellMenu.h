@@ -36,6 +36,7 @@
 #include "kFileHandle.h"
 #include "kGrfxRenderableFinite.h"
 #include "kGrfxFont.h"
+#include "kGrfxFontHSL.h"
 
 class kMainShellMenu : public kMainShell {
 public:
@@ -53,6 +54,8 @@ private:
 	file::kHandle< grfx::kRenderableFinite > ball;
 	file::kHandle< grfx::kRenderableFinite > alph;
 	file::kHandle< grfx::kFont > fnt;
+	file::kHandle< grfx::kFontHSL > fnthsl;
+	file::kHandle< grfx::kFont > fnthslty;
 
 	kPoint< INT32 > gp;
 	kRect< INT32 > gb;
@@ -60,12 +63,22 @@ private:
 	int pbs[ 4 ];
 	int ulbbs[ 4 ];
 	int brbbs[ 4 ];
+	int kroma[ 4 ][ 2 ];
 	int balzac;
 	int balspam;
 
+	int ae[ 4 ][ 2 ];
+	int be[ 4 ][ 2 ];
+	grfx::kColor a;
+	grfx::kColorHSL b;
+
 	bool got;
 
+	grfx::kColor dc;
+
 	std::vector< std::pair< kPoint< double >, kPoint< double > > > balls;
+
+	bool fart;
 
 };
 

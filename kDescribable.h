@@ -43,12 +43,12 @@
 #endif
 
 class kDescribable;
-class kOutputtoken;
+template < typename kClass > class kOutputtoken;
 
 class kDescribable {
 public:
 
-	kOutputtoken textdesc() const;
+	kOutputtoken< kDescribable > textdesc() const;
 	virtual void describe( std::ostream &ostr ) const VAGUEDESC;
 
 	virtual ~kDescribable();
@@ -62,18 +62,23 @@ protected:
 // note: does NOT include virtual destructor! do NOT delete something which is cast to a
 // kDescribable!
 
-std::ostream &operator<<( std::ostream &ostr, const kOutputtoken &kot );
-
+template < typename kClass >
 class kOutputtoken {
 public:
 
-	kOutputtoken( const kDescribable *target );
+	const kClass *target;
+	// TODO: make this private.
 
-private:
-	friend std::ostream &operator<<( std::ostream &ostr, const kOutputtoken &kot );
-
-	const kDescribable *target;
+	kOutputtoken( const kClass *in_target ) :
+		target( in_target ) { };
 
 };
+
+template < typename kClass > kOutputtoken< kClass > descr( const kClass *pt ) {
+	return kOutputtoken< kClass >( pt ); };
+
+template < typename kClass > std::ostream &operator<<( std::ostream &ostr, const kOutputtoken< kClass > &kot ) {
+	kot.target->describe( ostr );
+	return ostr; };
 
 #endif

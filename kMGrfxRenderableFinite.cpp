@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #include "kMGrfxRenderableFinite.h"
 
 #include "kFileManager.h"
@@ -48,18 +46,6 @@
 namespace module {
 
 	namespace finiteFunctors {
-
-		class kPLN : public file::kModuleStdfunctor< grfx::kRenderableFinite > {
-		public:
-			virtual RVOID operator()( file::kManager *inp );
-			kPLN( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind );
-		};
-
-		class kPNG : public file::kModuleStdfunctor< grfx::kRenderableFinite > {
-		public:
-			virtual RVOID operator()( file::kManager *inp );
-			kPNG( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind );
-		};
 
 	};
 
@@ -82,18 +68,17 @@ namespace module {
 
 		*spath = "grfx\\";
 
-		(*assoc)[ "pln" ] = new zutil::kIOFunctorFactory< zutil::kIOFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< grfx::kRenderableFinite > * >
+/*		(*assoc)[ "pln" ] = new zutil::kIOFunctorFactory< zutil::kIOFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< grfx::kRenderableFinite > * >
 			, finiteFunctors::kPLN >; // ow.
 		(*assoc)[ "png" ] = new zutil::kIOFunctorFactory< zutil::kIOFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< grfx::kRenderableFinite > * >
-			, finiteFunctors::kPNG >; // ow.
+			, finiteFunctors::kPNG >; // ow.*/
+		// okay, yes, that's NOT THE POINT DAMMIT
 
 	};
 
 // TODO: wrap a little further down.
-	file::kHandle< grfx::kRenderableFinite > kGrfxRenderableFinite::createNull() {
-		file::kWrapped *wr = new file::kWrappedNode( new file::kBaseNull() );
-		addWrapped( wr );
-		return file::kHandle< grfx::kRenderableFinite >( &null::grfxRenderableFinite, wr ); };
+	grfx::kRenderableFinite *kGrfxRenderableFinite::createNull() {
+		return &null::grfxRenderableFinite; };
 
 // TODO: dehack.
 using file::kModule;
@@ -108,39 +93,6 @@ using file::kModule;
 	kGrfxRenderableFinite finite;
 
 	namespace finiteFunctors {
-
-		RVOID kPLN::operator()( file::kManager *inp ) {
-			std::ifstream ifs( fname.c_str() );
-			int count;
-			std::string fname;
-			std::string ident;
-			ifs >> count;
-			ifs.ignore( std::numeric_limits< int >::max(), '\n' );
-			for( int i = 0; i < count; ++i ) {
-				std::getline( ifs, ident );
-				std::getline( ifs, fname );		// TODO: work out better filename tracking!
-				grfx::kRenderablePNG *dat = new grfx::kRenderablePNG( fname.c_str() );
-				file::kWrapped *wrp = new file::kWrappedNode( dat );
-				module->addWrapped( wrp );
-				module->addKey( ident.c_str(), file::kHandle< grfx::kRenderableFinite >( dat, wrp ) );
-			}
-			ifs.close();
-			return RVOIDVAL;
-		};
-
-		kPLN::kPLN( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind ) :
-			file::kModuleStdfunctor< grfx::kRenderableFinite >( ind ) { };
-
-		RVOID kPNG::operator()( file::kManager *inp ) {
-			grfx::kRenderablePNG *dat = new grfx::kRenderablePNG( fname.c_str() );
-			file::kWrapped *wrp = new file::kWrappedNode( dat );
-			module->addWrapped( wrp );
-			module->addKey( file::extractFname( fname ), file::kHandle< grfx::kRenderableFinite >( dat, wrp ) );
-			return RVOIDVAL;
-		};
-
-		kPNG::kPNG( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind ) :
-			file::kModuleStdfunctor< grfx::kRenderableFinite >( ind ) { };
 
 	};
 

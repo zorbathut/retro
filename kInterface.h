@@ -67,6 +67,16 @@ public:
 
 };
 
+class kStartupData {
+public:
+
+	kPoint< INT32 > minWindow;
+	kPoint< INT32 > maxWindow;
+	kPoint< INT32 > startWindow;
+
+};
+
+void gameInit( kStartupData *dat );
 void gameMain( kInterface *inter );
 
 #endif

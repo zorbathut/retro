@@ -29,10 +29,9 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #include "kMainShellMenu.h"
 #include "kMGrfxRenderableFinite.h"
+#include "kMGrfxFontHSL.h"
 #include "kMGrfxFont.h"
 #include "hididConsts.h"
 #include "errlog.h"
@@ -65,6 +64,36 @@ kMainShell *kMainShellMenu::clockTick( const kControls *controls ) {
 		brbbs[ 2 ] = controls->findButton( hidid::kbd::J );
 		brbbs[ 3 ] = controls->findButton( hidid::kbd::K );
 
+		kroma[ 0 ][ 0 ] = controls->findButton( hidid::kbd::E );
+		kroma[ 1 ][ 0 ] = controls->findButton( hidid::kbd::R );
+		kroma[ 2 ][ 0 ] = controls->findButton( hidid::kbd::T );
+		kroma[ 3 ][ 0 ] = controls->findButton( hidid::kbd::Y );
+
+		kroma[ 0 ][ 1 ] = controls->findButton( hidid::kbd::D );
+		kroma[ 1 ][ 1 ] = controls->findButton( hidid::kbd::F );
+		kroma[ 2 ][ 1 ] = controls->findButton( hidid::kbd::G );
+		kroma[ 3 ][ 1 ] = controls->findButton( hidid::kbd::H );
+
+		ae[ 0 ][ 0 ] = controls->findButton( hidid::kbd::Q );
+		ae[ 1 ][ 0 ] = controls->findButton( hidid::kbd::W );
+		ae[ 2 ][ 0 ] = controls->findButton( hidid::kbd::E );
+		ae[ 3 ][ 0 ] = controls->findButton( hidid::kbd::R );
+
+		ae[ 0 ][ 1 ] = controls->findButton( hidid::kbd::A );
+		ae[ 1 ][ 1 ] = controls->findButton( hidid::kbd::S );
+		ae[ 2 ][ 1 ] = controls->findButton( hidid::kbd::D );
+		ae[ 3 ][ 1 ] = controls->findButton( hidid::kbd::F );
+
+		be[ 0 ][ 0 ] = controls->findButton( hidid::kbd::T );
+		be[ 1 ][ 0 ] = controls->findButton( hidid::kbd::Y );
+		be[ 2 ][ 0 ] = controls->findButton( hidid::kbd::U );
+		be[ 3 ][ 0 ] = controls->findButton( hidid::kbd::I );
+
+		be[ 0 ][ 1 ] = controls->findButton( hidid::kbd::G );
+		be[ 1 ][ 1 ] = controls->findButton( hidid::kbd::H );
+		be[ 2 ][ 1 ] = controls->findButton( hidid::kbd::J );
+		be[ 3 ][ 1 ] = controls->findButton( hidid::kbd::K );
+
 		balzac = controls->findButton( hidid::kbd::B );
 		balspam = controls->findButton( hidid::kbd::N );
 
@@ -92,10 +121,35 @@ kMainShell *kMainShellMenu::clockTick( const kControls *controls ) {
 	}
 
 	if( ( controls->getButton( balzac ) & keyis::push ) || ( controls->getButton( balspam ) & keyis::down ) ) {
-		balls.push_back( std::make_pair( kPoint< double >( 0.0, 0.0 ), kPoint< double >( rand() / ( RAND_MAX * 1000.0 ), rand() / ( RAND_MAX * 1000.0 ) ) ) );
+		balls.push_back( std::make_pair( kPoint< double >( 0.0, 0.0 ), kPoint< double >( rand() / ( RAND_MAX * 100.0 ), rand() / ( RAND_MAX * 100.0 ) ) ) );
+		fart = true;
+	} else {
+		fart = false;
+	};
+
+	for( i = 0; i < 4; i++ ) {
+
+		if( controls->getButton( kroma[ i ][ 0 ] ) & keyis::down )
+			dc.bytes[ i ]++;
+		if( controls->getButton( kroma[ i ][ 1 ] ) & keyis::down )
+			dc.bytes[ i ]--;
+
 	}
 
-	for( i = 0; i < balls.size(); i++ ) {
+	for( i = 0; i < 4; i++ ) {
+
+		if( controls->getButton( ae[ i ][ 0 ] ) & keyis::down )
+			a.bytes[ i ]++;
+		if( controls->getButton( ae[ i ][ 1 ] ) & keyis::down )
+			a.bytes[ i ]--;
+		if( controls->getButton( be[ i ][ 0 ] ) & keyis::down )
+			b.bytes[ i ]++;
+		if( controls->getButton( be[ i ][ 1 ] ) & keyis::down )
+			b.bytes[ i ]--;
+
+	}
+
+	for( size_t i = 0; i < balls.size(); i++ ) {
 		balls[ i ].first += balls[ i ].second;
 		if( balls[ i ].first.x < 0 ) {
 			balls[ i ].first.x *= -1;
@@ -121,8 +175,8 @@ void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 	kPoint< INT32 > size = target->getDimensions();
 	kPoint< INT32 > bs = ball->getDimensions();
 	fin->renderTo( target, kPoint< INT32 >( 0, 0 ) );
-	for( int i = 0; i < balls.size(); i++ ) {
-		ball->renderTo( target, kPoint< INT32 >( size.x * balls[ i ].first.x - bs.x / 2, size.y * balls[ i ].first.y - bs.y / 2 ) );
+	for( size_t i = 0; i < balls.size(); i++ ) {
+		ball->renderTo( target, kPoint< INT32 >( INT32( size.x * balls[ i ].first.x - bs.x / 2 ), INT32( size.y * balls[ i ].first.y - bs.y / 2 ) ) );
 	}
 	std::stringstream foo;
 	foo << size.x << "x" << size.y;
@@ -132,14 +186,32 @@ void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 	foo.clear();
 	foo << gp << ", " << gb;
 	std::getline( foo, texxt );
-	fnt->renderTextTo( target, texxt.c_str(), kPoint< INT32 >( 100, 0 ) );
 	gn->renderPartTo( target, gp, gb );
+	fnt->renderTextTo( target, texxt.c_str(), kPoint< INT32 >( 100, 0 ) );
 	foo.clear();
 	foo << balls.size() << " giant bouncy balls";
 	std::getline( foo, texxt );
 	fnt->renderTextTo( target, texxt.c_str(), kPoint< INT32 >( 0, 16 ) );
 
-	alph->renderTo( target, kPoint< INT32 >( 200, 200 ) );
+	alph->renderTo( target, kPoint< INT32 >( 400, 400 ) );
+	target->drawRect( makeRect( 100, 100, 300, 300 ), a );
+
+	std::stringstream ss;
+
+	ss << dc;
+
+	fnt->renderTextTo( target, ss.str().c_str(), makePoint( 0, 150 ) );
+	fnthslty = fnthsl->getChroma( dc );
+	fnthslty.activate();
+	fnthslty->renderTextTo( target, ss.str().c_str(), makePoint( 0, 200 ) );
+	fnthslty.deactivate();
+	fnthsl->dropChroma( dc );
+
+	std::stringstream ss2;
+
+	ss2 << a << " = " << grfx::cutil::RGBtoHSL( a );
+
+	fnt->renderTextTo( target, ss2.str().c_str(), makePoint( 0, 500 ) );
 
 /*	std::pair< kPoint< INT32 >, grfx::kColor > det[ 100 ];
 	for( int i = 0; i < 100; i++ ) {
@@ -161,9 +233,19 @@ kMainShellMenu::kMainShellMenu() : fin( module::finite.get( "gnarl" ) ),
 	alph.activate();
 	ball.activate();
 	gn.activate();
+
+	fnthsl = module::fonthsl.get( "arial" );
+	fnthsl.activate();
+	/*fnthslty = fnthsl->getChroma( COL );
+	fnthslty.activate();*/
+
 };
 
 kMainShellMenu::~kMainShellMenu() {
+
+	/*fnthslty.deactivate();
+	fnthsl->dropChroma( COL );*/
+	fnthsl.deactivate();
 	fin.deactivate();
 	fnt.deactivate();
 	alph.deactivate();

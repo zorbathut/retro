@@ -37,14 +37,19 @@
 #include "kGrfxUtil.h"
 
 // A structure for our custom vertex type
-struct CUSTOMVERTEX {
+struct TEXVERTEX {
     float x, y, z, rhw;
     float u, v;
 };
 
-// Our custom FVF, which describes our custom vertex structure
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZRHW|D3DFVF_TEX1|D3DFVF_TEXCOORDSIZE2(0))
+struct RECTVERTEX {
+    float x, y, z, rhw;
+    DWORD rgba;
+};
 
+// Our custom FVF, which describes our custom vertex structure
+#define D3DFVF_TEXVERTEX (D3DFVF_XYZRHW|D3DFVF_TEX1|D3DFVF_TEXCOORDSIZE2(0))
+#define D3DFVF_RECTVERTEX (D3DFVF_XYZRHW|D3DFVF_DIFFUSE)
 
 // information functions
 const kPoint< INT32 > &kWritableD3D::getDimensions( void ) const {
@@ -56,10 +61,20 @@ void kWritableD3D::drawRaster( const grfx::kRasterConst *rstr, const kPoint< INT
 };
 void kWritableD3D::drawRasterPart( const grfx::kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) {
 
+	if( FAILED( dev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE ) ) ) {
+		g_errlog << "D3D: Problem with setting alpha blend" << std::endl;
+	}
+	if( FAILED( dev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA ) ) ) {
+		g_errlog << "D3D: Problem with setting source blend" << std::endl;
+	}
+	if( FAILED( dev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA ) ) ) {
+		g_errlog << "D3D: Problem with setting destination blend" << std::endl;
+	}
+
 	kWritableD3DTexture *texture = getTex( rstr );
 
-	for( int i = 0; i < texture->length.size(); i++ ) {
-		for( int j = 0; j < texture->length[ i ].width.size(); j++ ) {
+	for( size_t i = 0; i < texture->length.size(); i++ ) {
+		for( size_t j = 0; j < texture->length[ i ].width.size(); j++ ) {
 			kPoint< INT32 > nloc( loc );
 			kPoint< INT32 > nstart( start );
 			kPoint< INT32 > nend( end );
@@ -76,29 +91,80 @@ void kWritableD3D::drawRasterPart( const grfx::kRasterConst *rstr, const kPoint<
 				float txend = static_cast< float >( nend.x - texture->length[ i ].width[ j ].start ) / xlen;
 				float tystart = static_cast< float >( nstart.y - texture->length[ i ].start ) / ylen;
 				float tyend = static_cast< float >( nend.y - texture->length[ i ].start ) / ylen;
-				CUSTOMVERTEX g_Vertices[] =
+				/*RECTVERTEX g_Vertices[] =
 				{
-					{ static_cast< float >( nloc.x ) - 0.5, static_cast< float >( nloc.y + nend.y - nstart.y ) - 0.5, cpos, cpos, txstart, tyend },
-					{ static_cast< float >( nloc.x ) - 0.5, static_cast< float >( nloc.y ) - 0.5, cpos, cpos, txstart, tystart },
-					{ static_cast< float >( nloc.x + nend.x - nstart.x ) - 0.5, static_cast< float >( nloc.y + nend.y - nstart.y ) - 0.5, cpos, cpos, txend, tyend },
-					{ static_cast< float >( nloc.x + nend.x - nstart.x ) - 0.5, static_cast< float >( nloc.y ) - 0.5, cpos, cpos, txend, tystart },
+					{ float( nloc.x - 0.5 ), float( nloc.y + nend.y - nstart.y - 0.5 ), cpos, cpos, 0x80808080 },
+					{ float( nloc.x - 0.5 ), float( nloc.y - 0.5 ), cpos, cpos, 0x80808080 },
+					{ float( nloc.x + nend.x - nstart.x - 0.5 ), float( nloc.y + nend.y - nstart.y - 0.5 ), cpos, cpos, 0x80808080 },
+					{ float( nloc.x + nend.x - nstart.x - 0.5 ), float( nloc.y - 0.5 ), cpos, cpos, 0x80808080 },
 				};
 
 				// Now we fill the vertex buffer. To do this, we need to Lock() the VB to
 				// gain access to the vertices. This mechanism is required becuase vertex
 				// buffers may be in device memory.
 				VOID* pVertices;
-				if( FAILED( vbuff->Lock( 0, sizeof(g_Vertices), (BYTE**)&pVertices, 0 ) ) )
-					return;
+				if( FAILED( rectbuff->Lock( 0, sizeof(g_Vertices), (BYTE**)&pVertices, 0 ) ) ) {
+					g_errlog << "D3D: vertex locking failed" << std::endl;
+					continue;
+				};
 				memcpy( pVertices, g_Vertices, sizeof(g_Vertices) );
-				vbuff->Unlock();
+				if( FAILED( rectbuff->Unlock() ) ) {
+					g_errlog << "D3D: vertex unlocking failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->SetStreamSource( 0, rectbuff, sizeof( RECTVERTEX ) ) ) ) {
+					g_errlog << "D3D: stream source setting failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->SetVertexShader( D3DFVF_RECTVERTEX ) ) ) {
+					g_errlog << "D3D: vertex shader setting failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 ) ) ) {
+					g_errlog << "D3D: primitive drawing failed" << std::endl;
+					continue;
+				};*/
+				TEXVERTEX g_Vertices[] =
+				{
+					{ float( nloc.x - 0.5 ), float( nloc.y + nend.y - nstart.y - 0.5 ), 0.5f, 0.5f, txstart, tyend },
+					{ float( nloc.x - 0.5 ), float( nloc.y - 0.5 ), 0.5f, 0.5f, txstart, tystart },
+					{ float( nloc.x + nend.x - nstart.x - 0.5 ), float( nloc.y + nend.y - nstart.y - 0.5 ), 0.5f, 0.5f, txend, tyend },
+					{ float( nloc.x + nend.x - nstart.x - 0.5 ), float( nloc.y - 0.5 ), 0.5f, 0.5f, txend, tystart },
+				};
 
-				dev->SetTexture( 0, texture->length[ i ].width[ j ].tex );
-				dev->SetStreamSource( 0, vbuff, sizeof(CUSTOMVERTEX) );
-				dev->SetVertexShader( D3DFVF_CUSTOMVERTEX );
-				dev->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 );
-
-				cpos--;
+				// Now we fill the vertex buffer. To do this, we need to Lock() the VB to
+				// gain access to the vertices. This mechanism is required becuase vertex
+				// buffers may be in device memory.
+				VOID* pVertices;
+				if( FAILED( texbuff->Lock( 0, sizeof(g_Vertices), (BYTE**)&pVertices, 0 ) ) ) {
+					g_errlog << "D3D: vertex locking failed" << std::endl;
+					continue;
+				};
+				memcpy( pVertices, g_Vertices, sizeof(g_Vertices) );
+				if( FAILED( texbuff->Unlock() ) ) {
+					g_errlog << "D3D: vertex unlocking failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->SetVertexShader( D3DFVF_TEXVERTEX ) ) ) {
+					g_errlog << "D3D: vertex shader setting failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->SetStreamSource( 0, texbuff, sizeof( TEXVERTEX ) ) ) ) {
+					g_errlog << "D3D: stream source setting failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->SetTexture( 0, texture->length[ i ].width[ j ].tex ) ) ) {
+					g_errlog << "D3D: texture setting failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 ) ) ) {
+					g_errlog << "D3D: primitive drawing failed" << std::endl;
+					continue;
+				};
+				if( FAILED( dev->SetTexture( 0, NULL ) ) ) {
+					g_errlog << "D3D: texture unsetting failed" << std::endl;
+					continue;
+				};
 			}
 
 		}
@@ -107,7 +173,54 @@ void kWritableD3D::drawRasterPart( const grfx::kRasterConst *rstr, const kPoint<
 
 }
 
-void kWritableD3D::drawPoints( const std::pair< kPoint< INT32 >, grfx::kColor > *pointArray, int count ) { };
+void kWritableD3D::drawRect( const kRect< INT32 > &loc, grfx::kColor col ) {
+
+	g_errlog << "draw "<< loc << " " << col << std::endl;
+	if( FAILED( dev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE ) ) ) {
+		g_errlog << "D3D: Problem with setting alpha blend" << std::endl;
+	}
+	if( FAILED( dev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA ) ) ) {
+		g_errlog << "D3D: Problem with setting source blend" << std::endl;
+	}
+	if( FAILED( dev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA ) ) ) {
+		g_errlog << "D3D: Problem with setting destination blend" << std::endl;
+	}
+
+	RECTVERTEX g_Vertices[] =
+	{
+		{ float( loc.ul.x - 0.5 ), float( loc.br.y - 0.5 ), 0.5f, 0.5f, col.argb },
+		{ float( loc.ul.x - 0.5 ), float( loc.ul.y - 0.5 ), 0.5f, 0.5f, col.argb },
+		{ float( loc.br.x - 0.5 ), float( loc.br.y - 0.5 ), 0.5f, 0.5f, col.argb },
+		{ float( loc.br.x - 0.5 ), float( loc.ul.y - 0.5 ), 0.5f, 0.5f, col.argb },
+	};
+
+	// Now we fill the vertex buffer. To do this, we need to Lock() the VB to
+	// gain access to the vertices. This mechanism is required becuase vertex
+	// buffers may be in device memory.
+	VOID* pVertices;
+	if( FAILED( rectbuff->Lock( 0, sizeof(g_Vertices), (BYTE**)&pVertices, 0 ) ) ) {
+		g_errlog << "D3D: vertex locking failed" << std::endl;
+		return;
+	};
+	memcpy( pVertices, g_Vertices, sizeof(g_Vertices) );
+	if( FAILED( rectbuff->Unlock() ) ) {
+		g_errlog << "D3D: vertex unlocking failed" << std::endl;
+		return;
+	};
+	if( FAILED( dev->SetVertexShader( D3DFVF_RECTVERTEX ) ) ) {
+		g_errlog << "D3D: vertex shader setting failed" << std::endl;
+		return;
+	};
+	if( FAILED( dev->SetStreamSource( 0, rectbuff, sizeof( RECTVERTEX ) ) ) ) {
+		g_errlog << "D3D: stream source setting failed" << std::endl;
+		return;
+	};
+	if( FAILED( dev->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 ) ) ) {
+		g_errlog << "D3D: primitive drawing failed" << std::endl;
+		return;
+	};
+};
+
 void kWritableD3D::clear( grfx::kColor color ) {
 	dev->Clear( 0, NULL, D3DCLEAR_TARGET, color.argb, 1.0, 0 ); };
 
@@ -129,6 +242,10 @@ kWritableD3D::kWritableD3D( IDirect3DDevice8 *in_dev ) : df( &texes ) {
 };
 
 kWritableD3D::~kWritableD3D() {
+	cleartexes();
+};
+
+void kWritableD3D::cleartexes() {
 	g_errlog << "D3D: Destroying hardware textures" << std::endl;
 	std::map< const grfx::kRasterConst *, kWritableD3DTexture >::iterator texit;
 	for( texit = texes.begin(); texit != texes.end(); texit++ ) {
@@ -138,13 +255,22 @@ kWritableD3D::~kWritableD3D() {
 		texit->first->removeDestructionNotification( &df );
 		texit->second.clear();
 	}
+	texes.clear();
 };
 
 void kWritableD3D::start() {
-	dev->BeginScene();
-    if( FAILED( dev->CreateVertexBuffer( 4*sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &vbuff ) ) )
+	if( FAILED( dev->BeginScene() ) ) {
+		g_errlog << "D3D: Scene begin failed" << std::endl;
+	}
+    if( FAILED( dev->CreateVertexBuffer( 4*sizeof(TEXVERTEX), 0, D3DFVF_TEXVERTEX, D3DPOOL_DEFAULT, &texbuff ) ) )
     {
-		g_errlog << "D3D: Vertex buffer creation failed! Things will now break." << std::endl;
+		g_errlog << "D3D: Textured vertex buffer creation failed! Things will now break." << std::endl;
+		// TODO: make things not break as badly.
+        return;
+    } // had some problems putting this in the constructor. Don't know why.
+    if( FAILED( dev->CreateVertexBuffer( 4*sizeof(RECTVERTEX), 0, D3DFVF_RECTVERTEX, D3DPOOL_DEFAULT, &rectbuff ) ) )
+    {
+		g_errlog << "D3D: Rect vertex buffer creation failed! Things will now break." << std::endl;
 		// TODO: make things not break as badly.
         return;
     } // had some problems putting this in the constructor. Don't know why.
@@ -153,19 +279,11 @@ void kWritableD3D::start() {
 	GetClientRect( hWnd, &rect );
 	curdim.x = rect.right;
 	curdim.y = rect.bottom;
-	if( FAILED( dev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE ) ) ) {
-		g_errlog << "D3D: Problem with setting alpha blend" << std::endl;
-	}
-	if( FAILED( dev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA ) ) ) {
-		g_errlog << "D3D: Problem with setting source blend" << std::endl;
-	}
-	if( FAILED( dev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA ) ) ) {
-		g_errlog << "D3D: Problem with setting destination blend" << std::endl;
-	}
 };
 
 void kWritableD3D::end() {
-	vbuff->Release();
+	texbuff->Release();
+	rectbuff->Release();
 	dev->EndScene(); };
 
 int nextPower( int x ) {
@@ -228,7 +346,7 @@ kWritableD3DTexture *kWritableD3D::getTex( const grfx::kRasterConst *rstr ) {
 			rstr->lock( kRect< INT32 >( tc.start, tl.start, tc.start + hreal, tl.start + vreal ), &glock );
 
 			for( int i = 0; i < vreal; i++ )
-				memcpy( dlbyte + i * dlock.Pitch, glock.data + curx + ( cury + i ) * glock.pitch, sizeof( grfx::kColor ) * hreal );
+				memcpy( dlbyte + i * dlock.Pitch, glock.data + curx - tc.start + ( cury + i - tl.start ) * glock.pitch, sizeof( grfx::kColor ) * hreal );
 
 			rstr->unlock( &glock );
 			tc.tex->UnlockRect( 0 );
@@ -261,8 +379,8 @@ kWritableD3DDestructFunctor::kWritableD3DDestructFunctor( std::map< const grfx::
 	mp = in_mp; };
 
 void kWritableD3DTexture::clear() {
-	for( int i = 0; i < length.size(); i++ ) {
-		for( int j = 0; j < length[ i ].width.size(); j++ ) {
+	for( size_t i = 0; i < length.size(); i++ ) {
+		for( size_t j = 0; j < length[ i ].width.size(); j++ ) {
 			length[ i ].width[ j ].tex->Release();
 		}
 	}

@@ -51,7 +51,6 @@ namespace grfx {
 		// drawing functions
 		virtual void drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &loc ) = 0;
 		virtual void drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end ) = 0;
-		virtual void drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count ) = 0;
 		virtual void clear( kColor color ) = 0;
 
 		// setup functions

@@ -32,13 +32,10 @@
 #ifndef RETRO_CONFIG
 #define RETRO_CONFIG
 
-static const int config_xmin = 600;
-static const int config_ymin = 400;
-
 static const int tickspersec = 60;
 
 #define POSTDEBUGINFO 0
-#define EXTRACHECK 1
+#define EXTRACHECK 0
 
 #define STRICT_DESCRIPTIONS 0
 

@@ -32,8 +32,6 @@
 #ifndef RETRO_KCONTROLS
 #define RETRO_KCONTROLS
 
-#pragma warning( disable : 4786 )
-
 #include "kHIDID.h"
 #include "kUniqueID.h"
 

@@ -61,7 +61,7 @@ namespace module {
 				> *assoc
 		);
 
-		virtual file::kHandle< grfx::kFont > createNull();
+		virtual grfx::kFont *createNull();
 
 	public:
 

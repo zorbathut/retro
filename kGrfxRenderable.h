@@ -32,8 +32,6 @@
 #ifndef RETRO_KGRFXRENDERABLE
 #define RETRO_KGRFXRENDERABLE
 
-#pragma warning( disable : 4786 )
-
 namespace grfx {
 
 	class kRenderable;

@@ -29,6 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
+#error used?
+
 #ifndef RETRO_KGRFXWRITABLERASTER
 #define RETRO_KGRFXWRITABLERASTER
 
@@ -51,14 +53,13 @@ namespace grfx {
 		// drawing functions
 		virtual void drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &pos );
 		virtual void drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
-		virtual void drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count );
 		virtual void clear( kColor color );
 
 		kRaster      *getRaster();
 		kRasterConst *getRaster() const;
 
-		static void getUncroppedDimensions( const kPoint< INT32 > &offset, const kPoint< INT32 > &sourcesize, const kPoint< INT32 > &targetsize, kPoint< INT32 > *start, kPoint< INT32 > *end );
-		static void getCroppedDimensions( const kPoint< INT32 > &offset, const kPoint< INT32 > &sourcesize, const kPoint< INT32 > &targetsize, kPoint< INT32 > *start, kPoint< INT32 > *end );
+		void resetRaster( const kPoint< INT32 > &dim );
+		void resetRaster( const kPoint< INT32 > &dim, kColor *dat, INT32 pitch, bool owned = true );
 
 		// setup functions
 		kWritableRaster( const kPoint< INT32 > &dim );

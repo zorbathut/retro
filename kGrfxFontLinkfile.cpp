@@ -41,10 +41,6 @@ namespace grfx {
 	const kRenderable &kFontLinkfile::getRenderable() const {
 		return *renderable; };
 
-	int kFontLinkfile::getVerticalOffset() const {
-		return bounds->getVoffs();
-	};
-
 	void kFontLinkfile::init( const std::string &boundname, const std::string &rendername ) {
 		bounds = module::fontbounds.get( boundname );
 		renderable = module::finite.get( rendername );

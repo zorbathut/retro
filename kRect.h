@@ -56,14 +56,18 @@ public:
 
 	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
 
-	static kRect< kPrecision > makeBounds( kPoint< kPrecision > inp ) {
-		return kRect< kPrecision >( kPoint< kPrecision >( 0, 0 ), inp ); }
-
 };
 
-template< typename kPrecision > kPoint< kPrecision > makeRect( const kPrecision &l, const kPrecision &u,
+template< typename kPrecision > kRect< kPrecision > makeRect( const kPrecision &l, const kPrecision &u,
 															   const kPrecision &r, const kPrecision &d ) {
 	return kRect< kPrecision >( l, u, r, d ); };
+
+template< typename kPrecision > kRect< kPrecision > makeRect( const kPoint< kPrecision > &ul,
+															   const kPoint< kPrecision > &dr ) {
+	return kRect< kPrecision >( ul, dr ); };
+
+template< typename kPrecision > kRect< kPrecision > makeRect( const kPoint< kPrecision > &size ) {
+	return kRect< kPrecision >( makePoint< kPrecision >( 0, 0 ), size ); };
 
 template < typename kPrecision >
 std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {

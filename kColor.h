@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #ifndef RETRO_KCOLOR
 #define RETRO_KCOLOR
 
@@ -50,13 +48,13 @@ namespace grfx {
 		EXACTUINT32 argb;
 
 		struct {
-			BYTE a;
-			BYTE r;
-			BYTE g;
 			BYTE b;
+			BYTE g;
+			BYTE r;
+			BYTE a;
 		} split;
 
-		bool checkConsistency();	// evaluates to noop when not in debug, returns true
+		BYTE bytes[ 4 ];
 
 		kColor() { };				// this *should* auto-inline, but isn't. grrr.
 		kColor( const kColor &alt );
@@ -65,7 +63,40 @@ namespace grfx {
 
 	};	// alpha and RGB are perfectly normal in every way.
 
+	union kColorHSL {
+
+		EXACTUINT32 ahsl;
+
+		struct {
+			BYTE l;
+			BYTE s;
+			BYTE h;
+			BYTE a;
+		} split;
+
+		BYTE bytes[ 4 ];
+
+		kColorHSL() { };				// this *should* auto-inline, but isn't. grrr.
+		kColorHSL( const kColorHSL &alt );
+		kColorHSL( BYTE a, BYTE h, BYTE s, BYTE l );
+		kColorHSL( EXACTUINT32 in_ahsl );
+
+	};
+
 	std::ostream &operator<<( std::ostream &ostr, kColor inp );
+	std::ostream &operator<<( std::ostream &ostr, kColorHSL inp );
+
+	bool operator<( kColor lhs, kColor rhs );
+	bool operator<( kColorHSL lhs, kColorHSL rhs );
+
+	kColorHSL operator*( kColorHSL lhs, kColorHSL rhs );
+
+	namespace cutil {
+
+		kColor HSLtoRGB( kColorHSL hsl );
+		kColorHSL RGBtoHSL( kColor hsl );
+
+	};
 
 };
 

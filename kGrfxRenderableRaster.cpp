@@ -36,7 +36,12 @@
 namespace grfx {
 
 	const kPoint< INT32 > &kRenderableRaster::getDimensions( void ) const {
-		return getRaster()->getDimensions(); };
+		const kRasterConst *krc = getRaster();
+		if( krc )
+			return krc->getDimensions();
+		  else
+			return null::raster.getDimensions();
+	};
 
 	void kRenderableRaster::renderTo( kWritable *target, const kPoint< INT32 > &pos ) const {
 		target->drawRaster( getRaster(), pos ); };

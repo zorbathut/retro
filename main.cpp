@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #include <ctime>
 #include <cstdlib>
 
@@ -42,8 +40,16 @@
 #include "kGrfxRenderablePNG.h"
 #include "kMGrfxRenderableFinite.h"
 #include "kFileManager.h"
-#include "kMGrfxFont.h"
 #include "kMGrfxFontBoundaries.h"
+#include "kMGrfxFontHSL.h"
+#include "kMGrfxFont.h"
+#include "kMGrfxRenderableRaster.h"
+
+void gameInit( kStartupData *dte ) {
+	dte->minWindow = makePoint( 600, 400 );
+	dte->maxWindow = makePoint( 1024, 768 );
+	dte->startWindow = makePoint( 640, 480 );
+};
 
 bool initManager( kInterface *inter ) {		// return 1 on failure
 
@@ -60,6 +66,8 @@ bool initManager( kInterface *inter ) {		// return 1 on failure
 	module::finite.generate( g_manager );
 	module::font.generate( g_manager );
 	module::fontbounds.generate( g_manager );
+	module::fonthsl.generate( g_manager );
+	module::raster.generate( g_manager );
 	g_manager->prepare();
 
 	while( g_manager->getCurCycle() != g_manager->getCycles() ) {
@@ -98,9 +106,9 @@ void gameMain( kInterface *inter ) {
 
 	kMainShellStackhead mainstack( new kMainShellMenu );
 
-	INT64 freq = inter->getCounterFreq();
-	INT64 curframe = inter->getCounterPos();
-	INT64 lastsecond = inter->getCounterPos();
+	UINT64 freq = inter->getCounterFreq();
+	UINT64 curframe = inter->getCounterPos();
+	UINT64 lastsecond = inter->getCounterPos();
 	int skipped = 0;
 
 	freq /= tickspersec;	// how many ticks per, well, tick?
@@ -139,7 +147,7 @@ void gameMain( kInterface *inter ) {
 				inter->sleep( 1 );
 
 			grfx::kWritable *it = inter->lockBuffer();
-			it->clear( 0x00000000 );
+			it->clear( 0xff000000 );
 			mainstack.renderFrame( it );
 			int vert = 32;
 			char buf[ 1024 ];

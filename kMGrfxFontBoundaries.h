@@ -61,7 +61,7 @@ namespace module {
 				> *assoc
 		);
 
-		virtual file::kHandle< grfx::font::kBoundaries > createNull();
+		virtual grfx::font::kBoundaries *createNull();
 
 	public:
 

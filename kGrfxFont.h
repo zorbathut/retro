@@ -32,8 +32,6 @@
 #ifndef RETRO_KGRFXFONT
 #define RETRO_KGRFXFONT
 
-#pragma warning( disable : 4786 )
-
 namespace grfx {
 
 	class kFont;

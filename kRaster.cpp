@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #include "kRaster.h"
 
 #include "errlog.h"
@@ -55,13 +53,10 @@ namespace grfx {
 			return true;
 		} else {
 			readLockCount++;
-			locked->bounds.ul.x = 0;
-			locked->bounds.ul.y = 0;
-			locked->bounds.br = dimension;
-			locked->data = data.c;
+			locked->data = data.c + bounds.ul.x + bounds.ul.y * pitch;
 			locked->pitch = pitch;
 #if POSTDEBUGINFO
-			g_errlog << "RASTER: (debug) Succeeded readlock on " << textdesc() << " for " << bounds << " (got " << locked->bounds << ")" << std::endl;
+			g_errlog << "RASTER: (debug) Succeeded readlock on " << textdesc() << " for " << bounds << std::endl;
 #endif
 			// yeah yeah.
 			return false;
@@ -126,7 +121,7 @@ namespace grfx {
 			mark.push_back( !(*(itr->second))( parm ) );
 		};
 		std::vector< std::pair< kRect< INT32 >, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > > alter;
-		for( int i = 0; i < mark.size(); ++i ) {
+		for( size_t i = 0; i < mark.size(); ++i ) {
 			if( mark[ i ] )
 				alter.push_back( changeNotifies[ i ] );
 		}
@@ -151,10 +146,7 @@ namespace grfx {
 			return true;
 		} else {
 			disallowReadLock = true;
-			locked->bounds.ul.x = 0;
-			locked->bounds.ul.y = 0;
-			locked->bounds.br = dimension;
-			locked->data = data.nc;
+			locked->data = data.nc + bounds.ul.x + bounds.ul.y * pitch;
 			locked->pitch = pitch;
 #if POSTDEBUGINFO
 			g_errlog << "RASTER: (debug) Succeeded writelock on " << textdesc() << " for " << bounds << " (got " << locked->bounds << ")" << std::endl;
@@ -184,7 +176,7 @@ namespace grfx {
 	kRaster::kRaster( const kPoint< INT32 > &dim, kColor *dat, INT32 in_pitch, bool in_owned ) {
 		dimension = dim;
 		pitch = in_pitch;
-		owned = true;
+		owned = in_owned;
 		data.nc = dat;
 	};
 

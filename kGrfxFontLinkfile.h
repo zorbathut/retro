@@ -51,9 +51,7 @@ namespace grfx {
 		virtual const font::kBoundaries &getBounds() const;
 		virtual const kRenderable &getRenderable() const;
 
-		virtual int getVerticalOffset() const;
-
-		virtual void init( const std::string &boundname, const std::string &rendername );
+		void init( const std::string &boundname, const std::string &rendername );
 
 		virtual void activate();
 		virtual void deactivate();

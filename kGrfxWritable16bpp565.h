@@ -29,6 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
+#error Header disabled and obsolete, leaving it around in case I rebuild it.
+
 #ifndef RETRO_KGRFXWRITABLE16BPP565
 #define RETRO_KGRFXWRITABLE16BPP565
 
@@ -48,7 +50,6 @@ namespace grfx {
 		// drawing functions
 		virtual void drawRaster( const kRasterConst *rstr, const kPoint< INT32 > &loc );
 		virtual void drawRasterPart( const kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
-		virtual void drawPoints( const std::pair< kPoint< INT32 >, kColor > *pointArray, int count );
 		virtual void clear( kColor color );
 
 		// setup functions

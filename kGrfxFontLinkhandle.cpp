@@ -29,37 +29,53 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KGRFXRENDERABLEHSL
-#define RETRO_KGRFXRENDERABLEHSL
+#include "kGrfxFontLinkhandle.h"
+#include "kFileWrapped.h"
+#include "kFileHandle.h"
 
 namespace grfx {
 
-	class kRenderableHSL;
+	const font::kBoundaries &kFontLinkhandle::getBounds() const {
+		return *bounds; };
+	const kRenderable &kFontLinkhandle::getRenderable() const {
+		return *renderable; };
+
+	void kFontLinkhandle::activate() {
+		renderable.activate();
+		bounds.activate(); };
+
+	void kFontLinkhandle::deactivate() {
+		renderable.deactivate();
+		bounds.deactivate(); };
+
+	void kFontLinkhandle::request( int ticks ) {
+		renderable.request( ticks );
+		bounds.request( ticks ); };
+
+	void kFontLinkhandle::urgent() {
+		renderable.urgent();
+		bounds.urgent(); };
+
+	kFontLinkhandle::kFontLinkhandle( const file::kHandle< kRenderable > &render, const file::kHandle< font::kBoundaries > &bound ) :
+			renderable( render ), bounds( bound ) { };
+	kFontLinkhandle::~kFontLinkhandle() { };
+
+// TODO: dehackify.
+using file::kWrapped;
+	void kFontLinkhandle::describe( std::ostream &ostr ) const {
+		ostr << "fontlinkhandle (" << renderable->textdesc() << ", " << bounds->textdesc() << ")";
+		kFontRenderable::chaindown( ostr );
+		kWrapped::chaindown( ostr ); };
+
+	void kFontLinkhandle::chaindown( std::ostream &ostr ) const {
+		ostr << "(*final*-fontlinkhandle (" << renderable->textdesc() << ", " << bounds->textdesc() << "))";
+		kFontRenderable::chaindown( ostr );
+		kWrapped::chaindown( ostr ); };
+
+/*	private:
+		file::kHandle< kRenderable > renderable;
+		file::kHandle< font::kBoundaries > bounds;
+
+	};*/
 
 };
-
-#include "kGrfxRenderableFinite.h"
-#include "kGrfxWritable.h"
-
-namespace grfx {
-
-	class kRenderableHSL : public kRenderableRaster, public file::kBase {
-	public:
-
-		virtual const kRasterConst *getRaster() const = 0;
-
-		virtual const kPoint< INT32 > &getDimensions() const;
-
-		virtual void renderTo( kWritable *target, const kPoint< INT32 > &pos ) const;
-		virtual void renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kRect< INT32 > &bounds ) const;
-
-		kRenderableHSL( 
-
-		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
-	protected:  void chaindown( std::ostream &ostr ) const;
-
-	};
-
-};
-
-#endif

@@ -32,7 +32,7 @@
 #ifndef RETRO_ERRLOG
 #define RETRO_ERRLOG
 
-#pragma warning( disable : 985 )
+//#pragma warning( disable : 985 )
 
 #include <fstream>
 

@@ -50,15 +50,13 @@ namespace grfx {
 		virtual const font::kBoundaries &getBounds() const;
 		virtual const kRenderable &getRenderable() const;
 
-		virtual int getVerticalOffset() const;
-
 		virtual void activate();
 		virtual void deactivate();
 		virtual void request( int ticks );
 		virtual void urgent();
 
-		kFontLinkfile( const file::kHandle< kRenderable > &rendername, const file::kHandle< font::kBoundaries > &boundname );
-		virtual ~kFontLinkfile();
+		kFontLinkhandle( const file::kHandle< kRenderable > &render, const file::kHandle< font::kBoundaries > &bound );
+		virtual ~kFontLinkhandle();
 
 		virtual void describe( std::ostream &ostr ) const;
 	protected:  void chaindown( std::ostream &ostr ) const;

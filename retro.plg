@@ -1,0 +1,89 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: retro - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\zorba.MCP\LOCALS~1\Temp\RSP51F.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Documents and Settings\zorba.MCP\Desktop\werk\sea\zem\kColor.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\zorba.MCP\LOCALS~1\Temp\RSP51F.tmp" 
+Creating temporary file "C:\DOCUME~1\zorba.MCP\LOCALS~1\Temp\RSP520.tmp" with contents
+[
+libpngd.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/retro.pdb" /debug /machine:I386 /out:"Debug/retro.exe" /pdbtype:sept 
+".\Debug\errlog.obj"
+".\Debug\kDescribable.obj"
+".\Debug\main.obj"
+".\Debug\dx8util.obj"
+".\Debug\kWritableD3D.obj"
+".\Debug\win32_hidid.obj"
+".\Debug\kInterfaceWin32.obj"
+".\Debug\kGrfxFont.obj"
+".\Debug\kGrfxFontBoundaries.obj"
+".\Debug\kGrfxFontBoundariesFile.obj"
+".\Debug\kGrfxFontHSL.obj"
+".\Debug\kGrfxFontHSLFilerb.obj"
+".\Debug\kGrfxFontHSLNull.obj"
+".\Debug\kGrfxFontLinkfile.obj"
+".\Debug\kGrfxFontLinkhandle.obj"
+".\Debug\kGrfxFontNull.obj"
+".\Debug\kGrfxFontRenderable.obj"
+".\Debug\kColor.obj"
+".\Debug\kGrfxRenderable.obj"
+".\Debug\kGrfxRenderableFinite.obj"
+".\Debug\kGrfxRenderableFiniteNull.obj"
+".\Debug\kGrfxRenderablePNG.obj"
+".\Debug\kGrfxRenderableRaster.obj"
+".\Debug\kGrfxRenderableRasterHSL.obj"
+".\Debug\kGrfxUtil.obj"
+".\Debug\kGrfxWritable.obj"
+".\Debug\kGrfxWritable16bpp.obj"
+".\Debug\kGrfxWritable16bpp565.obj"
+".\Debug\kGrfxWritableRaster.obj"
+".\Debug\kRaster.obj"
+".\Debug\kFileBase.obj"
+".\Debug\kFileBaseNull.obj"
+".\Debug\kFileBaseOneshot.obj"
+".\Debug\kFileGeneratable.obj"
+".\Debug\kFileManager.obj"
+".\Debug\kFileUtil.obj"
+".\Debug\kFileWrapped.obj"
+".\Debug\kFileWrappedFile.obj"
+".\Debug\kFileWrappedNode.obj"
+".\Debug\kFileWrappedNull.obj"
+".\Debug\kMainShell.obj"
+".\Debug\kMainShellMenu.obj"
+".\Debug\kMainShellStackhead.obj"
+".\Debug\kMGrfxFont.obj"
+".\Debug\kMGrfxFontBoundaries.obj"
+".\Debug\kMGrfxFontHSL.obj"
+".\Debug\kMGrfxRenderableFinite.obj"
+".\Debug\kMGrfxRenderableRaster.obj"
+".\Debug\hididConsts.obj"
+".\Debug\kHIDID.obj"
+".\Debug\kControls.obj"
+".\Debug\kControlsOpen.obj"
+".\Debug\kUniqueID.obj"
+".\Debug\kGrfxRenderableRasterNull.obj"
+".\libpngd.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\zorba.MCP\LOCALS~1\Temp\RSP520.tmp"
+<h3>Output Window</h3>
+Compiling...
+kColor.cpp
+Spawn Time 0:00.3
+Linking...
+Spawn Time 0:00.1
+
+
+
+<h3>Results</h3>
+retro.exe - 0 error(s), 0 warning(s)
+Build Time 0:00.6
+</pre>
+</body>
+</html>

@@ -32,8 +32,6 @@
 #ifndef RETRO_KWRITABLED3D
 #define RETRO_KWRITABLED3D
 
-#pragma warning( disable : 4786 )
-
 #include <d3d8.h>
 #include <map>
 #include "kGrfxWritable.h"
@@ -80,7 +78,9 @@ public:
 	// drawing functions
 	virtual void drawRaster( const grfx::kRasterConst *rstr, const kPoint< INT32 > &loc );
 	virtual void drawRasterPart( const grfx::kRasterConst *rstr, const kPoint< INT32 > &loc, const kPoint< INT32 > &start, const kPoint< INT32 > &end );
-	virtual void drawPoints( const std::pair< kPoint< INT32 >, grfx::kColor > *pointArray, int count );
+	
+	virtual void drawRect( const kRect< INT32 > &pos, grfx::kColor color );
+
 	virtual void clear( grfx::kColor color );
 
 	// setup functions
@@ -89,6 +89,8 @@ public:
 
 	void start();
 	void end();
+
+	void cleartexes();
 
 	virtual void describe( std::ostream &ostr ) const;
 protected:  void chaindown( std::ostream &ostr ) const;
@@ -109,7 +111,8 @@ private:
 
 	kWritableD3DDestructFunctor df;
 
-	IDirect3DVertexBuffer8 *vbuff;
+	IDirect3DVertexBuffer8 *texbuff;
+	IDirect3DVertexBuffer8 *rectbuff;
 
 	kPoint< INT32 > maxTex;
 	int maxTexAspect;

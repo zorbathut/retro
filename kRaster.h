@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #ifndef RETRO_KRASTER
 #define RETRO_KRASTER
 
@@ -129,15 +127,21 @@ namespace grfx {
 	};
 
 	class kLockedRead {
-	public:
+		friend kRaster;
+	private:
 		kRect< INT32 > bounds;
+		// currently only supplied for identification of which lock it is
+	public:
 		const kColor *data;
 		INT32 pitch;
 	};
 
 	class kLockedWrite {
-	public:
+		friend kRaster;
+	private:
 		kRect< INT32 > bounds;
+		// currently only supplied for identification of which lock it is
+	public:
 		kColor *data;
 		INT32 pitch;
 	};

@@ -53,7 +53,7 @@ namespace grfx {
 			setVoffs( offs );
 
 			while( ifs >> c >> dat.bounds.ul.x >> dat.bounds.ul.y >> dat.bounds.br.x >> dat.bounds.br.y >> dat.offset.x >> dat.offset.y >> dat.spacing ) {
-				set( c, dat );
+				set( unsigned char( c ), dat );
 			};
 
 			state = READY;

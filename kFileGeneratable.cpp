@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#pragma warning( disable : 4786 )
-
 #include "kFileBase.h"
 
 #include <iostream>
@@ -54,8 +52,8 @@ namespace file {
 			fail = "*UNKNOWN*";
 		};
 
-		const std::string &get( kGeneratable::eState stat ) const {
-			std::map< kGeneratable::eState, std::string >::const_iterator fnd = mep.find( stat );
+		const std::string &get( kGeneratable::eState state ) const {
+			std::map< kGeneratable::eState, std::string >::const_iterator fnd = mep.find( state );
 			if( fnd == mep.end() )
 				return fail;
 			return fnd->second;
