@@ -31,6 +31,9 @@
 
 #include "kControls.h"
 
+#include "errlog.h"
+#include "config.h"
+
 BYTE kControls::getButton( int num ) const {
 	return buttons[ num ]; };
 INT32 kControls::getAxis( int num ) const {
@@ -41,15 +44,10 @@ int kControls::getButtoncount() const {
 int kControls::getAxiscount() const {
 	return axiscount; };
 
-const zutil::kString &kControls::getButtonlabel( int num ) const {
-	return buttonlabels[ num ]; };
-const zutil::kString &kControls::getAxislabel( int num ) const {
-	return axislabels[ num ]; };
-
-const kDevicespecs &kControls::getButtondev( int num ) const {
-	return *buttondevs[ num ]; };
-const kDevicespecs &kControls::getAxisdev( int num ) const {
-	return *axisdevs[ num ]; };
+const control::kObjectspecs &kControls::getButtoninfo( int num ) const {
+	return buttoninfos[ num ]; };
+const control::kObjectspecs &kControls::getAxisinfo( int num ) const {
+	return axisinfos[ num ]; };
 
 BYTE *kControls::accessButtons() {
 	return buttons; };
@@ -58,49 +56,79 @@ INT32 *kControls::accessAxes() {
 
 void kControls::setButtoncount( int newcount ) {
 	delete [] buttons;
-	delete [] buttonlabels;
-	delete [] buttondevs;
+	delete [] buttoninfos;
 	buttons = new BYTE[ newcount ];
-	buttonlabels = new zutil::kString[ newcount ];
-	buttondevs = new const kDevicespecs*[ newcount ];
+	buttoninfos = new control::kObjectspecs[ newcount ];
 	buttoncount = newcount;
 };
 
 void kControls::setAxiscount( int newcount ) {
 	delete [] axes;
-	delete [] axislabels;
-	delete [] axisdevs;
+	delete [] axisinfos;
 	axes = new INT32[ newcount ];
-	axislabels = new zutil::kString[ newcount ];
-	axisdevs = new const kDevicespecs*[ newcount ];
+	axisinfos = new control::kObjectspecs[ newcount ];
 	axiscount = newcount;
 };
 
-zutil::kString *kControls::accessButtonlabels() {
-	return buttonlabels; }
-zutil::kString *kControls::accessAxislabels() {
-	return axislabels; };
+control::kObjectspecs *kControls::accessButtoninfo() {
+	return buttoninfos; }
+control::kObjectspecs *kControls::accessAxisinfo() {
+	return axisinfos; };
 
-const kDevicespecs **kControls::accessButtondevs() {
-	return buttondevs; }
-const kDevicespecs **kControls::accessAxisdevs() {
-	return axisdevs; };
+void kControls::rebuildFindLists() {
+
+	axisDevid.clear();
+	buttonDevid.clear();
+
+	axisHidid.clear();
+	buttonHidid.clear();
+
+	int i;
+	for( i = 0; i < getAxiscount(); i++ ) {
+		if( getAxisinfo( i ).hidid.valid() ) {
+			if( axisHidid.find( getAxisinfo( i ).hidid ) != axisHidid.end() ) {
+				int old = axisHidid[ getAxisinfo( i ).hidid ];
+				g_errlog << "CONTROL: Axis HIDID conflict for \"" << getAxisinfo( old ).dev->name.get() << "," << getAxisinfo( old ).name.get() << "\" and \"" << getAxisinfo( i ).dev->name.get() << "," << getAxisinfo( i ).name.get() << "\"" << std::endl;
+			}
+			axisHidid[ getAxisinfo( i ).hidid ] = i;
+		} else {
+#if POSTDEBUGINFO
+			g_errlog << "CONTROL: (debug) No provided HIDID for axis \"" << getAxisinfo( i ).dev->name.get() << "," << getAxisinfo( i ).name.get() << "\"" << std::endl;
+#endif
+		}
+		axisDevid[ getButtoninfo( i ).getKeyDevId() ] = i;
+	}
+
+	for( i = 0; i < getButtoncount(); i++ ) {
+		if( getButtoninfo( i ).hidid.valid() ) {
+			if( buttonHidid.find( getButtoninfo( i ).hidid ) != buttonHidid.end() ) {
+				int old = buttonHidid[ getButtoninfo( i ).hidid ];
+				g_errlog << "CONTROL: Button HIDID conflict for \"" << getButtoninfo( old ).dev->name.get() << "," << getButtoninfo( old ).name.get() << "\" and \"" << getButtoninfo( i ).dev->name.get() << "," << getButtoninfo( i ).name.get() << "\"" << std::endl;
+			}
+			buttonHidid[ getButtoninfo( i ).hidid ] = i;
+		} else {
+#if POSTDEBUGINFO
+			g_errlog << "CONTROL: (debug) No provided HIDID for button \"" << getButtoninfo( i ).dev->name.get() << "," << getButtoninfo( i ).name.get() << "\"" << std::endl;
+#endif
+		}
+		buttonDevid[ getButtoninfo( i ).getKeyDevId() ] = i;
+	}
+
+};
 
 kControls::kControls( int in_buttons, int in_axes ) :
 		buttons( new BYTE[ in_buttons ] ),
-		buttonlabels( new zutil::kString[ in_buttons ] ),
-		buttondevs( new const kDevicespecs*[ in_buttons ] ),
+		buttoninfos( new control::kObjectspecs[ in_buttons ] ),
 		buttoncount( in_buttons ),
 		axes( new INT32[ in_axes ] ),
-		axislabels( new zutil::kString[ in_axes ] ),
-		axisdevs( new const kDevicespecs*[ in_axes ] ),
+		axisinfos( new control::kObjectspecs[ in_axes ] ),
 		axiscount( in_axes )
 	{ };
 
 		
 kControls::~kControls() {
 	delete [] buttons;
-	delete [] buttonlabels;
+	delete [] buttoninfos;
 	delete [] axes;
-	delete [] axislabels;
+	delete [] axisinfos;
 };

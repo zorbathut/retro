@@ -142,14 +142,23 @@ void gameMain( kInterface *inter ) {
 			char buf[ 1024 ];
 			int x;
 			for( x = 0; x < controls->getAxiscount(); x++ ) {
-				sprintf( buf, "%s: %s: %d", controls->getAxisdev( x ).name.get(), controls->getAxislabel( x ).get(), controls->getAxis( x ) );
+				sprintf( buf, "%s: %s (%d, %d): %d", controls->getAxisinfo( x ).dev->name.get(), controls->getAxisinfo( x ).name.get(), controls->getAxisinfo( x ).hidid.getPage(), controls->getAxisinfo( x ).hidid.getItem(), controls->getAxis( x ) );
 				fnt->renderText( it, buf, kPoint< INT32 >( 0, vert ) );
 				vert += fnt->getVerticalOffset();
 			};
 			vert += fnt->getVerticalOffset();
 			for( x = 0; x < controls->getButtoncount(); x++ ) {
-				if( controls->getButton( x ) & keyis::down ) {
-					sprintf( buf, "%s: %s", controls->getButtondev( x ).name.get(), controls->getButtonlabel( x ).get() );
+				if( controls->getButton( x ) != keyis::up ) {
+					sprintf( buf, "%s: %s (%c%c%c%c%c) (%d, %d)",
+						controls->getButtoninfo( x ).dev->name.get(),
+						controls->getButtoninfo( x ).name.get(),
+						( controls->getButton( x ) & keyis::up ) ? 'U' : ' ',
+						( controls->getButton( x ) & keyis::down ) ? 'D' : ' ',
+						( controls->getButton( x ) & keyis::push ) ? 'P' : ' ',
+						( controls->getButton( x ) & keyis::release ) ? 'R' : ' ',
+						( controls->getButton( x ) & keyis::change ) ? 'C' : ' ',
+						controls->getButtoninfo( x ).hidid.getPage(),
+						controls->getButtoninfo( x ).hidid.getItem() );
 					fnt->renderText( it, buf, kPoint< INT32 >( 0, vert ) );
 					vert += fnt->getVerticalOffset();
 				}

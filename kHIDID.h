@@ -29,74 +29,35 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KFILEMANAGER
-#define RETRO_KFILEMANAGER
+#ifndef RETRO_KHIDID
+#define RETRO_KHIDID
 
-#pragma warning( disable : 4786 )
-
-namespace file {
-
-	class kManager;
-
-}
-
-#include "kString.h"
-#include "kFunctor.h"
 #include "types.h"
-#include "butility.h"
 
-#include "kFileWrapped.h"
-#include "kFileBase.h"
+class kHidid {
+private:
 
-#include <vector>
+	UINT16 page;
+	UINT16 item;
 
-namespace file {
+public:
 
-	class kManager : private boost::noncopyable {
-	public:
+	UINT16 getPage() const;
+	UINT16 getItem() const;
+	UINT32 getFull() const;
 
-		void prepare( void );
+	bool valid() const;
 
-		int getCycles( void ) const;
-		int getCurCycle( void ) const;
-		void doCycles( int count );
-
-		void complete( void );
-
-		void tick( void );
-
-		kManager();		// yep, you can make more than one. Not recommended tho. Like that'll stop ya.
-		~kManager();
-
-		void addInterface( kWrapped *nter );
-		void addRaw( kBase *bse );
-
-		void addLoader( zutil::kFunctor< RVOID, kManager * > *ldr );
-
-		bool isComplete() const;
-
-		void activateWrapped( file::kWrapped *wrp );
-		void removeWrapped( file::kWrapped *wrp );
-
-	private:
-
-		void wipeRemovals();
-
-		std::vector< kWrapped * > active;
-		std::vector< kWrapped * > removals;
-
-		std::vector< kWrapped * > interfaces;
-		std::vector< kBase * > raws;
-
-		std::vector< zutil::kFunctor< RVOID, kManager * > * > loador;
-		std::vector< zutil::kFunctor< RVOID, kManager * > * >::iterator curl;
-
-		bool completed;
-
-	};
+	kHidid();
+	kHidid( UINT16 page, UINT16 item );
 
 };
 
-extern file::kManager *g_manager;
+bool operator< ( const kHidid &a, const kHidid &b );
+bool operator<=( const kHidid &a, const kHidid &b );
+bool operator> ( const kHidid &a, const kHidid &b );
+bool operator>=( const kHidid &a, const kHidid &b );
+bool operator==( const kHidid &a, const kHidid &b );
+bool operator!=( const kHidid &a, const kHidid &b );
 
 #endif

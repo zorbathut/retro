@@ -45,11 +45,10 @@ public:
 	void setButtoncount( int newcount );
 	void setAxiscount( int newcount );
 
-	zutil::kString *accessButtonlabels();
-	zutil::kString *accessAxislabels();
+	control::kObjectspecs *accessButtoninfo();
+	control::kObjectspecs *accessAxisinfo();
 
-	const kDevicespecs **accessButtondevs();
-	const kDevicespecs **accessAxisdevs();
+	void rebuildFindLists();
 
 	kControlsOpen( int buttons, int axes );
 

@@ -29,74 +29,11 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KFILEMANAGER
-#define RETRO_KFILEMANAGER
+#ifndef RETRO_WIN32_HIDID
+#define RETRO_WIN32_HIDID
 
-#pragma warning( disable : 4786 )
+#include "kHidid.h"
 
-namespace file {
-
-	class kManager;
-
-}
-
-#include "kString.h"
-#include "kFunctor.h"
-#include "types.h"
-#include "butility.h"
-
-#include "kFileWrapped.h"
-#include "kFileBase.h"
-
-#include <vector>
-
-namespace file {
-
-	class kManager : private boost::noncopyable {
-	public:
-
-		void prepare( void );
-
-		int getCycles( void ) const;
-		int getCurCycle( void ) const;
-		void doCycles( int count );
-
-		void complete( void );
-
-		void tick( void );
-
-		kManager();		// yep, you can make more than one. Not recommended tho. Like that'll stop ya.
-		~kManager();
-
-		void addInterface( kWrapped *nter );
-		void addRaw( kBase *bse );
-
-		void addLoader( zutil::kFunctor< RVOID, kManager * > *ldr );
-
-		bool isComplete() const;
-
-		void activateWrapped( file::kWrapped *wrp );
-		void removeWrapped( file::kWrapped *wrp );
-
-	private:
-
-		void wipeRemovals();
-
-		std::vector< kWrapped * > active;
-		std::vector< kWrapped * > removals;
-
-		std::vector< kWrapped * > interfaces;
-		std::vector< kBase * > raws;
-
-		std::vector< zutil::kFunctor< RVOID, kManager * > * > loador;
-		std::vector< zutil::kFunctor< RVOID, kManager * > * >::iterator curl;
-
-		bool completed;
-
-	};
-
-};
-
-extern file::kManager *g_manager;
+kHidid getHidid( const char *dev, const char *key );
 
 #endif

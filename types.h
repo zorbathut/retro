@@ -51,4 +51,7 @@ typedef void *RVOID;		// is void if compiler supports returning void in a functi
 #define FAKEVOIDRETURN
 #define RVOIDVAL NULL		// should be defined as nothing if it can really deal properly
 
+const int DEVUNIQUEIDSIZE = 16;
+const int KEYUNIQUEIDSIZE = 2;
+
 #endif

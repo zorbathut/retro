@@ -32,11 +32,16 @@
 #ifndef RETRO_KCONTROLS
 #define RETRO_KCONTROLS
 
-class kControls;
+#pragma warning( disable : 4786 )
+
+#include "kHIDID.h"
+#include "kString.h"
+#include "kUniqueID.h"
 
 #include "types.h"
 #include "butility.h"
-#include "kString.h"
+
+#include <map>
 
 namespace keyis {
 
@@ -48,12 +53,32 @@ namespace keyis {
 
 }; // deal :P
 
-class kDevicespecs  {
-public:
+namespace control {
 
-	zutil::kString name;
+	class kDevicespecs  {
+	public:
 
-};	// okay, yes. shut up :P
+		zutil::kString name;
+		kUniqueDevId uid;
+		int axes;
+		int buttons;
+
+	};
+
+	class kObjectspecs {
+	public:
+
+		zutil::kString name;
+		kHidid hidid;
+		kUniqueKeyId uid;
+		const kDevicespecs *dev;
+
+		kUniqueKeyDevId getKeyDevId() const {
+			return kUniqueKeyDevId( dev->uid, uid ); };
+
+	};
+
+};
 
 class kControls : private boost::noncopyable {
 public:
@@ -64,11 +89,14 @@ public:
 	int getButtoncount() const;
 	int getAxiscount() const;
 
-	const zutil::kString &getButtonlabel( int num ) const;
-	const zutil::kString &getAxislabel( int num ) const;			// so I can reimplement these at some point
+	const control::kObjectspecs &getButtoninfo( int num ) const;
+	const control::kObjectspecs &getAxisinfo( int num ) const;			// so I can reimplement these at some point
 
-	const kDevicespecs &getButtondev( int num ) const;
-	const kDevicespecs &getAxisdev( int num ) const;
+	int findAxis( const kUniqueKeyDevId &devid ) const;
+	int findAxis( const kHidid &devid ) const;
+
+	int findButton( const kUniqueKeyDevId &devid ) const;
+	int findButton( const kHidid &devid ) const;	// all of these return -1 on failure
 
 protected:
 
@@ -79,11 +107,10 @@ protected:
 	void setButtoncount( int newcount );
 	void setAxiscount( int newcount );
 
-	zutil::kString *accessButtonlabels();
-	zutil::kString *accessAxislabels();
+	control::kObjectspecs *accessButtoninfo();
+	control::kObjectspecs *accessAxisinfo();
 
-	const kDevicespecs **accessButtondevs();
-	const kDevicespecs **accessAxisdevs();
+	void rebuildFindLists();
 
 	kControls( int buttons, int axes );
 	virtual ~kControls();
@@ -93,14 +120,17 @@ private:
 	BYTE *buttons;
 	INT32 *axes;
 
-	zutil::kString *buttonlabels;
-	zutil::kString *axislabels;
-
-	const kDevicespecs **buttondevs;
-	const kDevicespecs **axisdevs;
+	control::kObjectspecs *buttoninfos;
+	control::kObjectspecs *axisinfos;
 
 	int buttoncount;
 	int axiscount;
+
+	std::map< kUniqueKeyDevId, int > axisDevid;
+	std::map< kUniqueKeyDevId, int > buttonDevid;
+
+	std::map< kHidid, int > axisHidid;
+	std::map< kHidid, int > buttonHidid;
 
 };
 

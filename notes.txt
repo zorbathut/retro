@@ -3,15 +3,23 @@ much of what's in here is obsolete or worse. Read at your own risk.
 
 turbo nutter bastard todo:
 
+add HIDs for all devices (or as many as I can manage)
+reverse HID lookup
 some sort of lock for raws to make sure they don't get doublerequested (debug only)
 require all graphics to be returned! only keep track in debug. null function in release.
 (add this NOW, while I can)
-all those descriptions :P
+more descriptions :P
 gfx engine mark 3 - run over 3d
 file engine mark 3 - set priorities for requests (muchmuch later)
 
 
 
+Everything below this is probably wrong.
+
+errlog format:
+
+MODULE: otherstuff
+MODULE: (debug) otherstuff
 
 grfx process:
 

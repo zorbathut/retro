@@ -71,6 +71,7 @@ namespace grfx {
 
 		virtual void describe( std::ostream &ostr ) const;
 	protected:  void chaindown( std::ostream &ostr ) const;
+	private:	void chaindo( std::ostream &ostr ) const;
 	public:
 		kOutputtoken textdesc() const;	// activate de-ambiguification ray!
 										// it's ugly and I don't like it. sigh.

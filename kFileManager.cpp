@@ -65,13 +65,19 @@ namespace file {
 		for( std::vector< kWrapped * >::iterator titr = active.begin(); titr != active.end(); ++titr )
 			(*titr)->tick();
 
+		wipeRemovals();
+
+	};
+
+	void kManager::wipeRemovals() {
+
 		for( std::vector< kWrapped * >::iterator ritr = removals.begin(); ritr != removals.end(); ++ritr ) {
 			std::vector< kWrapped * >::iterator find = std::find( active.begin(), active.end(), *ritr );
 			if( find == active.end() )
-				g_errlog << "Couldn't find \"" << (*ritr)->textdesc() << "\" in activated list" << std::endl;
+				g_errlog << "GMANAGER: Couldn't find \"" << (*ritr)->textdesc() << "\" in activated list" << std::endl;
 			  else {
 #if POSTDEBUGINFO
-				g_errlog << "Removing \"" << (*ritr)->textdesc() << "\" from activated list" << std::endl;
+				g_errlog << "GMANAGER: (debug) Removing \"" << (*ritr)->textdesc() << "\" from activated list" << std::endl;
 #endif
 				active.erase( find );
 			}
@@ -84,6 +90,7 @@ namespace file {
 	kManager::~kManager() {
 		if( !completed )
 			complete();
+		wipeRemovals();
 		std::vector< kWrapped * >::iterator iitr;
 		std::vector< kBase * >::iterator ritr;
 		for( iitr = interfaces.begin(); iitr != interfaces.end(); ++iitr )
@@ -110,9 +117,9 @@ namespace file {
 	void kManager::activateWrapped( file::kWrapped *wrp ) {
 #if POSTDEBUGINFO
 		if( std::find( active.begin(), active.end(), wrp ) != active.end() ) {
-			g_errlog << "Already found \"" << wrp->textdesc() << "\" in activated list" << std::endl;
+			g_errlog << "GMANAGER: (debug) Already found \"" << wrp->textdesc() << "\" in activated list" << std::endl;
 		} else {
-			g_errlog << "Adding \"" << wrp->textdesc() << "\" to activated list" << std::endl;
+			g_errlog << "GMANAGER: (debug) Adding \"" << wrp->textdesc() << "\" to activated list" << std::endl;
 #endif
 			active.push_back( wrp );
 #if POSTDEBUGINFO
@@ -122,7 +129,7 @@ namespace file {
 
 	void kManager::removeWrapped( file::kWrapped *wrp ) {
 #if POSTDEBUGINFO
-		g_errlog << "Adding removal for \"" << wrp->textdesc() << "\"" << std::endl;
+		g_errlog << "GMANAGER: (debug) Adding removal for \"" << wrp->textdesc() << "\"" << std::endl;
 #endif
 		removals.push_back( wrp );
 	};

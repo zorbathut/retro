@@ -32,6 +32,7 @@
 // this file is one colossal hack.
 
 #pragma warning( disable : 4786 )
+#pragma warning( disable : 4800 )	// bool performance warning
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -49,9 +50,12 @@
 #include "config.h"
 #include "kControlsOpen.h"
 #include "dx8util.h"
+#include "hididConsts.h"
+#include "win32_hidid.h"
 // There's nothing slow about this at all.
 
 HWND hWnd; // oh bugger off :P
+const int bufferarray = 16; // size of the buffered data
 
 class kInputDevice : private boost::noncopyable {
 public:
@@ -59,7 +63,7 @@ public:
 	int getButtoncount() const;
 	int getAxiscount() const;
 
-	void getLabels( zutil::kString **butts, const kDevicespecs ***bdev, zutil::kString **axes, const kDevicespecs ***adev );
+	void getLabels( control::kObjectspecs **butts, control::kObjectspecs **axes );
 
 	void getData( BYTE **buttons, INT32 **axes );	// increments pointers, too.
 
@@ -75,7 +79,10 @@ private:
 
 	IDirectInputDevice8 *dev;
 
-	kDevicespecs devspecs;
+	control::kDevicespecs devspecs;
+
+	bool polling;
+	bool acquired;
 
 };
 
@@ -417,10 +424,15 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 BOOL CALLBACK devenumcallback( const DIDEVICEINSTANCE *lpddi, void *pvRef ) {
 	std::pair< IDirectInput8 *, std::vector< kInputDevice * > * > *inputs = reinterpret_cast< std::pair< IDirectInput8 *, std::vector< kInputDevice * > * > * >( pvRef );
 
-	IDirectInputDevice8 *leapdi;
+	if( strcmp( lpddi->tszInstanceName, "USB Mouse" ) ) {
+		// TODO: work on this :/
 
-	inputs->first->CreateDevice( lpddi->guidInstance, &leapdi, NULL );
-	inputs->second->push_back( new kInputDevice( leapdi ) );
+		IDirectInputDevice8 *leapdi;
+
+		inputs->first->CreateDevice( lpddi->guidInstance, &leapdi, NULL );
+		inputs->second->push_back( new kInputDevice( leapdi ) );
+
+	};
 
 	return DIENUM_CONTINUE;
 };
@@ -460,8 +472,9 @@ bool kInterfaceWin32::init( void ) {
 		if( !FAILED( D3D->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3ddm.Format, *testitr, TRUE ) ) ) {
 			bbfmt = *testitr;
 			char buffer[ 80 ];
-			sprintf( buffer, "Using frontbuffer %d, backbuffer %d, HAL", d3ddm.Format, bbfmt );
-			MessageBox( NULL, buffer, "Info", NULL );
+			sprintf( buffer, "WIN32: Using frontbuffer %d, backbuffer %d, HAL", d3ddm.Format, bbfmt );
+			//MessageBox( NULL, buffer, "Info", NULL );
+			g_errlog << buffer << std::endl;
 			hal = true;
 			break;
 		}
@@ -474,8 +487,9 @@ bool kInterfaceWin32::init( void ) {
 			if( !FAILED( D3D->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, d3ddm.Format, *testitr, TRUE ) ) ) {
 				bbfmt = *testitr;
 				char buffer[ 80 ];
-				sprintf( buffer, "Using frontbuffer %d, backbuffer %d, REF", d3ddm.Format, bbfmt );
-				MessageBox( NULL, buffer, "Info", NULL );
+				sprintf( buffer, "WIN32: Using frontbuffer %d, backbuffer %d, REF", d3ddm.Format, bbfmt );
+				//MessageBox( NULL, buffer, "Info", NULL );
+				g_errlog << buffer << std::endl;
 				hal = false;
 				break;
 			}
@@ -483,22 +497,26 @@ bool kInterfaceWin32::init( void ) {
 		}
 		if( bbfmt == D3DFMT_UNKNOWN ) {
 			char buffer[ 80 ];
-			sprintf( buffer, "Couldn't find usable backbuffer format for %d", d3ddm.Format );
-			MessageBox( NULL, buffer, "Critical error", NULL );
+			sprintf( buffer, "WIN32: Couldn't find usable backbuffer format for %d", d3ddm.Format );
+			//MessageBox( NULL, buffer, "Info", NULL );
+			g_errlog << buffer << std::endl;
+			MessageBox( NULL, "Couldn't find usable screen mode", "Critical error", NULL );
 			int i;
 			for( i = 0; i < 100; i++ ) {
 				if( !FAILED( D3D->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3ddm.Format, (D3DFORMAT)i, TRUE ) ) ) {
 					char buffer[ 80 ];
-					sprintf( buffer, "Found frontbuffer %d, backbuffer %d, HAL", d3ddm.Format, i );
-					MessageBox( NULL, buffer, "Info", NULL );
+					sprintf( buffer, "WIN32: Found frontbuffer %d, backbuffer %d, HAL", d3ddm.Format, i );
+					//MessageBox( NULL, buffer, "Info", NULL );
+					g_errlog << buffer << std::endl;
 				}
 				testitr++;
 			}
 			for( i = 0; i < 100; i++ ) {
 				if( !FAILED( D3D->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, d3ddm.Format, (D3DFORMAT)i, TRUE ) ) ) {
 					char buffer[ 80 ];
-					sprintf( buffer, "Found frontbuffer %d, backbuffer %d, REF", d3ddm.Format, i );
-					MessageBox( NULL, buffer, "Info", NULL );
+					sprintf( buffer, "WIN32: Found frontbuffer %d, backbuffer %d, REF", d3ddm.Format, i );
+					//MessageBox( NULL, buffer, "Info", NULL );
+					g_errlog << buffer << std::endl;
 				}
 				testitr++;
 			}
@@ -556,7 +574,7 @@ bool kInterfaceWin32::init( void ) {
 		}
 
 		D3D->Release();
-		return true;
+		return true;		// TODO: make errors make entries in the errlog
 	}
 
 	HRESULT hr; 
@@ -587,14 +605,13 @@ bool kInterfaceWin32::init( void ) {
 	controls.setButtoncount( buttoncount );
 	controls.setAxiscount( axiscount );
 
-	zutil::kString *buttonlabels = controls.accessButtonlabels();
-	zutil::kString *axislabels = controls.accessAxislabels();
-
-	const kDevicespecs **bdevs = controls.accessButtondevs();
-	const kDevicespecs **adevs = controls.accessAxisdevs();
+	control::kObjectspecs *buttoninfos = controls.accessButtoninfo();
+	control::kObjectspecs *axisinfos = controls.accessAxisinfo();
 
 	for( itr = inputs.begin(); itr != inputs.end(); ++itr ) {
-		(*itr)->getLabels( &buttonlabels, &bdevs, &axislabels, &adevs ); };
+		(*itr)->getLabels( &buttoninfos, &axisinfos ); };
+
+	controls.rebuildFindLists();
 
 	starting = false;
 
@@ -694,30 +711,50 @@ int kInputDevice::getAxiscount() const {
 
 BOOL CALLBACK ncback( const DIDEVICEOBJECTINSTANCE *lpddoi, void *pvRef ) {
 
-	std::pair< zutil::kString **, zutil::kString ** > *det = (std::pair< zutil::kString **, zutil::kString ** > *)pvRef;
+	std::pair< std::pair< control::kObjectspecs **, control::kObjectspecs ** >, control::kDevicespecs * > *det = (std::pair< std::pair< control::kObjectspecs **, control::kObjectspecs ** >, control::kDevicespecs * > *)pvRef;
 
-	if( lpddoi->dwType & DIDFT_BUTTON )
-		((*det->first)++)->set( lpddoi->tszName );
+	if( lpddoi->dwType & DIDFT_BUTTON ) {
+		unsigned short uid = DIDFT_GETINSTANCE( lpddoi->dwType );
+		(*det->first.first)->name.set( lpddoi->tszName );
+		(*det->first.first)->hidid = kHidid( lpddoi->wUsagePage, lpddoi->wUsage );
+		(*det->first.first)->uid = kUniqueKeyId( (const char *)&uid );
+		(*det->first.first)->dev = det->second;
+		if( !(*det->first.first)->hidid.valid() ) {
+			(*det->first.first)->hidid = getHidid( det->second->name.get(), lpddoi->tszName );
+			g_errlog << "CONTROL: Found HIDID for button \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
+		} else {
+			g_errlog << "CONTROL: Provided HIDID for button \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.first)->hidid.getPage() << ", " << (*det->first.first)->hidid.getItem() << ")" << std::endl;
+		}
+		(*det->first.first)++;
+	};
 
-	if( lpddoi->dwType & DIDFT_AXIS )
-		((*det->second)++)->set( lpddoi->tszName );
+	if( lpddoi->dwType & DIDFT_AXIS ) {
+		unsigned short uid = DIDFT_GETINSTANCE( lpddoi->dwType );
+		(*det->first.second)->name.set( lpddoi->tszName );
+		(*det->first.second)->hidid = kHidid( lpddoi->wUsagePage, lpddoi->wUsage );
+		(*det->first.second)->uid = kUniqueKeyId( (const char *)&uid );
+		(*det->first.second)->dev = det->second;
+		if( !(*det->first.second)->hidid.valid() ) {
+			(*det->first.second)->hidid = getHidid( det->second->name.get(), lpddoi->tszName );
+			g_errlog << "CONTROL: Found HIDID for axis \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
+		} else {
+			g_errlog << "CONTROL: Provided HIDID for axis \"" << det->second->name.get() << "," << lpddoi->tszName << "\" (" << (*det->first.second)->hidid.getPage() << ", " << (*det->first.second)->hidid.getItem() << ")" << std::endl;
+		}
+		(*det->first.second)++;
+	};
 
 	return DIENUM_CONTINUE;
 
 };
 
-void kInputDevice::getLabels( zutil::kString **butts, const kDevicespecs ***bdev, zutil::kString **axes, const kDevicespecs ***adev ) {
+void kInputDevice::getLabels( control::kObjectspecs **butts, control::kObjectspecs **axes ) {
 	
-	std::pair< zutil::kString **, zutil::kString ** > det( butts, axes );
+	std::pair< std::pair< control::kObjectspecs **, control::kObjectspecs ** >, control::kDevicespecs * > det;
+	det.first.first = butts;
+	det.first.second = axes;
+	det.second = &devspecs;
 
 	dev->EnumObjects( &ncback, &det, DIDFT_BUTTON | DIDFT_AXIS );
-
-	int i;
-	for( i = 0; i < butcount; i++ )
-		*((*bdev)++) = &devspecs;
-
-	for( i = 0; i < axicount; i++ )
-		*((*adev)++) = &devspecs;
 
 };
 
@@ -741,17 +778,37 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 	std::vector< DWORD > axes;
 	std::pair< std::vector< DWORD > *, std::vector< DWORD > * > det( &buttons, &axes );
 
+	bool relative;
+
+	acquired = false;
+
 	dev = in_dev;
 
 	{
 		DIDEVICEINSTANCE ddi;
-		ddi.dwSize = sizeof( ddi );
+		ddi.dwSize = sizeof( DIDEVICEINSTANCE );
 
 		dev->GetDeviceInfo( &ddi );
 
 		char boof[ MAX_PATH * 2 + 10 ];
 		sprintf( boof, "%s", ddi.tszInstanceName );
 		devspecs.name.set( boof );
+		devspecs.uid = kUniqueDevId( (const char *)&ddi.guidInstance );
+
+		if( ddi.dwDevType & 0xff == DI8DEVTYPE_MOUSE )
+			relative = true;
+		  else
+			relative = false;
+		// TODO: store both values.
+
+		DIDEVCAPS ddc;
+		ddc.dwSize = sizeof( DIDEVCAPS );
+
+		dev->GetCapabilities( &ddc );
+
+		polling = ddc.dwFlags & DIDC_POLLEDDEVICE;
+
+
 	}		// moved it, left it in brackets so it was obvious
 
 	dev->EnumObjects( &objcback, &det, DIDFT_BUTTON | DIDFT_AXIS );
@@ -768,7 +825,7 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 	DIDATAFORMAT ddf;
 	ddf.dwSize = sizeof( DIDATAFORMAT );
 	ddf.dwObjSize = sizeof( DIOBJECTDATAFORMAT );
-	ddf.dwFlags = DIDF_RELAXIS;
+	ddf.dwFlags = relative ? DIDF_RELAXIS : DIDF_ABSAXIS;
 	ddf.dwDataSize = fullsize;
 	ddf.dwNumObjs = butcount + axicount;
 
@@ -806,19 +863,22 @@ kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
 		deez++;
 	};
 
-	char bort[ 256 ];
-
     HRESULT hr = dev->SetCooperativeLevel( hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE ); 
-	g_errlog << "Mode set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
+	g_errlog << "WIN32: Mode set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
 
-	directInput8Error( hr, bort );
+	DIPROPDWORD prop;
+	prop.diph.dwHeaderSize = sizeof( DIPROPHEADER );
+	prop.diph.dwSize = sizeof( DIPROPDWORD );
+	prop.diph.dwHow = DIPH_DEVICE;
+	prop.diph.dwObj = 0;
+	prop.dwData = bufferarray;
+
+	hr = dev->SetProperty( DIPROP_BUFFERSIZE, &prop.diph );
+	g_errlog << "WIN32: Buffered-property set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
 
 	hr = dev->SetDataFormat( &ddf );
-	g_errlog << "Format set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
-
+	g_errlog << "WIN32: Format set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
 	// todo: error checking 'n stuff.
-
-	directInput8Error( hr, bort );
 
 	delete [] ddf.rgodf;
 
@@ -829,20 +889,29 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
     char     *buffer; 
 	buffer = new char[ fullsize ];
     HRESULT  hr;
- 
-    hr = dev->GetDeviceState( fullsize, (LPVOID)buffer ); 
+
+	if( polling )
+		dev->Poll(); // todo: errorcheck here?
+    hr = dev->GetDeviceState( fullsize, buffer ); 
     if( FAILED( hr ) ) { 
-//		g_errlog << "State failed " << devspecs.name.get() << " (error " << dInput8Stream( hr ) << ")" << std::endl;
+		if( acquired ) {
+			g_errlog << "WIN32: " << devspecs.name.get() << " lost (error " << dInput8Stream( hr ) << ")" << std::endl;
+			acquired = false;
+		}
 		if( hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED ) {
 			hr = dev->Acquire();
-		    hr = dev->GetDeviceState( sizeof( fullsize ), (LPVOID)&buffer );
+		    hr = dev->GetDeviceState( fullsize, buffer );
 			if( FAILED( hr ) ) {
+//				g_errlog << "WIN32: " << devspecs.name.get() << " still unacquired" << std::endl;
 				delete [] buffer;
 				memset( *buttons, keyis::up, butcount );
 				memset( *axes, 0, axicount * 4 );
 				*buttons += butcount;
 				*axes += axicount;
 				return;
+			} else {
+				g_errlog << "WIN32: " << devspecs.name.get() << " acquired" << std::endl;
+				acquired = true;
 			}
 		} else {
 			delete [] buffer;
@@ -853,6 +922,8 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
 			return;			// yes, it's a dupe. Go get yourself a big serving of shut-up.
 		}
     }
+
+	BYTE *butorig = *buttons;
 
 	char *btemp = buffer;
 	int i;
@@ -866,5 +937,18 @@ void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
 		*((*axes)++) = *(atemp++);
 
 	delete [] buffer;
+
+	DIDEVICEOBJECTDATA buff[ bufferarray ];
+	DWORD datsize = bufferarray;
+	hr = dev->GetDeviceData( sizeof( DIDEVICEOBJECTDATA ), buff, &datsize, 0 );
+	if( FAILED( hr ) ) {
+		g_errlog << "WIN32: Data snag failed " << devspecs.name.get() << " (error " << dInput8Stream( hr ) << ")" << std::endl;
+		// shazbot. I give up.
+		return;
+	}
+
+	for( i = 0; i < datsize; i++ ) {
+		butorig[ buff[ i ].dwOfs ] |= ( buff[ i ].dwData & 0x80 ? ( keyis::push | keyis::change ) : ( keyis::release | keyis::change ) );
+	};	// shut up :P
 
 };

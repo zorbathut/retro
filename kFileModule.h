@@ -120,7 +120,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		std::map< zutil::kString, kType >::const_iterator itr;
 		itr = data.find( id );
 		if( itr == data.end() ) {
-			g_errlog << "Couldn't find item \"" << id.get() << "\" in \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "MODULE: Couldn't find item \"" << id.get() << "\" in \"" << textdesc() << "\"" << std::endl;
 			data[ id ] = createNull();
 			return data[ id ];
 		}
@@ -166,9 +166,9 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		zutil::kString tmp( id );
 		itr = data.find( tmp );
 		if( itr != data.end() ) {
-			g_errlog << "\"" << id << "\" already exists as " << itr->second->textdesc() << ", replaced with " << hnd->textdesc() << std::endl;
+			g_errlog << "MODULE: \"" << id << "\" already exists as " << itr->second->textdesc() << ", replaced with " << hnd->textdesc() << std::endl;
 		} else {
-			g_errlog << "module \"" << textdesc() << "\": adding \"" << hnd.getHeld()->textdesc() << "\" as \"" << id << "\"" << std::endl;
+			g_errlog << "MODULE: \"" << textdesc() << "\" adding \"" << hnd.getHeld()->textdesc() << "\" as \"" << id << "\"" << std::endl;
 		}
 		data[ tmp ] = hnd;
 	};
@@ -209,7 +209,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 						zutil::kString::case_insensitive_lessthan
 					>::const_iterator itr = assoc.find( tstr );
 					if( itr == assoc.end() ) {
-						g_errlog << "Unidentified file " << data.name << " located in file scan" << std::endl;
+						g_errlog << "MODULE: Unidentified file " << data.name << " located in file scan" << std::endl;
 					} else {
 						std::string fn = path;
 						fn += data.name;

@@ -87,7 +87,7 @@ namespace module {
 
 	void kGrfxFont::describe( std::ostream &ostr ) const {
 		ostr << "font module (thrunch)";
-		/* file::kModuleHandle< grfx::kFont >::chaindown( ostr ); */ };
+		/*file::kModuleHandle< grfx::kFont >::chaindown( ostr );*/ };
 		// little bugses :/
 		// TODO: fix up on upgrade.
 

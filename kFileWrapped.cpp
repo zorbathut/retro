@@ -50,12 +50,12 @@ namespace file {
 	void kWrapped::activate() {
 		++activatecount;
 #if POSTDEBUGINFO
-		g_errlog << "Activating \"" << textdesc() << "\" (now at " << activatecount << ")" << std::endl;
+		g_errlog << "WRAPPED: (debug) Activating \"" << textdesc() << "\" (now at " << activatecount << ")" << std::endl;
 #endif
 		switch( file->getState() ) {
 		case kBase::EMPTY:
 #if POSTDEBUGINFO
-			g_errlog << "Full-loading \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "WRAPPED: (debug) Full-loading \"" << textdesc() << "\"" << std::endl;
 #endif
 			file->loadAll();
 			break;
@@ -67,7 +67,7 @@ namespace file {
 		case kBase::DONE:
 			file->completeProgressive();
 #if POSTDEBUGINFO
-			g_errlog << "Short-cutting and dehooking \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "WRAPPED: (debug) Short-cutting and dehooking \"" << textdesc() << "\"" << std::endl;
 #endif
 			g_manager->removeWrapped( this );
 			break;
@@ -76,7 +76,7 @@ namespace file {
 			break;
 
 		default:
-			g_errlog << "Insane status for \"" << textdesc() << "\" during activation" << std::endl;
+			g_errlog << "WRAPPED: Insane status for \"" << textdesc() << "\" during activation" << std::endl;
 			break;
 		}
 	};
@@ -84,21 +84,21 @@ namespace file {
 	void kWrapped::deactivate() {
 		--activatecount;
 #if POSTDEBUGINFO
-		g_errlog << "Deactivating \"" << textdesc() << "\" (now at " << activatecount << ")" << std::endl;
+		g_errlog << "WRAPPED: (debug) Deactivating \"" << textdesc() << "\" (now at " << activatecount << ")" << std::endl;
 #endif
 		if( activatecount < 0 ) {
-			g_errlog << "Negative activation count for \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "WRAPPED: Negative activation count for \"" << textdesc() << "\"" << std::endl;
 			activatecount = 0; }
 		if( !activatecount ) {
 			switch( file->getState() ) {
 			case kBase::EMPTY:
-				g_errlog << "Insane status for \"" << textdesc() << "\" during deactivation (already empty)" << std::endl;
+				g_errlog << "WRAPPED: Insane status for \"" << textdesc() << "\" during deactivation (already empty)" << std::endl;
 				break;
 
 			case kBase::LOADING:
 				file->cancelProgressive();
 #if POSTDEBUGINFO
-				g_errlog << "Canceling \"" << textdesc() << "\"" << std::endl;
+				g_errlog << "WRAPPED: (debug) Canceling \"" << textdesc() << "\"" << std::endl;
 #endif
 				// dropthrough intentional
 
@@ -106,19 +106,19 @@ namespace file {
 				file->completeProgressive();
 				g_manager->removeWrapped( this );
 #if POSTDEBUGINFO
-				g_errlog << "Dehooking \"" << textdesc() << "\"" << std::endl;
+				g_errlog << "WRAPPED: (debug) Dehooking \"" << textdesc() << "\"" << std::endl;
 #endif
 				// dropthrough also intentional
 
 			case kBase::READY:
 #if POSTDEBUGINFO
-				g_errlog << "Deallocating \"" << textdesc() << "\"" << std::endl;
+				g_errlog << "WRAPPED: (debug) Deallocating \"" << textdesc() << "\"" << std::endl;
 #endif
 				file->unload();
 				break;
 
 			default:
-				g_errlog << "Insane status for \"" << textdesc() << "\" during deactivation" << std::endl;
+				g_errlog << "WRAPPED: Insane status for \"" << textdesc() << "\" during deactivation" << std::endl;
 				break;
 			}
 		}
@@ -128,12 +128,12 @@ namespace file {
 	void kWrapped::request( int ticks ) {
 		activatecount++;
 #if POSTDEBUGINFO
-		g_errlog << "Requesting \"" << textdesc() << "\" (now at " << activatecount << ")" << std::endl;
+		g_errlog << "WRAPPED: (debug) Requesting \"" << textdesc() << "\" (now at " << activatecount << ")" << std::endl;
 #endif
 		switch( file->getState() ) {
 		case kBase::EMPTY:
 #if POSTDEBUGINFO
-			g_errlog << "Beginning progressive and hooking \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "WRAPPED: (debug) Beginning progressive and hooking \"" << textdesc() << "\"" << std::endl;
 #endif
 			count = ticks;
 			file->beginProgressive();
@@ -151,7 +151,7 @@ namespace file {
 			break;
 			
 		default:
-			g_errlog << "Insane status for \"" << textdesc() << "\" during request" << std::endl;
+			g_errlog << "WRAPPED: Insane status for \"" << textdesc() << "\" during request" << std::endl;
 			break;
 		}
 	};
@@ -159,7 +159,7 @@ namespace file {
 	void kWrapped::tick() {
 		switch( file->getState() ) {
 		case kBase::EMPTY:
-			g_errlog << "Insane status for \"" << textdesc() << "\" during tick (EMPTY, removing)" << std::endl;
+			g_errlog << "WRAPPED: Insane status for \"" << textdesc() << "\" during tick (EMPTY, removing)" << std::endl;
 			g_manager->removeWrapped( this );
 			break;
 
@@ -172,21 +172,19 @@ namespace file {
 
 		case kBase::DONE:
 #if POSTDEBUGINFO
-			g_errlog << "Completing progressive and dehooking \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "WRAPPED: (debug) Completing progressive and dehooking \"" << textdesc() << "\"" << std::endl;
 #endif
 			file->completeProgressive();
 			g_manager->removeWrapped( this );
 			break;
 
 		case kBase::READY:
-#if POSTDEBUGINFO
-			g_errlog << "Insane status for \"" << textdesc() << "\" during tick (READY, removing)" << std::endl;
-#endif
+			g_errlog << "WRAPPED: Insane status for \"" << textdesc() << "\" during tick (READY, removing)" << std::endl;
 			g_manager->removeWrapped( this );
 			break;
 
 		default:
-			g_errlog << "Insane status for \"" << textdesc() << "\" during tick (UNKNOWN)" << std::endl;
+			g_errlog << "WRAPPED: Insane status for \"" << textdesc() << "\" during tick (UNKNOWN)" << std::endl;
 			break;
 		}
 	};
@@ -195,7 +193,7 @@ namespace file {
 			count( 0 ) { };
 	kWrapped::~kWrapped() {
 		if( activatecount != 0 )
-			g_errlog << "Incomplete decoupling for \"" << textdesc() << "\" (still at " << activatecount << ")" << std::endl;
+			g_errlog << "WRAPPED: Incomplete decoupling for \"" << textdesc() << "\" (still at " << activatecount << ")" << std::endl;
 		delete file;
 	};
 

@@ -51,7 +51,7 @@ namespace grfx {
 			fritz = true;
 			state = READY;
 			progcur = progres;
-			g_errlog << "instant initpngread failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: instant initpngread failure in " << textdesc() << std::endl;
 			return;
 		}
 
@@ -66,7 +66,7 @@ namespace grfx {
 			fritz = true;
 			state = READY;
 			progcur = progres;
-			g_errlog << "png_read_image failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: png_read_image failure in " << textdesc() << std::endl;
 			return;
 
 		}
@@ -87,7 +87,7 @@ namespace grfx {
 			fritz = true;
 			state = DONE;
 			progcur = progres;
-			g_errlog << "progressive initpngread failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: progressive initpngread failure in " << textdesc() << std::endl;
 			return;
 		} else {
 			state = LOADING;
@@ -110,7 +110,7 @@ namespace grfx {
 			fritz = true;
 			state = DONE;
 			progcur = progres;
-			g_errlog << "png_read_rows failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: png_read_rows failure in " << textdesc() << std::endl;
 			return;
 
 		}
@@ -167,20 +167,20 @@ namespace grfx {
 
 		fp = fopen( getFname().get(), "rb" );
 		if( !fp ) {
-			g_errlog << "file open failure in " << textdesc() << std::endl;
+			g_errlog << "PNG: file open failure in " << textdesc() << std::endl;
 			return true;
 		}
 
 		fread( header, 1, preroll, fp );
 		if( png_sig_cmp( header, 0, preroll ) ) {
-			g_errlog << "PNG signature mismatch in " << textdesc() << std::endl;
+			g_errlog << "PNG: signature mismatch in " << textdesc() << std::endl;
 			fclose( fp );
 			return true;
 		}
 
 		png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, user_error_fn, NULL );
 		if( !png_ptr ) {
-			g_errlog << "PNG read failure (stage 1) in " << textdesc() << std::endl;
+			g_errlog << "PNG: initialization failure (stage 1) in " << textdesc() << std::endl;
 			fclose( fp );
 			return true;
 		}
@@ -188,7 +188,7 @@ namespace grfx {
 		info_ptr = png_create_info_struct( png_ptr );
 		if( !info_ptr ) {
 			png_destroy_read_struct( &png_ptr, NULL, NULL );
-			g_errlog << "PNG read failure (stage 2) in " << textdesc() << std::endl;
+			g_errlog << "PNG: initialization failure (stage 2) in " << textdesc() << std::endl;
 			fclose( fp );
 			return true;
 		}
@@ -274,11 +274,14 @@ namespace grfx {
 	};
 
 	void kRenderablePNG::describe( std::ostream &ostr ) const {
-		ostr << "renderablePNG";
-		kRenderablePNG::chaindown( ostr ); };
+		ostr << "renderablePNG (PNG)";
+		kRenderablePNG::chaindo( ostr ); };
 
 	void kRenderablePNG::chaindown( std::ostream &ostr ) const {
 		ostr << " (*final*-PNG)";
+		kRenderablePNG::chaindo( ostr ); };
+
+	void kRenderablePNG::chaindo( std::ostream &ostr ) const {
 		kRenderableOwnedraster::chaindown( ostr );
 		kBase::chaindown( ostr ); };
 

@@ -44,7 +44,6 @@ RSC=rc.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
 # ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FR /FD /c
-# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -157,6 +156,14 @@ SOURCE=.\dx8util.cpp
 
 SOURCE=.\dx8util.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\win32_hidid.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\win32_hidid.h
+# End Source File
 # End Group
 # Begin Source File
 
@@ -197,26 +204,6 @@ SOURCE=.\minmax.h
 # Begin Source File
 
 SOURCE=.\miscfunc.h
-# End Source File
-# End Group
-# Begin Group "libpng"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\libpng\png.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libpng\pngconf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libpng\zconf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libpng\zlib.h
 # End Source File
 # End Group
 # Begin Group "grfx"
@@ -478,6 +465,26 @@ SOURCE=.\kMGrfxRenderableFiniteRaw.h
 # Begin Group "controls"
 
 # PROP Default_Filter ""
+# Begin Group "hidid"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\hididConsts.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\hididConsts.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kHIDID.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kHIDID.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\kControls.cpp
@@ -494,6 +501,14 @@ SOURCE=.\kControlsOpen.cpp
 
 SOURCE=.\kControlsOpen.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\kUniqueID.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kUniqueID.h
+# End Source File
 # End Group
 # Begin Source File
 
@@ -506,10 +521,6 @@ SOURCE=.\datadog\errlog.txt
 # Begin Source File
 
 SOURCE=.\notes.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\datadog\syslog.txt
 # End Source File
 # End Target
 # End Project

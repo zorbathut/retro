@@ -41,15 +41,13 @@ void kControlsOpen::setButtoncount( int newcount ) {
 void kControlsOpen::setAxiscount( int newcount ) {
 	kControls::setAxiscount( newcount ); };
 
-zutil::kString *kControlsOpen::accessButtonlabels() {
-	return kControls::accessButtonlabels(); };
-zutil::kString *kControlsOpen::accessAxislabels() {
-	return kControls::accessAxislabels(); };
+control::kObjectspecs *kControlsOpen::accessButtoninfo() {
+	return kControls::accessButtoninfo(); };
+control::kObjectspecs *kControlsOpen::accessAxisinfo() {
+	return kControls::accessAxisinfo(); };
 
-const kDevicespecs **kControlsOpen::accessButtondevs() {
-	return kControls::accessButtondevs(); };
-const kDevicespecs **kControlsOpen::accessAxisdevs() {
-	return kControls::accessAxisdevs(); };
+void kControlsOpen::rebuildFindLists() {
+	kControls::rebuildFindLists(); };
 
 kControlsOpen::kControlsOpen( int buttons, int axes ) :
 		kControls( buttons, axes )
