@@ -146,6 +146,18 @@ SOURCE=.\kPoint.h
 # Begin Group "port-targets"
 
 # PROP Default_Filter ""
+# Begin Group "internal"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\dx8util.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\dx8util.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\kInterfaceWin32.cpp
@@ -165,6 +177,10 @@ SOURCE=.\types.h
 # Begin Source File
 
 SOURCE=.\kFunctor.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kStreamtoken.h
 # End Source File
 # Begin Source File
 
@@ -490,6 +506,10 @@ SOURCE=.\datadog\errlog.txt
 # Begin Source File
 
 SOURCE=.\notes.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\datadog\syslog.txt
 # End Source File
 # End Target
 # End Project

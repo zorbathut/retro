@@ -29,7 +29,7 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-// this file is hackish.
+// this file is one colossal hack.
 
 #pragma warning( disable : 4786 )
 
@@ -40,7 +40,7 @@
 #include <dinput.h>
 #include <process.h>
 #include <assert.h>
-// There's nothing slow about this at all.
+#include <vector>
 
 #include "kinterface.h"
 #include "kGrfxWritableOwnedraster.h"
@@ -48,6 +48,36 @@
 #include "errlog.h"
 #include "config.h"
 #include "kControlsOpen.h"
+#include "dx8util.h"
+// There's nothing slow about this at all.
+
+HWND hWnd; // oh bugger off :P
+
+class kInputDevice : private boost::noncopyable {
+public:
+
+	int getButtoncount() const;
+	int getAxiscount() const;
+
+	void getLabels( zutil::kString **butts, const kDevicespecs ***bdev, zutil::kString **axes, const kDevicespecs ***adev );
+
+	void getData( BYTE **buttons, INT32 **axes );	// increments pointers, too.
+
+	kInputDevice( IDirectInputDevice8 *dev );
+
+private:
+
+	int butcount;
+	int axicount;
+
+	int axioffs;
+	int fullsize;
+
+	IDirectInputDevice8 *dev;
+
+	kDevicespecs devspecs;
+
+};
 
 class kInterfaceWin32 : public kInterface {
 public:
@@ -78,8 +108,6 @@ public:
 	IDirect3D8             *D3D;
 	IDirect3DDevice8       *D3DDevice;
 
-	HWND hWnd;
-
 	volatile bool closing;
 	HANDLE finishedEvent;
 
@@ -89,7 +117,6 @@ public:
 	IDirect3DSurface8 *writsurf;
 
 	IDirectInput8		*dinput;
-	IDirectInputDevice8 *kbd;
 
 	bool starting;
 
@@ -98,6 +125,8 @@ public:
 	grfx::kWritableOwnedraster *kwr;
 
 	kControlsOpen controls;
+
+	std::vector< kInputDevice * > inputs;
 
 };
 
@@ -385,6 +414,17 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     return DefWindowProc( hWnd, msg, wParam, lParam );
 }
 
+BOOL CALLBACK devenumcallback( const DIDEVICEINSTANCE *lpddi, void *pvRef ) {
+	std::pair< IDirectInput8 *, std::vector< kInputDevice * > * > *inputs = reinterpret_cast< std::pair< IDirectInput8 *, std::vector< kInputDevice * > * > * >( pvRef );
+
+	IDirectInputDevice8 *leapdi;
+
+	inputs->first->CreateDevice( lpddi->guidInstance, &leapdi, NULL );
+	inputs->second->push_back( new kInputDevice( leapdi ) );
+
+	return DIENUM_CONTINUE;
+};
+
 bool kInterfaceWin32::init( void ) {
 
 	starting = true;
@@ -490,7 +530,7 @@ bool kInterfaceWin32::init( void ) {
  
 	HRESULT bort;
 	bort = D3D->CreateDevice( D3DADAPTER_DEFAULT, hal ? D3DDEVTYPE_HAL : D3DDEVTYPE_REF, hWnd,
-                                      D3DCREATE_MIXED_VERTEXPROCESSING,
+                                      D3DCREATE_SOFTWARE_VERTEXPROCESSING,
                                       &d3dpp, &D3DDevice );
     if( FAILED( bort ) ) {
 		switch( bort ) {  
@@ -531,48 +571,31 @@ bool kInterfaceWin32::init( void ) {
 		MessageBox( NULL, "Error creating DirectInput8 object", "Critical error", NULL );
 		return true;
 	};
-		
- 
-    // Retrieve a pointer to an IDirectInputDevice8 interface 
-    hr = dinput->CreateDevice(GUID_SysKeyboard, &kbd, NULL); 
- 
-    if( FAILED(hr) ) { 
-		MessageBox( NULL, "Error creating keyboard", "Critical error", NULL );
-		D3DDevice->Release();
-		D3D->Release();
-		dinput->Release();
-        return true; 
-    } 
- 
-    // Now that you have an IDirectInputDevice8 interface, get 
-    // it ready to use. 
- 
-    // Set the data format using the predefined keyboard data 
-    // format provided by the DirectInput object for keyboards. 
-    
-    hr = kbd->SetDataFormat(&c_dfDIKeyboard); 
- 
-    if( FAILED(hr) ) { 
-		MessageBox( NULL, "Error setting keyboard mode", "Critical error", NULL );
-		D3DDevice->Release();
-		D3D->Release();
-		kbd->Release();
-		dinput->Release();
-        return true; 
-    } 
- 
-    // Set the cooperative level 
-    hr = kbd->SetCooperativeLevel( hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE ); 
-    if( FAILED(hr) )
-    { 
-		MessageBox( NULL, "Error setting keyboard cooperation", "Critical error", NULL );
-		D3DDevice->Release();
-		D3D->Release();
-		kbd->Release();
-		dinput->Release();
-        return true; 
-    } 
- 
+
+	std::pair< IDirectInput8 *, std::vector< kInputDevice * > * > det( dinput, &inputs );
+
+	dinput->EnumDevices( DI8DEVCLASS_ALL, &devenumcallback, &det, DIEDFL_ATTACHEDONLY );
+
+	int buttoncount = 0;
+	int axiscount = 0;
+
+	std::vector< kInputDevice * >::iterator itr;
+ 	for( itr = inputs.begin(); itr != inputs.end(); ++itr ) {
+		buttoncount += (*itr)->getButtoncount();
+		axiscount += (*itr)->getAxiscount(); };
+
+	controls.setButtoncount( buttoncount );
+	controls.setAxiscount( axiscount );
+
+	zutil::kString *buttonlabels = controls.accessButtonlabels();
+	zutil::kString *axislabels = controls.accessAxislabels();
+
+	const kDevicespecs **bdevs = controls.accessButtondevs();
+	const kDevicespecs **adevs = controls.accessAxisdevs();
+
+	for( itr = inputs.begin(); itr != inputs.end(); ++itr ) {
+		(*itr)->getLabels( &buttonlabels, &bdevs, &axislabels, &adevs ); };
+
 	starting = false;
 
     // Device state would normally be set here
@@ -590,8 +613,8 @@ void kInterfaceWin32::close( void ) {
 	writsurf->Release();
     D3DDevice->Release();
     D3D->Release();
-	kbd->Unacquire();
-	kbd->Release();
+	for( std::vector< kInputDevice * >::iterator itr = inputs.begin(); itr != inputs.end(); ++itr )
+		delete *itr;
 	dinput->Release();
 
     UnregisterClass( "D3D Tutorial", GetModuleHandle( NULL ) );
@@ -600,18 +623,17 @@ void kInterfaceWin32::close( void ) {
 
 void __cdecl mainThread( void *parameter ) {
 
-	g_errlog.open( "errlog.txt" );
-	g_errlog.setf( std::ios::unitbuf );	// whee, autoflush!
-
 	gameMain( inter );
 
 	inter->shutDownNow();
 
-	delete g_errlog;
-
 }
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR, int ) {
+
+	g_errlog.open( "errlog.txt" );
+	g_errlog.setf( std::ios::unitbuf );	// whee, autoflush!
+	// todo: THREADSAFETY! or just be careful not to use it while the main thread is open.
 
 	assert( sizeof( grfx::kColor ) == 4 );	// good god I hope so . . .
 	
@@ -636,6 +658,8 @@ int WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR, int ) {
 
 	delete inter;
 
+	g_errlog.close();
+
 	return 0;
 
 }
@@ -652,36 +676,195 @@ UINT64 kInterfaceWin32::getCounterPos() const {
 
 const kControls *kInterfaceWin32::updateControls() {
 
-    char     buffer[256]; 
-    HRESULT  hr; 
- 
-    hr = kbd->GetDeviceState( sizeof(buffer), (LPVOID)&buffer ); 
-    if( FAILED( hr ) ) { 
+	BYTE *button = controls.accessButtons();
+	INT32 *axis  = controls.accessAxes();
 
-		if( hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED ) {
-			kbd->Acquire();
-		    hr = kbd->GetDeviceState( sizeof(buffer), (LPVOID)&buffer );
-			if( FAILED( hr ) ) {
-				memset( controls.accessButtons(), CONTROL_KEYUP, 256 );
-				return &controls;
-			}
-		} else {
-			memset( controls.accessButtons(), CONTROL_KEYUP, 256 );
-			return &controls;
-		}
-    }
-
-	char *buf = buffer;
-	BYTE *oot = controls.accessButtons();
-
-	char *ned = buf + 256;
-
-	do {
-
-		*oot = ( *buf & 0x80 ) ? CONTROL_KEYDOWN : CONTROL_KEYUP;
-
-	} while( ++oot, ++buf != ned );
+	for( std::vector< kInputDevice * >::iterator itr = inputs.begin(); itr != inputs.end(); ++itr )
+		(*itr)->getData( &button, &axis );
 
 	return &controls;
 
-}
+};
+
+int kInputDevice::getButtoncount() const {
+	return butcount; };
+
+int kInputDevice::getAxiscount() const {
+	return axicount; };
+
+BOOL CALLBACK ncback( const DIDEVICEOBJECTINSTANCE *lpddoi, void *pvRef ) {
+
+	std::pair< zutil::kString **, zutil::kString ** > *det = (std::pair< zutil::kString **, zutil::kString ** > *)pvRef;
+
+	if( lpddoi->dwType & DIDFT_BUTTON )
+		((*det->first)++)->set( lpddoi->tszName );
+
+	if( lpddoi->dwType & DIDFT_AXIS )
+		((*det->second)++)->set( lpddoi->tszName );
+
+	return DIENUM_CONTINUE;
+
+};
+
+void kInputDevice::getLabels( zutil::kString **butts, const kDevicespecs ***bdev, zutil::kString **axes, const kDevicespecs ***adev ) {
+	
+	std::pair< zutil::kString **, zutil::kString ** > det( butts, axes );
+
+	dev->EnumObjects( &ncback, &det, DIDFT_BUTTON | DIDFT_AXIS );
+
+	int i;
+	for( i = 0; i < butcount; i++ )
+		*((*bdev)++) = &devspecs;
+
+	for( i = 0; i < axicount; i++ )
+		*((*adev)++) = &devspecs;
+
+};
+
+BOOL CALLBACK objcback( const DIDEVICEOBJECTINSTANCE *lpddoi, void *pvRef ) {
+
+	std::pair< std::vector< DWORD > *, std::vector< DWORD > * > *dort = (std::pair< std::vector< DWORD > *, std::vector< DWORD > * > *)pvRef;
+
+	if( lpddoi->dwType & DIDFT_AXIS )
+		dort->second->push_back( lpddoi->dwType ); // hope this works . . .
+
+	if( lpddoi->dwType & DIDFT_BUTTON )
+		dort->first->push_back( lpddoi->dwType );
+
+	return DIENUM_CONTINUE;
+
+};
+
+kInputDevice::kInputDevice( IDirectInputDevice8 *in_dev ) {
+
+	std::vector< DWORD > buttons;
+	std::vector< DWORD > axes;
+	std::pair< std::vector< DWORD > *, std::vector< DWORD > * > det( &buttons, &axes );
+
+	dev = in_dev;
+
+	{
+		DIDEVICEINSTANCE ddi;
+		ddi.dwSize = sizeof( ddi );
+
+		dev->GetDeviceInfo( &ddi );
+
+		char boof[ MAX_PATH * 2 + 10 ];
+		sprintf( boof, "%s", ddi.tszInstanceName );
+		devspecs.name.set( boof );
+	}		// moved it, left it in brackets so it was obvious
+
+	dev->EnumObjects( &objcback, &det, DIDFT_BUTTON | DIDFT_AXIS );
+
+	butcount = buttons.size();
+	axicount = axes.size();
+	axioffs = butcount;
+	if( axioffs % 4 ) {
+		axioffs &= ~0x3;
+		axioffs += 4;
+	};
+	fullsize = axioffs + axicount * 4;
+
+	DIDATAFORMAT ddf;
+	ddf.dwSize = sizeof( DIDATAFORMAT );
+	ddf.dwObjSize = sizeof( DIOBJECTDATAFORMAT );
+	ddf.dwFlags = DIDF_RELAXIS;
+	ddf.dwDataSize = fullsize;
+	ddf.dwNumObjs = butcount + axicount;
+
+	DIOBJECTDATAFORMAT *objs = new DIOBJECTDATAFORMAT[ butcount + axicount ];
+	ddf.rgodf = objs;
+	int offs = 0;
+
+	DIOBJECTDATAFORMAT *deez = objs;
+	std::vector< DWORD >::iterator itr = buttons.begin();
+	int i;
+	for( i = 0; i < butcount; i++ ) {
+		//deez->pguid = &*itr; // please don't ask.
+		deez->pguid = NULL;
+		deez->dwOfs = offs;
+		deez->dwType = *itr;
+		deez->dwFlags = NULL;
+
+		offs++;
+		itr++;
+		deez++;
+	};
+
+	offs = axioffs;
+	itr = axes.begin();
+
+	for( i = 0; i < axicount; i++ ) {
+		//deez->pguid = &*itr; // please don't ask.
+		deez->pguid = NULL;
+		deez->dwOfs = offs;
+		deez->dwType = *itr;
+		deez->dwFlags = NULL;
+
+		offs += 4;
+		itr++;
+		deez++;
+	};
+
+	char bort[ 256 ];
+
+    HRESULT hr = dev->SetCooperativeLevel( hWnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE ); 
+	g_errlog << "Mode set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
+
+	directInput8Error( hr, bort );
+
+	hr = dev->SetDataFormat( &ddf );
+	g_errlog << "Format set for " << devspecs.name.get() << " (" << dInput8Stream( hr ) << ")" << std::endl;
+
+	// todo: error checking 'n stuff.
+
+	directInput8Error( hr, bort );
+
+	delete [] ddf.rgodf;
+
+};
+
+void kInputDevice::getData( BYTE **buttons, INT32 **axes ) {
+
+    char     *buffer; 
+	buffer = new char[ fullsize ];
+    HRESULT  hr;
+ 
+    hr = dev->GetDeviceState( fullsize, (LPVOID)buffer ); 
+    if( FAILED( hr ) ) { 
+//		g_errlog << "State failed " << devspecs.name.get() << " (error " << dInput8Stream( hr ) << ")" << std::endl;
+		if( hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED ) {
+			hr = dev->Acquire();
+		    hr = dev->GetDeviceState( sizeof( fullsize ), (LPVOID)&buffer );
+			if( FAILED( hr ) ) {
+				delete [] buffer;
+				memset( *buttons, keyis::up, butcount );
+				memset( *axes, 0, axicount * 4 );
+				*buttons += butcount;
+				*axes += axicount;
+				return;
+			}
+		} else {
+			delete [] buffer;
+			memset( *buttons, keyis::up, butcount );
+			memset( *axes, 0, axicount * 4 );
+			*buttons += butcount;
+			*axes += axicount;
+			return;			// yes, it's a dupe. Go get yourself a big serving of shut-up.
+		}
+    }
+
+	char *btemp = buffer;
+	int i;
+	for( i = 0; i < butcount; i++ )
+		*((*buttons)++) = ( *(btemp++) & 0x80 ) ? keyis::down : keyis::up;
+	// todo: the push/release/change stuff.
+
+	INT32 *atemp = reinterpret_cast< INT32 * >( buffer + axioffs );
+
+	for( i = 0; i < axicount; i++ )
+		*((*axes)++) = *(atemp++);
+
+	delete [] buffer;
+
+};

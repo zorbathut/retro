@@ -48,6 +48,9 @@ public:
 	zutil::kString *accessButtonlabels();
 	zutil::kString *accessAxislabels();
 
+	const kDevicespecs **accessButtondevs();
+	const kDevicespecs **accessAxisdevs();
+
 	kControlsOpen( int buttons, int axes );
 
 };

@@ -31,20 +31,25 @@
 
 #include "kControls.h"
 
-const BYTE *kControls::getButtons() const {
-	return buttons; };
-const INT32 *kControls::getAxes() const {
-	return axes; };
+BYTE kControls::getButton( int num ) const {
+	return buttons[ num ]; };
+INT32 kControls::getAxis( int num ) const {
+	return axes[ num ]; };
 
 int kControls::getButtoncount() const {
 	return buttoncount; };
 int kControls::getAxiscount() const {
 	return axiscount; };
 
-const zutil::kString *kControls::getButtonlabels() const {
-	return buttonlabels; };
-const zutil::kString *kControls::getAxislabels() const {
-	return axislabels; };
+const zutil::kString &kControls::getButtonlabel( int num ) const {
+	return buttonlabels[ num ]; };
+const zutil::kString &kControls::getAxislabel( int num ) const {
+	return axislabels[ num ]; };
+
+const kDevicespecs &kControls::getButtondev( int num ) const {
+	return *buttondevs[ num ]; };
+const kDevicespecs &kControls::getAxisdev( int num ) const {
+	return *axisdevs[ num ]; };
 
 BYTE *kControls::accessButtons() {
 	return buttons; };
@@ -54,30 +59,41 @@ INT32 *kControls::accessAxes() {
 void kControls::setButtoncount( int newcount ) {
 	delete [] buttons;
 	delete [] buttonlabels;
+	delete [] buttondevs;
 	buttons = new BYTE[ newcount ];
 	buttonlabels = new zutil::kString[ newcount ];
+	buttondevs = new const kDevicespecs*[ newcount ];
 	buttoncount = newcount;
 };
 
 void kControls::setAxiscount( int newcount ) {
 	delete [] axes;
 	delete [] axislabels;
+	delete [] axisdevs;
 	axes = new INT32[ newcount ];
 	axislabels = new zutil::kString[ newcount ];
+	axisdevs = new const kDevicespecs*[ newcount ];
 	axiscount = newcount;
 };
 
-zutil::kString *kControls::accessButtonlabels() const {
+zutil::kString *kControls::accessButtonlabels() {
 	return buttonlabels; }
-zutil::kString *kControls::accessAxislabels() const {
+zutil::kString *kControls::accessAxislabels() {
 	return axislabels; };
+
+const kDevicespecs **kControls::accessButtondevs() {
+	return buttondevs; }
+const kDevicespecs **kControls::accessAxisdevs() {
+	return axisdevs; };
 
 kControls::kControls( int in_buttons, int in_axes ) :
 		buttons( new BYTE[ in_buttons ] ),
 		buttonlabels( new zutil::kString[ in_buttons ] ),
+		buttondevs( new const kDevicespecs*[ in_buttons ] ),
 		buttoncount( in_buttons ),
 		axes( new INT32[ in_axes ] ),
 		axislabels( new zutil::kString[ in_axes ] ),
+		axisdevs( new const kDevicespecs*[ in_axes ] ),
 		axiscount( in_axes )
 	{ };
 

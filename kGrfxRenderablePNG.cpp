@@ -257,8 +257,8 @@ namespace grfx {
 
 	kRenderablePNG::kRenderablePNG( const char *fname ) : file::kBase( fname ), png_ptr( NULL ), info_ptr( NULL ),
 			row_pointers( NULL ), fp( NULL ) {
-		preparepng();
-		destructpngread();
+		if( !preparepng() )
+			destructpngread();
 	};
 
 	kRenderablePNG::~kRenderablePNG() {

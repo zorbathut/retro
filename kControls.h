@@ -38,23 +38,37 @@ class kControls;
 #include "butility.h"
 #include "kString.h"
 
-const BYTE CONTROL_KEYDOWN = 0x01;
-const BYTE CONTROL_KEYUP = 0x02;
-const BYTE CONTROL_KEYPUSH = 0x04;
-const BYTE CONTROL_KEYRELEASE = 0x08;
-const BYTE CONTROL_KEYCHANGE = 0x10;
+namespace keyis {
+
+	const BYTE down = 0x01;
+	const BYTE up = 0x02;
+	const BYTE push = 0x04;
+	const BYTE release = 0x08;
+	const BYTE change = 0x10;
+
+}; // deal :P
+
+class kDevicespecs  {
+public:
+
+	zutil::kString name;
+
+};	// okay, yes. shut up :P
 
 class kControls : private boost::noncopyable {
 public:
 
-	const BYTE *getButtons() const;
-	const INT32 *getAxes() const;
+	BYTE getButton( int num ) const;
+	INT32 getAxis( int num ) const;
 
 	int getButtoncount() const;
 	int getAxiscount() const;
 
-	const zutil::kString *getButtonlabels() const;
-	const zutil::kString *getAxislabels() const;
+	const zutil::kString &getButtonlabel( int num ) const;
+	const zutil::kString &getAxislabel( int num ) const;			// so I can reimplement these at some point
+
+	const kDevicespecs &getButtondev( int num ) const;
+	const kDevicespecs &getAxisdev( int num ) const;
 
 protected:
 
@@ -65,8 +79,11 @@ protected:
 	void setButtoncount( int newcount );
 	void setAxiscount( int newcount );
 
-	zutil::kString *accessButtonlabels() const;
-	zutil::kString *accessAxislabels() const;
+	zutil::kString *accessButtonlabels();
+	zutil::kString *accessAxislabels();
+
+	const kDevicespecs **accessButtondevs();
+	const kDevicespecs **accessAxisdevs();
 
 	kControls( int buttons, int axes );
 	virtual ~kControls();
@@ -78,6 +95,9 @@ private:
 
 	zutil::kString *buttonlabels;
 	zutil::kString *axislabels;
+
+	const kDevicespecs **buttondevs;
+	const kDevicespecs **axisdevs;
 
 	int buttoncount;
 	int axiscount;

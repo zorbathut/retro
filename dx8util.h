@@ -29,29 +29,15 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#include "kControlsOpen.h"
+#ifndef RETRO_DX8UTIL
+#define RETRO_DX8UTIL
 
-BYTE *kControlsOpen::accessButtons() {
-	return kControls::accessButtons(); };
-INT32 *kControlsOpen::accessAxes() {
-	return kControls::accessAxes(); };
+#include <windows.h>
 
-void kControlsOpen::setButtoncount( int newcount ) {
-	kControls::setButtoncount( newcount ); };
-void kControlsOpen::setAxiscount( int newcount ) {
-	kControls::setAxiscount( newcount ); };
+#include "kStreamtoken.h"
 
-zutil::kString *kControlsOpen::accessButtonlabels() {
-	return kControls::accessButtonlabels(); };
-zutil::kString *kControlsOpen::accessAxislabels() {
-	return kControls::accessAxislabels(); };
+void directInput8Error( HRESULT ecode, char *buf );
 
-const kDevicespecs **kControlsOpen::accessButtondevs() {
-	return kControls::accessButtondevs(); };
-const kDevicespecs **kControlsOpen::accessAxisdevs() {
-	return kControls::accessAxisdevs(); };
+zutil::kStreamtoken< HRESULT > dInput8Stream( HRESULT ecode );
 
-kControlsOpen::kControlsOpen( int buttons, int axes ) :
-		kControls( buttons, axes )
-	{ };
-
+#endif

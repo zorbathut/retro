@@ -29,29 +29,35 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#include "kControlsOpen.h"
+#ifndef _ZUTIL_STREAMTOKEN
+#define _ZUTIL_STREAMTOKEN
 
-BYTE *kControlsOpen::accessButtons() {
-	return kControls::accessButtons(); };
-INT32 *kControlsOpen::accessAxes() {
-	return kControls::accessAxes(); };
+#include <iostream>
 
-void kControlsOpen::setButtoncount( int newcount ) {
-	kControls::setButtoncount( newcount ); };
-void kControlsOpen::setAxiscount( int newcount ) {
-	kControls::setAxiscount( newcount ); };
+namespace zutil {
 
-zutil::kString *kControlsOpen::accessButtonlabels() {
-	return kControls::accessButtonlabels(); };
-zutil::kString *kControlsOpen::accessAxislabels() {
-	return kControls::accessAxislabels(); };
+	template < class kData > class kStreamtoken {
+	private:
 
-const kDevicespecs **kControlsOpen::accessButtondevs() {
-	return kControls::accessButtondevs(); };
-const kDevicespecs **kControlsOpen::accessAxisdevs() {
-	return kControls::accessAxisdevs(); };
+		kData data;
+		void (*tgt)( std::ostream &str, kData * );
 
-kControlsOpen::kControlsOpen( int buttons, int axes ) :
-		kControls( buttons, axes )
-	{ };
+	public:
 
+		void go( std::ostream &str ) {
+			(*tgt)( str, &data );
+		};
+
+		kStreamtoken( const kData &in_data, void (*in_tgt)( std::ostream &str, kData * ) ) :
+			data( in_data ), tgt( in_tgt ) { };
+
+	};
+
+	template< class foo > std::ostream &operator<<( std::ostream &str, kStreamtoken< foo > &alter ) {
+		alter.go( str );
+		return str;
+	};
+
+};
+
+#endif

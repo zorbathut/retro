@@ -139,10 +139,17 @@ void gameMain( kInterface *inter ) {
 			grfx::kWritable *it = inter->lockBuffer( grfx::kColor( 0xffffffff ) );
 			mainstack.renderFrame( it );
 			int vert = 15;
-			char buf[ 8 ];
-			for( int x = 0; x < controls->getButtoncount(); x++ ) {
-				if( controls->getButtons()[ x ] & CONTROL_KEYDOWN ) {
-					sprintf( buf, "%d", x );
+			char buf[ 1024 ];
+			int x;
+			for( x = 0; x < controls->getAxiscount(); x++ ) {
+				sprintf( buf, "%s: %s: %d", controls->getAxisdev( x ).name.get(), controls->getAxislabel( x ).get(), controls->getAxis( x ) );
+				fnt->renderText( it, buf, kPoint< INT32 >( 0, vert ) );
+				vert += fnt->getVerticalOffset();
+			};
+			vert += fnt->getVerticalOffset();
+			for( x = 0; x < controls->getButtoncount(); x++ ) {
+				if( controls->getButton( x ) & keyis::down ) {
+					sprintf( buf, "%s: %s", controls->getButtondev( x ).name.get(), controls->getButtonlabel( x ).get() );
 					fnt->renderText( it, buf, kPoint< INT32 >( 0, vert ) );
 					vert += fnt->getVerticalOffset();
 				}
