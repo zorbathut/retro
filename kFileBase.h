@@ -40,51 +40,29 @@ namespace file {
 
 #include "butility.h"
 #include "kDescribable.h"
+#include "kFileGeneratable.h"
 
 #include <string>
 
 namespace file {
 
-	class kBase : private boost::noncopyable, public kDescribable {
+	class kBase : public kGeneratable {
 	public:
-
-		enum eState { EMPTY, LOADING, DONE, READY };
-
-		virtual void init();		// init stuff: guaranteed to be after construction, before anything
-									// else, and might happen more than once. call other inits during
-									// init if you need their initted data. And do what you can during
-									// construction.
 
 		virtual void loadAll() = 0;
 
-		        int    getProgressiveResolution() const;
-		virtual void   beginProgressive() = 0;
-		        int    currentProgressive() const;
-		virtual void   continueProgressive( int steps ) = 0;
-		virtual void   completeProgressive() = 0;
-		virtual void   cancelProgressive() = 0;
-		        eState getState() const;
-		        bool   getFritz() const; // is this data fritzed?
+		virtual void beginProgressive() = 0;
+		virtual void continueProgressive( int steps ) = 0;
+		virtual void completeProgressive() = 0;
+		virtual void cancelProgressive() = 0;
 
 		virtual void unload() = 0;
 
-		virtual void deinit();		// preparation for destruction - nothing's *been* destroyed yet,
-									// but get ready for it, since there's no assigned order for
-									// destruction. Also may be called more than once, though I can't
-									// imagine why (yet).
-
-		kBase( const char *fname );	// better init progres . . . well, not my problem.
+		kBase( const std::string &fname );	// better init progres . . . well, not my problem.
 		virtual ~kBase();
 
 		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
 	protected:  void chaindown( std::ostream &ostr ) const;
-
-	protected:
-
-		int progres;
-		int progcur;
-		eState state;
-		bool fritz;
 
 		const std::string &getFname() const;
 

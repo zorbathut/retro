@@ -151,7 +151,7 @@ void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 };
 
 kMainShellMenu::kMainShellMenu() : fin( module::finite.get( "gnarl" ) ),
-			fnt( module::font.get( "big" ) ),
+			fnt( module::font.get( "arial" ) ),
 			gn( module::finite.get( "greenity" ) ),
 			alph( module::finite.get( "alpha" ) ),
 			ball( module::finite.get( "bouncy" ) ),

@@ -32,3 +32,8 @@
 #include "errlog.h"
 
 std::ofstream g_errlog;
+
+void tossException() {
+	int x = 1;
+	x *= 2; // only purpose is to provide a place to put a breakpoint
+};

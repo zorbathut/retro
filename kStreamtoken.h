@@ -40,20 +40,20 @@ namespace zutil {
 	private:
 
 		kData data;
-		void (*tgt)( std::ostream &str, kData * );
+		void (*tgt)( std::ostream &str, const kData * );
 
 	public:
 
-		void go( std::ostream &str ) {
+		void go( std::ostream &str ) const {
 			(*tgt)( str, &data );
 		};
 
-		kStreamtoken( const kData &in_data, void (*in_tgt)( std::ostream &str, kData * ) ) :
+		kStreamtoken( const kData &in_data, void (*in_tgt)( std::ostream &str, const kData * ) ) :
 			data( in_data ), tgt( in_tgt ) { };
 
 	};
 
-	template< typename foo > std::ostream &operator<<( std::ostream &str, kStreamtoken< foo > &alter ) {
+	template< typename foo > std::ostream &operator<<( std::ostream &str, const kStreamtoken< foo > &alter ) {
 		alter.go( str );
 		return str;
 	};

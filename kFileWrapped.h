@@ -48,16 +48,10 @@ namespace file {
 	class kWrapped : private boost::noncopyable, public kDescribable {
 	public:
 
-		virtual void init() = 0;
-
 		virtual void activate() = 0;
 		virtual void deactivate() = 0;
 		virtual void request( int ticks ) = 0;
 		virtual void urgent() = 0;
-
-		virtual void tick() = 0;
-
-		virtual void deinit() = 0;
 
 		kWrapped();
 		virtual ~kWrapped();

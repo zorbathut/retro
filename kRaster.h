@@ -64,15 +64,15 @@ namespace grfx {
 
 		const kPoint< INT32 > &getDimensions() const;
 
-		bool lock( kRect< INT32 > &bounds, kLockedRead *locked, bool suppressError = false ) const;
+		bool lock( const kRect< INT32 > &bounds, kLockedRead *locked, bool suppressError = false ) const;
 
 		void unlock( const kLockedRead *locked ) const;
 
-		void addModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const;
-		void addDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const;
+		void addModifyNotification( const kRect< INT32 > &bounds, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const;
+		void addDestructionNotification( zutil::kIOFunctor< RVOID, const kRasterConst * > *fptr ) const;
 
-		void removeModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const;
-		void removeDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const;
+		void removeModifyNotification( const kRect< INT32 > &bounds, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const;
+		void removeDestructionNotification( zutil::kIOFunctor< RVOID, const kRasterConst * > *fptr ) const;
 
 		kRasterConst( const kPoint< INT32 > &dim, const kColor *dat, INT32 pitch, bool owned = true );
 		virtual ~kRasterConst();
@@ -95,8 +95,8 @@ namespace grfx {
 
 		bool owned;
 
-		mutable std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > > changeNotifies;
-		mutable std::vector< zutil::kFunctor< RVOID, const kRasterConst * > * > destructNotifies;
+		mutable std::vector< std::pair< kRect< INT32 >, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > > changeNotifies;
+		mutable std::vector< zutil::kIOFunctor< RVOID, const kRasterConst * > * > destructNotifies;
 
 		// yes yes. this needs to be re-implemented :P
 		bool disallowReadLock;
@@ -111,7 +111,7 @@ namespace grfx {
 	class kRaster : public kRasterConst {
 	public:
 
-		bool writeLock( kRect< INT32 > &bounds, kLockedWrite *locked, bool suppressError = false );
+		bool writeLock( const kRect< INT32 > &bounds, kLockedWrite *locked, bool suppressError = false );
 
 		void unlock( const kLockedRead *locked ) const;
 		void unlock( const kLockedWrite *locked );

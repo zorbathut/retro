@@ -59,7 +59,7 @@ namespace grfx {
 
 	kRostaMan roasta;
 
-	class k565ChaNoti : public zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > {
+	class k565ChaNoti : public zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > {
 	public:
 
 		bool operator()( std::pair< const kRect< INT32 > *, const kRasterConst * > inp ) {
@@ -70,7 +70,7 @@ namespace grfx {
 
 	};
 
-	class k565DelNoti : public zutil::kFunctor< RVOID, const kRasterConst * > {
+	class k565DelNoti : public zutil::kIOFunctor< RVOID, const kRasterConst * > {
 	public:
 
 		RVOID operator()( const kRasterConst *inp ) {

@@ -29,6 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
+#define DIRECTINPUT_VERSION 0x0800
+
 #include "dx8util.h"
 
 #include <dinput.h>
@@ -91,13 +93,13 @@ void direct3D8Error( HRESULT ecode, char *buf ) {
 	D3DXGetErrorString( ecode, buf, 255 );
 };
 
-void dInputLocalbuf( std::ostream &ostr, HRESULT *dat ) {
+void dInputLocalbuf( std::ostream &ostr, const HRESULT *dat ) {
 	char buf[ 256 ];
 	directInput8Error( *dat, buf );
 	ostr << buf;
 };
 
-void d3DLocalbuf( std::ostream &ostr, HRESULT *dat ) {
+void d3DLocalbuf( std::ostream &ostr, const HRESULT *dat ) {
 	char buf[ 256 ];
 	direct3D8Error( *dat, buf );
 	ostr << buf;

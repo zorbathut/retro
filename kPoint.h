@@ -55,7 +55,7 @@ public:
 
 };
 
-template< typename kPrecision > kPoint< kPrecision > make_point( const kPrecision &x, const kPrecision &y ) {
+template< typename kPrecision > kPoint< kPrecision > makePoint( const kPrecision &x, const kPrecision &y ) {
 	return kPoint< kPrecision >( x, y ); };
 
 template < typename kPrecision >

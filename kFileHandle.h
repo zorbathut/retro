@@ -55,8 +55,6 @@ namespace file {
 		bool isEmpty() const { return !(held || wrp); };
 		void clear() { held = NULL; wrp = NULL; };
 
-		void init() const { wrp->init(); };
-
 		void activate() const { wrp->activate(); };	// can you say "delegation"?
 		void deactivate() const { wrp->deactivate(); };
 		void request( int ticks ) const { wrp->request( ticks ); }; // De-le-ga-tion.

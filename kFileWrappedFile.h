@@ -29,50 +29,41 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KRECT
-#define RETRO_KRECT
 
-#include "kPoint.h"
+#ifndef RETRO_KFILEWRAPPEDFILE
+#define RETRO_KFILEWRAPPEDFILE
 
-template < typename kPrecision > class kRect {
-public:
+namespace file {
 
-	kPoint< kPrecision > ul;
-	kPoint< kPrecision > br;
+	class kWrappedFile;
 
-	int height() const {
-		return br.y - ul.y; }
+}
 
-	int width() const {
-		return br.x - ul.x; }
+#include "kFileWrapped.h"
 
-	int area() const {
-		return height() * width(); };
+namespace file {
 
-	kRect( void ) { };
+	class kWrappedFile : public kWrapped {
+	public:
 
-	kRect( const kPoint< kPrecision > &in_ul, const kPoint< kPrecision > &in_br ) : ul( in_ul ), br( in_br ) { };
-	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_b ) : ul( in_l, in_u ), br( in_r, in_b ) { };
+		virtual void activate() = 0;
+		virtual void deactivate() = 0;
+		virtual void request( int ticks ) = 0;
+		virtual void urgent() = 0;
 
-	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
+		kWrappedFile( const std::string &fname );
 
-	static kRect< kPrecision > makeBounds( kPoint< kPrecision > inp ) {
-		return kRect< kPrecision >( kPoint< kPrecision >( 0, 0 ), inp ); }
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
+		const std::string &getFname() const;
+
+	private:
+
+		std::string fname;
+
+	};
 
 };
-
-template< typename kPrecision > kPoint< kPrecision > makeRect( const kPrecision &l, const kPrecision &u,
-															   const kPrecision &r, const kPrecision &d ) {
-	return kRect< kPrecision >( l, u, r, d ); };
-
-template < typename kPrecision >
-std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {
-	ostr << pt.ul << "-" << pt.br;
-	return ostr; };
-	// See comment in kPoint.h.
-
-template < typename kPrecLhs, typename kPrecRhs >
-bool operator==( const kRect< kPrecLhs > &lhs, const kRect< kPrecRhs > &rhs ) {
-	return lhs.ul == rhs.ul && lhs.br == rhs.br; };
 
 #endif

@@ -38,6 +38,7 @@ static const int config_ymin = 400;
 static const int tickspersec = 60;
 
 #define POSTDEBUGINFO 0
+#define EXTRACHECK 1
 
 #define STRICT_DESCRIPTIONS 0
 
@@ -51,6 +52,16 @@ static const int tickspersec = 60;
 #define POSTDEBUGINFO 1
 #else
 #define POSTDEBUGINFO 0
+#endif
+
+#endif
+
+#ifndef EXTRACHECK
+
+#ifdef _DEBUG
+#define EXTRACHECK 1
+#else
+#define EXTRACHECK 0
 #endif
 
 #endif

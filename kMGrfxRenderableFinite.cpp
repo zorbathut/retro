@@ -37,6 +37,8 @@
 #include "kFileWrappedNode.h"
 #include "kGrfxRenderablePNG.h"
 #include "kGrfxRenderableFiniteNull.h"
+#include "kFileUtil.h"
+#include "kFileBaseNull.h"
 
 #include <fstream>
 #include <string>
@@ -47,22 +49,16 @@ namespace module {
 
 	namespace finiteFunctors {
 
-		class kPLN : public zutil::kFunctor< RVOID, file::kManager * > {
+		class kPLN : public file::kModuleStdfunctor< grfx::kRenderableFinite > {
 		public:
 			virtual RVOID operator()( file::kManager *inp );
-			kPLN( std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * > ind );
-		private:
-			std::string fname;
-			file::kModule< file::kHandle< grfx::kRenderableFinite > > *module;
+			kPLN( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind );
 		};
 
-		class kPNG : public zutil::kFunctor< RVOID, file::kManager * > {
+		class kPNG : public file::kModuleStdfunctor< grfx::kRenderableFinite > {
 		public:
 			virtual RVOID operator()( file::kManager *inp );
-			kPNG( std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * > ind );
-		private:
-			std::string fname;
-			file::kModule< file::kHandle< grfx::kRenderableFinite > > *module;
+			kPNG( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind );
 		};
 
 	};
@@ -71,11 +67,11 @@ namespace module {
 			std::string *spath,
 					std::map<
 						std::string,		// string: the extension
-						zutil::kFunctor<	// the functor that creates the item that parses files
-							zutil::kFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
+						zutil::kIOFunctor<	// the functor that creates the item that parses files
+							zutil::kIOFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 																	// takes a manager, returns by pointer for
 																	// polymorphism
-							std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * >
+							std::pair< const char *, file::kModule< grfx::kRenderableFinite > * >
 																	// the file data - needs the filename and a pointer
 																	// to what-to-register-with.
 						> *				// and it's a pointer itself for polymorphism, again.
@@ -86,25 +82,28 @@ namespace module {
 
 		*spath = "grfx\\";
 
-		(*assoc)[ "pln" ] = new zutil::kFunctorFactory< zutil::kFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * >
+		(*assoc)[ "pln" ] = new zutil::kIOFunctorFactory< zutil::kIOFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< grfx::kRenderableFinite > * >
 			, finiteFunctors::kPLN >; // ow.
-		(*assoc)[ "png" ] = new zutil::kFunctorFactory< zutil::kFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * >
+		(*assoc)[ "png" ] = new zutil::kIOFunctorFactory< zutil::kIOFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< grfx::kRenderableFinite > * >
 			, finiteFunctors::kPNG >; // ow.
 
 	};
 
-	grfx::kRenderableFinite *kGrfxRenderableFinite::createNullQuantity() {
-		return &null::grfxRenderableFinite; };
+// TODO: wrap a little further down.
+	file::kHandle< grfx::kRenderableFinite > kGrfxRenderableFinite::createNull() {
+		file::kWrapped *wr = new file::kWrappedNode( new file::kBaseNull() );
+		addWrapped( wr );
+		return file::kHandle< grfx::kRenderableFinite >( &null::grfxRenderableFinite, wr ); };
 
+// TODO: dehack.
+using file::kModule;
 	void kGrfxRenderableFinite::describe( std::ostream &ostr ) const {
 		ostr << "grfxRenderableFinite module (thrunch)";
-		/*file::kModuleHandle< grfx::kRenderableFinite >::chaindown( ostr );*/ };
-		// TODO: fix. upgrade.
+		kModule< grfx::kRenderableFinite >::chaindown( ostr ); };
 
 	void kGrfxRenderableFinite::chaindown( std::ostream &ostr ) const {
 		ostr << " (*final*-grfxRenderableFinite module) (thrunch)";
-		/*file::kModuleHandle< grfx::kRenderableFinite >::chaindown( ostr );*/ };
-		// TODO: fix. upgrade.
+		kModule< grfx::kRenderableFinite >::chaindown( ostr ); };
 
 	kGrfxRenderableFinite finite;
 
@@ -122,45 +121,26 @@ namespace module {
 				std::getline( ifs, fname );		// TODO: work out better filename tracking!
 				grfx::kRenderablePNG *dat = new grfx::kRenderablePNG( fname.c_str() );
 				file::kWrapped *wrp = new file::kWrappedNode( dat );
-				inp->addInterface( wrp );
-				module->add( ident.c_str(), file::kHandle< grfx::kRenderableFinite >( dat, wrp ) );
+				module->addWrapped( wrp );
+				module->addKey( ident.c_str(), file::kHandle< grfx::kRenderableFinite >( dat, wrp ) );
 			}
 			ifs.close();
 			return RVOIDVAL;
 		};
 
-
-		kPLN::kPLN( std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * > ind ) :
-				fname( ind.first ),
-				module( ind.second )
-			{ };
+		kPLN::kPLN( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind ) :
+			file::kModuleStdfunctor< grfx::kRenderableFinite >( ind ) { };
 
 		RVOID kPNG::operator()( file::kManager *inp ) {
 			grfx::kRenderablePNG *dat = new grfx::kRenderablePNG( fname.c_str() );
 			file::kWrapped *wrp = new file::kWrappedNode( dat );
-			inp->addInterface( wrp );
-			const char *beg = fname.c_str();
-			const char *end = beg;
-			while( *end )
-				end++;
-			while( end != beg && *end != '.' )
-				end--;
-			const char *fin = end;
-			while( end != beg && *end != '\\' )
-				end--;
-			end++;
-			std::string en( end, fin );
-			for( int i = 0; i < en.size(); i++ )
-				en[ i ] = tolower( en[ i ] );
-			module->add( en.c_str(), file::kHandle< grfx::kRenderableFinite >( dat, wrp ) );
+			module->addWrapped( wrp );
+			module->addKey( file::extractFname( fname ), file::kHandle< grfx::kRenderableFinite >( dat, wrp ) );
 			return RVOIDVAL;
 		};
 
-
-		kPNG::kPNG( std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * > ind ) :
-				fname( ind.first ),
-				module( ind.second )
-			{ };
+		kPNG::kPNG( std::pair< const char *, file::kModule< grfx::kRenderableFinite > * > ind ) :
+			file::kModuleStdfunctor< grfx::kRenderableFinite >( ind ) { };
 
 	};
 

@@ -29,53 +29,60 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KGRFXFONTFILE
-#define RETRO_KGRFXFONTFILE
+#ifndef RETRO_KGRFXFONTLINKFILE
+#define RETRO_KGRFXFONTLINKFILE
 
 namespace grfx {
 
-	class kFontFile;
+	class kFontLinkfile;
 
 }
 
-#include "kGrfxFont.h"
-#include "kGrfxRenderableFinite.h"
-#include "kFileRawhandle.h"
-
-#include <string>
+#include "kGrfxFontRenderable.h"
+#include "kFileWrappedFile.h"
+#include "kFileHandle.h"
+#include "kFunctor.h"
 
 namespace grfx {
 
-	class kFontFile : public kFont, public file::kBase {
+	class kFontLinkfile : public kFontRenderable, public file::kWrappedFile {
 	public:
+
+		virtual const font::kBoundaries &getBounds() const;
+		virtual const kRenderable &getRenderable() const;
 
 		virtual int getVerticalOffset() const;
 
-		virtual void renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const;
+		virtual void init( const std::string &boundname, const std::string &rendername );
 
-		virtual void init();
+		virtual void activate();
+		virtual void deactivate();
+		virtual void request( int ticks );
+		virtual void urgent();
 
-		virtual void loadAll();
-
-		virtual void beginProgressive();
-		virtual void continueProgressive( int steps );
-		virtual void cancelProgressive();
-		virtual void completeProgressive();
-
-		virtual void unload();
-
-		virtual void deinit();
-
-		kFontFile( const char *fname, const char *fontname );
+		kFontLinkfile( const std::string &fname );
+		virtual ~kFontLinkfile();
 
 		virtual void describe( std::ostream &ostr ) const;
 	protected:  void chaindown( std::ostream &ostr ) const;
 
 	private:
 
-		file::kRawhandle< kRenderableFinite > fnt;
-		std::string fontname;
+		file::kHandle< kRenderable > renderable;
+		file::kHandle< font::kBoundaries > bounds;
 
+	};
+
+	class kFontLinkfileInitter : public zutil::kNFunctor {
+	public:
+		virtual void operator()();
+		kFontLinkfileInitter( const std::string &boundname, const std::string &rendername, kFontLinkfile *target );
+
+	private:
+		std::string boundname;
+		std::string rendername;
+
+		kFontLinkfile *target;
 	};
 
 };

@@ -29,50 +29,56 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KRECT
-#define RETRO_KRECT
+#ifndef RETRO_KFILEGENERATABLE
+#define RETRO_KFILEGENERATABLE
 
-#include "kPoint.h"
+namespace file {
 
-template < typename kPrecision > class kRect {
-public:
+	class kGeneratable;
 
-	kPoint< kPrecision > ul;
-	kPoint< kPrecision > br;
+}
 
-	int height() const {
-		return br.y - ul.y; }
+#include "butility.h"
+#include "kDescribable.h"
 
-	int width() const {
-		return br.x - ul.x; }
+#include <string>
 
-	int area() const {
-		return height() * width(); };
+namespace file {
 
-	kRect( void ) { };
+	class kGeneratable : private boost::noncopyable, public kDescribable {
+	public:
 
-	kRect( const kPoint< kPrecision > &in_ul, const kPoint< kPrecision > &in_br ) : ul( in_ul ), br( in_br ) { };
-	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_b ) : ul( in_l, in_u ), br( in_r, in_b ) { };
+		enum eState { EMPTY, LOADING, DONE, READY };
 
-	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
+		virtual void loadAll() = 0;
 
-	static kRect< kPrecision > makeBounds( kPoint< kPrecision > inp ) {
-		return kRect< kPrecision >( kPoint< kPrecision >( 0, 0 ), inp ); }
+		        int    getProgressiveResolution() const;
+		virtual void   beginProgressive() = 0;
+		        int    currentProgressive() const;
+		virtual void   continueProgressive( int steps ) = 0;
+		virtual void   completeProgressive() = 0;
+		virtual void   cancelProgressive() = 0;
+		        eState getState() const;
+		const std::string &getStatetext() const;
+		        bool   getFritz() const; // is this data fritzed?
+
+		virtual void unload() = 0;
+
+		kGeneratable();	// better init progres . . . well, not my problem.
+		virtual ~kGeneratable();
+
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
+	protected:
+
+		int progres;
+		int progcur;
+		eState state;
+		bool fritz;
+
+	};
 
 };
-
-template< typename kPrecision > kPoint< kPrecision > makeRect( const kPrecision &l, const kPrecision &u,
-															   const kPrecision &r, const kPrecision &d ) {
-	return kRect< kPrecision >( l, u, r, d ); };
-
-template < typename kPrecision >
-std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {
-	ostr << pt.ul << "-" << pt.br;
-	return ostr; };
-	// See comment in kPoint.h.
-
-template < typename kPrecLhs, typename kPrecRhs >
-bool operator==( const kRect< kPrecLhs > &lhs, const kRect< kPrecRhs > &rhs ) {
-	return lhs.ul == rhs.ul && lhs.br == rhs.br; };
 
 #endif

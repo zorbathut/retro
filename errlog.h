@@ -35,8 +35,9 @@
 #pragma warning( disable : 985 )
 
 #include <fstream>
-// todo: GET RID OF THIS HEADER!
 
 extern std::ofstream g_errlog;
+
+void tossException();
 
 #endif

@@ -29,56 +29,58 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KFILEMODULERAWHANDLE
-#define RETRO_KFILEMODULERAWHANDLE
+#pragma warning( disable : 4786 )
+
+#include "kFileBase.h"
+
+#include <iostream>
+#include <map>
 
 namespace file {
 
-	template < class kType > class kModuleRawhandle;
+	class kGMap {
 
-};
+		std::map< kGeneratable::eState, std::string > mep;
 
-#include "kFileModule.h"
-#include "kFileRawhandle.h"
-
-namespace file {
-
-	template < typename kType > class kModuleRawhandle : public kModule< kRawhandle< kType > > {
-	private:
-
-		virtual void specDat(
-				std::string *spath,
-				std::map<
-					std::string,		// string: the extension
-					zutil::kFunctor<	// the functor that creates the item that parses files
-						zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
-																// takes a manager, returns by pointer for
-																// polymorphism
-						std::pair< const char *, kModule< kRawhandle< kType > > * >
-																// the file data - needs the filename and a pointer
-																// to what-to-register-with.
-					> *				// and it's a pointer itself for polymorphism, again.
-				> *assoc
-		) = 0;
-
-		virtual kRawhandle< kType > createNull( void ) = 0;
+		std::string fail;
 
 	public:
+		kGMap() {
+			mep[ kGeneratable::EMPTY ] = "EMPTY";
+			mep[ kGeneratable::LOADING ] = "LOADING";
+			mep[ kGeneratable::DONE ] = "DONE";
+			mep[ kGeneratable::READY ] = "READY";
 
-		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
-	protected:  void chaindown( std::ostream &ostr ) const;
+			fail = "*UNKNOWN*";
+		};
+
+		const std::string &get( kGeneratable::eState stat ) const {
+			std::map< kGeneratable::eState, std::string >::const_iterator fnd = mep.find( stat );
+			if( fnd == mep.end() )
+				return fail;
+			return fnd->second;
+		};
 
 	};
 
-	template < typename kType > void kModuleRawhandle< kType >::describe( std::ostream &ostr ) const {
-		ostr << "unidentified modulerawhandle";
-		kModule< file::kRawhandle< kType > >::chaindown( ostr ); };
-	template < typename kType > void kModuleRawhandle< kType >::chaindown( std::ostream &ostr ) const {
-		kModule< file::kRawhandle< kType > >::chaindown( ostr ); };
+	const kGMap kgmap;
 
+	int kGeneratable::getProgressiveResolution() const { return progres; };
+    int kGeneratable::currentProgressive() const { return progcur; };
+	kGeneratable::eState kGeneratable::getState() const { return state; };
+	const std::string &kGeneratable::getStatetext() const {
+		return kgmap.get( state ); };
 
-};
+    bool kGeneratable::getFritz() const { return fritz; };
 
+	kGeneratable::kGeneratable() : state( EMPTY ), fritz( false ), progres( 0 ), progcur( 0 ) { };
+	kGeneratable::~kGeneratable() { };
 
+	void kGeneratable::describe( std::ostream &ostr ) const {
+		ostr << "unidentified generatable";
+		kDescribable::chaindown( ostr ); };
 
-#endif
+	void kGeneratable::chaindown( std::ostream &ostr ) const {
+		kDescribable::chaindown( ostr ); };
+
+}

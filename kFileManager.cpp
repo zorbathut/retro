@@ -44,7 +44,7 @@ namespace file {
 	int kManager::getCurCycle( void ) const {
 		return std::distance(
 			loador.begin(),
-			static_cast< std::vector< zutil::kFunctor< RVOID, kManager * > * >::const_iterator >( curl )
+			static_cast< std::vector< zutil::kIOFunctor< RVOID, kManager * > * >::const_iterator >( curl )
 		);
 	};
 
@@ -57,28 +57,27 @@ namespace file {
 	};
 
 	void kManager::complete( void ) {
-		for( std::vector< zutil::kFunctor< RVOID, kManager * > * >::iterator aitr = loador.begin(); aitr != loador.end(); ++aitr )
+		for( std::vector< zutil::kIOFunctor< RVOID, kManager * > * >::iterator aitr = loador.begin(); aitr != loador.end(); ++aitr )
 			delete *aitr;
 		loador.clear();
-		for( std::vector< file::kWrapped * >::iterator bitr = interfaces.begin(); bitr != interfaces.end(); ++bitr )
-			(*bitr)->init();
-		for( std::vector< file::kBase * >::iterator citr = raws.begin(); citr != raws.end(); ++citr )
-			(*citr)->init();
+		for( std::vector< zutil::kNFunctor * >::iterator bitr = inits.begin(); bitr != inits.end(); bitr++ ) {
+			(**bitr)();
+			delete *bitr;
+		};
 		completed = true;
 	};
 
 	void kManager::tick( void ) {
-		for( std::vector< kWrapped * >::iterator titr = active.begin(); titr != active.end(); ++titr )
+		for( std::vector< kWrappedNode * >::iterator titr = active.begin(); titr != active.end(); ++titr )
 			(*titr)->tick();
-
 		wipeRemovals();
 
 	};
 
 	void kManager::wipeRemovals() {
 
-		for( std::vector< kWrapped * >::iterator ritr = removals.begin(); ritr != removals.end(); ++ritr ) {
-			std::vector< kWrapped * >::iterator find = std::find( active.begin(), active.end(), *ritr );
+		for( std::vector< kWrappedNode * >::iterator ritr = removals.begin(); ritr != removals.end(); ++ritr ) {
+			std::vector< kWrappedNode * >::iterator find = std::find( active.begin(), active.end(), *ritr );
 			if( find == active.end() )
 				g_errlog << "GMANAGER: Couldn't find \"" << (*ritr)->textdesc() << "\" in activated list" << std::endl;
 			  else {
@@ -96,44 +95,31 @@ namespace file {
 	kManager::~kManager() {
 		if( !completed )
 			complete();
-		wipeRemovals();
-		std::vector< kWrapped * >::iterator iitr;
-		std::vector< kBase * >::iterator ritr;
-		for( iitr = interfaces.begin(); iitr != interfaces.end(); ++iitr )
-			(*iitr)->deinit();
-		for( ritr = raws.begin(); ritr != raws.end(); ++ritr )
-			(*ritr)->deinit();
-		for( iitr = interfaces.begin(); iitr != interfaces.end(); ++iitr )
-			delete *iitr;
-		for( ritr = raws.begin(); ritr != raws.end(); ++ritr )
-			delete *ritr;
 	};
 
-	void kManager::addInterface( file::kWrapped *nter ) {
-		interfaces.push_back( nter ); };
-	void kManager::addRaw( file::kBase *base ) {
-		raws.push_back( base ); };
-
-	void kManager::addLoader( zutil::kFunctor< RVOID, kManager * > *ldr ) {
+	void kManager::addLoader( zutil::kIOFunctor< RVOID, kManager * > *ldr ) {
 		loador.push_back( ldr ); };
+
+	void kManager::addInitter( zutil::kNFunctor *ini ) {
+		inits.push_back( ini ); };
 
 	bool kManager::isComplete() const {
 		return completed; };
 
-	void kManager::activateWrapped( file::kWrapped *wrp ) {
-#if POSTDEBUGINFO
+	void kManager::activateWrapped( file::kWrappedNode *wrp ) {
+#if EXTRACHECK
 		if( std::find( active.begin(), active.end(), wrp ) != active.end() ) {
-			g_errlog << "GMANAGER: (debug) Already found \"" << wrp->textdesc() << "\" in activated list" << std::endl;
-		} else {
-			g_errlog << "GMANAGER: (debug) Adding \"" << wrp->textdesc() << "\" to activated list" << std::endl;
-#endif
-			active.push_back( wrp );
-#if POSTDEBUGINFO
+			g_errlog << "ERRCHECK: GMANAGER: Already found \"" << wrp->textdesc() << "\" in activated list" << std::endl;
+			return;
 		}
 #endif
+#if POSTDEBUGINFO
+		g_errlog << "GMANAGER: (debug) Adding \"" << wrp->textdesc() << "\" to activated list" << std::endl;
+#endif
+		active.push_back( wrp );
 	};
 
-	void kManager::removeWrapped( file::kWrapped *wrp ) {
+	void kManager::removeWrapped( file::kWrappedNode *wrp ) {
 #if POSTDEBUGINFO
 		g_errlog << "GMANAGER: (debug) Adding removal for \"" << wrp->textdesc() << "\"" << std::endl;
 #endif

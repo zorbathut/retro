@@ -29,57 +29,25 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KMGRFXRENDERABLEFINITERAW
-#define RETRO_KMGRFXRENDERABLEFINITERAW
+#include "kFileBaseOneshot.h"
 
-namespace module {
+namespace file {
 
-	class kGrfxRenderableFiniteRaw;
+	void kBaseOneshot::beginProgressive() { state = LOADING; };
+	void kBaseOneshot::continueProgressive( int steps ) { state = DONE; };
+	void kBaseOneshot::completeProgressive() { loadAll(); };
+	void kBaseOneshot::cancelProgressive() { state = EMPTY; };
 
-};
+	kBaseOneshot::kBaseOneshot( const std::string &fname ) : kBase( fname ) {
+		progres = 1; };
 
-#include "kFileModuleRawhandle.h"
-#include "kGrfxRenderableFinite.h"
+	kBaseOneshot::~kBaseOneshot() { };
 
-namespace module {
+	void kBaseOneshot::describe( std::ostream &ostr ) const {
+		ostr << "unidentified baseoneshot";
+		kBase::chaindown( ostr ); };
 
-	class kGrfxRenderableFiniteRaw : public file::kModuleRawhandle< grfx::kRenderableFinite > {
-	public:
-
-		~kGrfxRenderableFiniteRaw();
-
-	private:
-
-		virtual void specDat(
-				std::string *spath,
-				std::map<
-					std::string,		// string: the extension
-					zutil::kFunctor<	// the functor that creates the item that parses files
-						zutil::kFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
-																// takes a manager, returns by pointer for
-																// polymorphism
-						std::pair< const char *, file::kModule< file::kRawhandle< grfx::kRenderableFinite > > * >
-																// the file data - needs the filename and a pointer
-																// to what-to-register-with.
-					> *				// and it's a pointer itself for polymorphism, again.
-				> *assoc
-		);
-
-		virtual file::kRawhandle< grfx::kRenderableFinite > createNull( void );
-
-		std::vector< file::kBase * > nulls;
-
-	public:
-
-		virtual void describe( std::ostream &ostr ) const;
-	protected:  void chaindown( std::ostream &ostr ) const;
-
-	};
-
-	extern kGrfxRenderableFiniteRaw rawfinite;
+	void kBaseOneshot::chaindown( std::ostream &ostr ) const {
+		kBase::chaindown( ostr ); };
 
 };
-
-
-
-#endif

@@ -38,30 +38,30 @@ namespace module {
 
 };
 
-#include "kFileModuleHandle.h"
+#include "kFileModule.h"
 #include "kGrfxFont.h"
 
 namespace module {
 
-	class kGrfxFont : public file::kModuleHandle< grfx::kFont > {
+	class kGrfxFont : public file::kModule< grfx::kFont > {
 	private:
 
 		virtual void specDat(
 				std::string *spath,
 				std::map<
 					std::string,		// string: the extension
-					zutil::kFunctor<	// the functor that creates the item that parses files
-						zutil::kFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
+					zutil::kIOFunctor<	// the functor that creates the item that parses files
+						zutil::kIOFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 																// takes a manager, returns by pointer for
 																// polymorphism
-						std::pair< const char *, file::kModule< file::kHandle< grfx::kFont > > * >
+						std::pair< const char *, file::kModule< grfx::kFont > * >
 																// the file data - needs the filename and a pointer
 																// to what-to-register-with.
 					> *				// and it's a pointer itself for polymorphism, again.
 				> *assoc
 		);
 
-		virtual grfx::kFont *createNullQuantity();
+		virtual file::kHandle< grfx::kFont > createNull();
 
 	public:
 

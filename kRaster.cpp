@@ -35,6 +35,7 @@
 
 #include "errlog.h"
 #include "minmax.h"
+#include "kPoint.h"
 
 #include <algorithm>
 
@@ -46,7 +47,7 @@ namespace grfx {
 		return dimension; };
 
 		// TODO: more testing
-	bool kRasterConst::lock( kRect< INT32 > &bounds, kLockedRead *locked, bool suppressError ) const {
+	bool kRasterConst::lock( const kRect< INT32 > &bounds, kLockedRead *locked, bool suppressError ) const {
 		if( disallowReadLock ) {
 			if( !suppressError ) {
 				g_errlog << "RASTER: Failed readlock on " << textdesc() << " for " << bounds << std::endl;
@@ -75,14 +76,14 @@ namespace grfx {
 		readLockCount--; };
 	// TODO: more errorchecking 'n stuff.
 
-	void kRasterConst::addModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const {
+	void kRasterConst::addModifyNotification( const kRect< INT32 > &bounds, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const {
 		changeNotifies.push_back( std::make_pair( bounds, fptr ) ); };
 
-	void kRasterConst::addDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const {
+	void kRasterConst::addDestructionNotification( zutil::kIOFunctor< RVOID, const kRasterConst * > *fptr ) const {
 		destructNotifies.push_back( fptr ); };
 
-	void kRasterConst::removeModifyNotification( const kRect< INT32 > &bounds, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const {
-		std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > >::iterator itr;
+	void kRasterConst::removeModifyNotification( const kRect< INT32 > &bounds, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > *fptr ) const {
+		std::vector< std::pair< kRect< INT32 >, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > >::iterator itr;
 		itr = std::find( changeNotifies.begin(), changeNotifies.end(), std::make_pair( bounds, fptr ) );
 		if( itr != changeNotifies.end() )
 			changeNotifies.erase( itr );
@@ -90,8 +91,8 @@ namespace grfx {
 			g_errlog << textdesc() << " tried removing a modification notification that did not exist" << std::endl;
 	};
 
-	void kRasterConst::removeDestructionNotification( zutil::kFunctor< RVOID, const kRasterConst * > *fptr ) const {
-		std::vector< zutil::kFunctor< RVOID, const kRasterConst * > * >::iterator itr;
+	void kRasterConst::removeDestructionNotification( zutil::kIOFunctor< RVOID, const kRasterConst * > *fptr ) const {
+		std::vector< zutil::kIOFunctor< RVOID, const kRasterConst * > * >::iterator itr;
 		itr = std::find( destructNotifies.begin(), destructNotifies.end(), fptr );
 		if( itr != destructNotifies.end() )
 			destructNotifies.erase( itr );
@@ -110,7 +111,7 @@ namespace grfx {
 	kRasterConst::~kRasterConst() {
 		if( owned )
 			delete [] data.nc;
-		std::vector< zutil::kFunctor< RVOID, const kRasterConst * > * >::iterator itr;
+		std::vector< zutil::kIOFunctor< RVOID, const kRasterConst * > * >::iterator itr;
 		for( itr = destructNotifies.begin(); itr != destructNotifies.end(); itr++ ) {
 			(**itr)( this );
 		};
@@ -119,12 +120,12 @@ namespace grfx {
 
 	void kRasterConst::notifyModification( const kRect< INT32 > &bounds ) const {
 		std::vector< bool > mark;
-		std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > >::iterator itr;
+		std::vector< std::pair< kRect< INT32 >, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > >::iterator itr;
 		std::pair< const kRect< INT32 > *, const kRasterConst * > parm( &bounds, this );
 		for( itr = changeNotifies.begin(); itr != changeNotifies.end(); itr++ ) {
 			mark.push_back( !(*(itr->second))( parm ) );
 		};
-		std::vector< std::pair< kRect< INT32 >, zutil::kFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > > alter;
+		std::vector< std::pair< kRect< INT32 >, zutil::kIOFunctor< bool, std::pair< const kRect< INT32 > *, const kRasterConst * > > * > > alter;
 		for( int i = 0; i < mark.size(); ++i ) {
 			if( mark[ i ] )
 				alter.push_back( changeNotifies[ i ] );
@@ -142,7 +143,7 @@ namespace grfx {
 		kDescribable::chaindown( ostr ); }
 
 	// TODO: more testing
-	bool kRaster::writeLock( kRect< INT32 > &bounds, kLockedWrite *locked, bool suppressError ) {
+	bool kRaster::writeLock( const kRect< INT32 > &bounds, kLockedWrite *locked, bool suppressError ) {
 		if( disallowReadLock || readLockCount ) {
 			if( !suppressError ) {
 				g_errlog << "RASTER: Failed writelock on " << textdesc() << " for " << bounds << std::endl;
@@ -198,6 +199,6 @@ namespace grfx {
 		
 namespace null {
 
-	grfx::kRaster raster( make_point( 0, 0 ) );
+	grfx::kRaster raster( makePoint( 0, 0 ) );
 
 };

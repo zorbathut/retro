@@ -38,30 +38,30 @@ namespace module {
 
 };
 
-#include "kFileModuleHandle.h"
+#include "kFileModule.h"
 #include "kGrfxRenderableFinite.h"
 
 namespace module {
 
-	class kGrfxRenderableFinite : public file::kModuleHandle< grfx::kRenderableFinite > {
+	class kGrfxRenderableFinite : public file::kModule< grfx::kRenderableFinite > {
 	private:
 
 		virtual void specDat(
 				std::string *spath,
 				std::map<
 					std::string,		// string: the extension
-					zutil::kFunctor<	// the functor that creates the item that parses files
-						zutil::kFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
+					zutil::kIOFunctor<	// the functor that creates the item that parses files
+						zutil::kIOFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 																// takes a manager, returns by pointer for
 																// polymorphism
-						std::pair< const char *, file::kModule< file::kHandle< grfx::kRenderableFinite > > * >
+						std::pair< const char *, file::kModule< grfx::kRenderableFinite > * >
 																// the file data - needs the filename and a pointer
 																// to what-to-register-with.
 					> *				// and it's a pointer itself for polymorphism, again.
 				> *assoc
 		);
 
-		virtual grfx::kRenderableFinite *createNullQuantity();
+		virtual file::kHandle< grfx::kRenderableFinite > createNull();
 
 	public:
 

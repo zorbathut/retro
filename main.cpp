@@ -41,9 +41,9 @@
 #include "errlog.h"
 #include "kGrfxRenderablePNG.h"
 #include "kMGrfxRenderableFinite.h"
-#include "kMGrfxRenderableFiniteRaw.h"
 #include "kFileManager.h"
 #include "kMGrfxFont.h"
+#include "kMGrfxFontBoundaries.h"
 
 bool initManager( kInterface *inter ) {		// return 1 on failure
 
@@ -51,7 +51,6 @@ bool initManager( kInterface *inter ) {		// return 1 on failure
 	grfx::kRenderablePNG bar( "hardcode\\loadingbar.png" );
 	bg.loadAll();
 	bar.loadAll();
-	// todo: ignore error bits
 
 	grfx::kWritable *target = inter->lockBuffer();
 	target->clear( 0x00000000 );
@@ -59,8 +58,8 @@ bool initManager( kInterface *inter ) {		// return 1 on failure
 	inter->unlockBuffer( target );
 
 	module::finite.generate( g_manager );
-	module::rawfinite.generate( g_manager );
 	module::font.generate( g_manager );
+	module::fontbounds.generate( g_manager );
 	g_manager->prepare();
 
 	while( g_manager->getCurCycle() != g_manager->getCycles() ) {
@@ -117,13 +116,10 @@ void gameMain( kInterface *inter ) {
 
 	inter->updateControls(); // just to flush
 
-	file::kHandle< grfx::kFont > fnt;
+	file::kHandle< grfx::kFont > fnt = module::font.get( "small" );
+	fnt.activate();
 
 	while( !inter->shutDown() && mainstack.ready() ) {
-
-		if( fnt.isEmpty() ) {
-			fnt = module::font.get( "small" );
-			fnt.activate(); }
 
 		const kControls *controls = inter->updateControls();
 

@@ -29,8 +29,6 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-// TODO: improve logging, make it a little easier to read
-
 #include "kFileWrappedNode.h"
 
 #include "kFileManager.h"

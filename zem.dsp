@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /pdb:none /machine:I386
+# ADD LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /pdb:none /map /machine:I386
 # SUBTRACT LINK32 /verbose
 
 !ELSEIF  "$(CFG)" == "zem - Win32 Debug"
@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /pdb:none /machine:I386
 # SUBTRACT BASE LINK32 /verbose
-# ADD LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib GDI32.lib /nologo /subsystem:windows /profile /machine:I386
+# ADD LINK32 libpngr.lib d3dx8.lib d3d8.lib dinput8.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /profile /machine:I386
 # SUBTRACT LINK32 /verbose
 
 !ELSEIF  "$(CFG)" == "zem - Win32 DProfile"
@@ -293,11 +293,31 @@ SOURCE=.\kGrfxFont.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\kGrfxFontFile.cpp
+SOURCE=.\kGrfxFontBoundaries.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\kGrfxFontFile.h
+SOURCE=.\kGrfxFontBoundaries.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxFontBoundariesFile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxFontBoundariesFile.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxFontLinkfile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxFontLinkfile.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxFontLinkhandle.h
 # End Source File
 # Begin Source File
 
@@ -309,7 +329,11 @@ SOURCE=.\kGrfxFontNull.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\kGrfxFontPropBitmap.h
+SOURCE=.\kGrfxFontRenderable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxFontRenderable.h
 # End Source File
 # End Group
 # Begin Source File
@@ -335,6 +359,10 @@ SOURCE=.\kGrfxRenderableFinite.cpp
 # Begin Source File
 
 SOURCE=.\kGrfxRenderableFinite.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kGrfxRenderableFiniteHSL.h
 # End Source File
 # Begin Source File
 
@@ -430,6 +458,22 @@ SOURCE=.\kFileBaseNull.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\kFileBaseOneshot.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kFileBaseOneshot.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kFileGeneratable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kFileGeneratable.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\kFileHandle.h
 # End Source File
 # Begin Source File
@@ -446,15 +490,11 @@ SOURCE=.\kFileModule.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\kFileModuleHandle.h
+SOURCE=.\kFileUtil.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\kFileModuleRawhandle.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\kFileRawhandle.h
+SOURCE=.\kFileUtil.h
 # End Source File
 # Begin Source File
 
@@ -463,6 +503,14 @@ SOURCE=.\kFileWrapped.cpp
 # Begin Source File
 
 SOURCE=.\kFileWrapped.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\kFileWrappedFile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kFileWrappedFile.h
 # End Source File
 # Begin Source File
 
@@ -522,19 +570,19 @@ SOURCE=.\kMGrfxFont.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\kMGrfxFontBoundaries.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\kMGrfxFontBoundaries.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\kMGrfxRenderableFinite.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\kMGrfxRenderableFinite.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\kMGrfxRenderableFiniteRaw.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\kMGrfxRenderableFiniteRaw.h
 # End Source File
 # End Group
 # Begin Group "controls"

@@ -34,6 +34,8 @@
 #pragma warning( disable : 4786 )
 #pragma warning( disable : 4800 )	// bool performance warning
 
+#define DIRECTINPUT_VERSION 0x0800
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <d3d8.h>
@@ -41,6 +43,7 @@
 #include <process.h>
 #include <assert.h>
 #include <vector>
+#include <cstdio>
 
 #include "kInterface.h"
 #include "kGrfxWritableRaster.h"
@@ -468,14 +471,14 @@ bool kInterfaceWin32::init( void ) {
 
     // Initialize Direct3D
     if( NULL == ( D3D = Direct3DCreate8( D3D_SDK_VERSION ) ) ) {
-		MessageBox( NULL, "Error initializing Direct3D8", "Critical Error", NULL );
+		MessageBox( 0, "Error initializing Direct3D8", "Critical Error", NULL );
         return true;
 	}
 
     // Get the current desktop display mode
     D3DDISPLAYMODE d3ddm;
     if( FAILED( D3D->GetAdapterDisplayMode( D3DADAPTER_DEFAULT, &d3ddm ) ) ) {
-		MessageBox( NULL, "Couldn't get display mode information", "Critical Error", NULL );
+		MessageBox( 0, "Couldn't get display mode information", "Critical Error", NULL );
 		D3D->Release();
         return true;
 	}
@@ -498,7 +501,6 @@ bool kInterfaceWin32::init( void ) {
 			bbfmt = *testitr;
 			char buffer[ 80 ];
 			sprintf( buffer, "WIN32: Using frontbuffer %d, backbuffer %d, HAL", d3ddm.Format, bbfmt );
-			//MessageBox( NULL, buffer, "Info", NULL );
 			g_errlog << buffer << std::endl;
 			hal = true;
 			break;
@@ -513,7 +515,6 @@ bool kInterfaceWin32::init( void ) {
 				bbfmt = *testitr;
 				char buffer[ 80 ];
 				sprintf( buffer, "WIN32: Using frontbuffer %d, backbuffer %d, REF", d3ddm.Format, bbfmt );
-				//MessageBox( NULL, buffer, "Info", NULL );
 				g_errlog << buffer << std::endl;
 				hal = false;
 				break;
@@ -523,7 +524,6 @@ bool kInterfaceWin32::init( void ) {
 		if( bbfmt == D3DFMT_UNKNOWN ) {
 			char buffer[ 80 ];
 			sprintf( buffer, "WIN32: Couldn't find usable backbuffer format for %d", d3ddm.Format );
-			//MessageBox( NULL, buffer, "Info", NULL );
 			g_errlog << buffer << std::endl;
 			MessageBox( NULL, "Couldn't find usable screen mode", "Critical error", NULL );
 			int i;
@@ -531,7 +531,6 @@ bool kInterfaceWin32::init( void ) {
 				if( !FAILED( D3D->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3ddm.Format, (D3DFORMAT)i, TRUE ) ) ) {
 					char buffer[ 80 ];
 					sprintf( buffer, "WIN32: Found frontbuffer %d, backbuffer %d, HAL", d3ddm.Format, i );
-					//MessageBox( NULL, buffer, "Info", NULL );
 					g_errlog << buffer << std::endl;
 				}
 				testitr++;
@@ -540,7 +539,6 @@ bool kInterfaceWin32::init( void ) {
 				if( !FAILED( D3D->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, d3ddm.Format, (D3DFORMAT)i, TRUE ) ) ) {
 					char buffer[ 80 ];
 					sprintf( buffer, "WIN32: Found frontbuffer %d, backbuffer %d, REF", d3ddm.Format, i );
-					//MessageBox( NULL, buffer, "Info", NULL );
 					g_errlog << buffer << std::endl;
 				}
 				testitr++;
@@ -566,7 +564,7 @@ bool kInterfaceWin32::init( void ) {
     hWnd = CreateWindow( "Timespace", "Timespace",
                               WS_OVERLAPPEDWINDOW, 0, 0, config_xmin + GetSystemMetrics( SM_CXSIZEFRAME ) * 2,
 							  config_ymin + GetSystemMetrics( SM_CYSIZEFRAME ) * 2 + GetSystemMetrics( SM_CYMENU ),
-                              GetDesktopWindow(), NULL, wc.hInstance, NULL );
+                              GetDesktopWindow(), 0, wc.hInstance, NULL );
 
     // Create the Direct3D device. Here we are using the default adapter and
 	// choosing the HAL we figured out above.
@@ -578,15 +576,15 @@ bool kInterfaceWin32::init( void ) {
     if( FAILED( bort ) ) {
 		switch( bort ) {  
 		case D3DERR_INVALIDCALL  :
-			MessageBox( NULL, "Unexpected error (invalid call) initializing graphics card", "Critical error", NULL );
+			MessageBox( 0, "Unexpected error (invalid call) initializing graphics card", "Critical error", NULL );
 			break;
 
 		case D3DERR_OUTOFVIDEOMEMORY  :
-			MessageBox( NULL, "Out-of-memory error initializing graphics card", "Critical error", NULL );
+			MessageBox( 0, "Out-of-memory error initializing graphics card", "Critical error", NULL );
 			break;
 
 		case D3DERR_NOTAVAILABLE  :
-			MessageBox( NULL, "Unexpected error (not available) initializing graphics card", "Critical error", NULL );
+			MessageBox( 0, "Unexpected error (not available) initializing graphics card", "Critical error", NULL );
 			break;
 
 		default: {
@@ -594,7 +592,7 @@ bool kInterfaceWin32::init( void ) {
 			direct3D8Error( bort, foo );
 			char bar[ 512 ];
 			sprintf( bar, "Unexpected error (0x%x, %s) initializing graphics card", bort, foo );
-			MessageBox( NULL, bar, "Critical error", NULL );
+			MessageBox( 0, bar, "Critical error", NULL );
 			break; }
 		}
 
@@ -611,7 +609,7 @@ bool kInterfaceWin32::init( void ) {
     if( FAILED(hr) ) {
 		D3DDevice->Release();
 		D3D->Release();
-		MessageBox( NULL, "Error creating DirectInput8 object", "Critical error", NULL );
+		MessageBox( 0, "Error creating DirectInput8 object", "Critical error", NULL );
 		return true;
 	};
 
@@ -679,7 +677,7 @@ void __cdecl mainThread( void *parameter ) {
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR, int ) {
 
-	//_chdir( "c:\\win98se\\desktop\\werk\\sea\\zem\\datadog" );
+//	_chdir( "C:\\Documents and Settings\\zorba.MCP\\Desktop\\werk\\sea\\zem\\datadog" );
 
 	g_errlog.open( "errlog.txt" );
 	g_errlog.setf( std::ios::unitbuf );	// whee, autoflush!

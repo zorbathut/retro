@@ -39,6 +39,8 @@ kOutputtoken kDescribable::textdesc() const {
 void kDescribable::describe( std::ostream &ostr ) const {
 	ostr << "undescribed item"; };
 
+kDescribable::~kDescribable() { };
+
 void kDescribable::chaindown( std::ostream &ostr ) const { };
 
 std::ostream &operator<<( std::ostream &ostr, const kOutputtoken &kot ) {

@@ -31,12 +31,9 @@
 
 #pragma warning( disable : 4786 )
 
-#include "kMGrfxFont.h"
+#include "kMGrfxFontBoundaries.h"
 
-#include "kFileManager.h"
-#include "kFileWrappedNode.h"
-#include "kGrfxFontNull.h"
-#include "kGrfxFontLinkfile.h"
+#include "kGrfxFontBoundariesFile.h"
 #include "kFileUtil.h"
 #include "kFileBaseNull.h"
 
@@ -46,17 +43,17 @@
 
 namespace module {
 
-	namespace fontFunctors {
+	namespace fontBoundariesFunctors {
 
-		class kFLF : public file::kModuleStdfunctor< grfx::kFont > {
+		class kFMP : public file::kModuleStdfunctor< grfx::font::kBoundaries > {
 		public:
 			virtual RVOID operator()( file::kManager *inp );
-			kFLF( std::pair< const char *, file::kModule< grfx::kFont > * > ind );
+			kFMP( std::pair< const char *, file::kModule< grfx::font::kBoundaries > * > ind );
 		};
 
 	};
 
-	void kGrfxFont::specDat(
+	void kGrfxFontBoundaries::specDat(
 			std::string *spath,
 					std::map<
 						std::string,		// string: the extension
@@ -64,7 +61,7 @@ namespace module {
 							zutil::kIOFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 																	// takes a manager, returns by pointer for
 																	// polymorphism
-							std::pair< const char *, file::kModule< grfx::kFont > * >
+							std::pair< const char *, file::kModule< grfx::font::kBoundaries > * >
 																	// the file data - needs the filename and a pointer
 																	// to what-to-register-with.
 						> *				// and it's a pointer itself for polymorphism, again.
@@ -73,48 +70,44 @@ namespace module {
 
 		// oy. where to start?
 
-		*spath = "font\\";
+		*spath = "fontmap\\";
 
-		(*assoc)[ "flf" ] = new zutil::kIOFunctorFactory< zutil::kIOFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< grfx::kFont > * >
-			, fontFunctors::kFLF >; // ow.
+		(*assoc)[ "fmp" ] = new zutil::kIOFunctorFactory< zutil::kIOFunctor< RVOID, file::kManager * > *, std::pair< const char *, file::kModule< grfx::font::kBoundaries > * >
+			, fontBoundariesFunctors::kFMP >; // ow.
 
 	};
 
+
 // TODO: wrap a little further down.
-	file::kHandle< grfx::kFont > kGrfxFont::createNull() {
+	file::kHandle< grfx::font::kBoundaries > kGrfxFontBoundaries::createNull() {
 		file::kWrapped *wr = new file::kWrappedNode( new file::kBaseNull() );
 		addWrapped( wr );
-		return file::kHandle< grfx::kFont >( &null::grfxFont, wr ); };
+		return file::kHandle< grfx::font::kBoundaries >( &null::fontboundaries, wr ); };
 
-// TODO: dehack
+// TODO: dehack.
 using file::kModule;
-	void kGrfxFont::describe( std::ostream &ostr ) const {
-		ostr << "font module";
-		kModule< grfx::kFont >::chaindown( ostr ); };
+	void kGrfxFontBoundaries::describe( std::ostream &ostr ) const {
+		ostr << "fontboundaries module (thrunch)";
+		kModule< grfx::font::kBoundaries >::chaindown( ostr ); };
 
-	void kGrfxFont::chaindown( std::ostream &ostr ) const {
-		ostr << " (*final*-font module)";
-		kModule< grfx::kFont >::chaindown( ostr ); };
+	void kGrfxFontBoundaries::chaindown( std::ostream &ostr ) const {
+		ostr << " (*final*-fontboundaries module) (thrunch)";
+		kModule< grfx::font::kBoundaries >::chaindown( ostr ); };
 
-	kGrfxFont font;
+	kGrfxFontBoundaries fontbounds;
 
-	namespace fontFunctors {
+	namespace fontBoundariesFunctors {
 
-		RVOID kFLF::operator()( file::kManager *inp ) {
-			std::ifstream ifs( fname.c_str() );
-			std::string ffname;
-			std::string bfname;
-			ifs >> bfname >> ffname;
-			grfx::kFontLinkfile *dat = new grfx::kFontLinkfile( fname );
-			module->addWrapped( dat );
-			module->addKey( file::extractFname( fname ), file::kHandle< grfx::kFont >( dat, dat ) );
-			inp->addInitter( new grfx::kFontLinkfileInitter( bfname, ffname, dat ) );
-			ifs.close();
+		RVOID kFMP::operator()( file::kManager *inp ) {
+			grfx::font::kBoundariesFile *dat = new grfx::font::kBoundariesFile( fname );
+			file::kWrapped *wrp = new file::kWrappedNode( dat );
+			module->addWrapped( wrp );
+			module->addKey( file::extractFname( fname ), file::kHandle< grfx::font::kBoundaries >( dat, wrp ) );
 			return RVOIDVAL;
 		};
 
-		kFLF::kFLF( std::pair< const char *, file::kModule< grfx::kFont > * > ind ) :
-			file::kModuleStdfunctor< grfx::kFont >( ind ) { };
+		kFMP::kFMP( std::pair< const char *, file::kModule< grfx::font::kBoundaries > * > ind ) :
+			file::kModuleStdfunctor< grfx::font::kBoundaries >( ind ) { };
 
 	};
 

@@ -44,7 +44,7 @@ namespace file {
 #include "types.h"
 #include "butility.h"
 
-#include "kFileWrapped.h"
+#include "kFileWrappedNode.h"
 #include "kFileBase.h"
 
 #include <vector>
@@ -67,28 +67,25 @@ namespace file {
 		kManager();		// yep, you can make more than one. Not recommended tho. Like that'll stop ya.
 		~kManager();
 
-		void addInterface( kWrapped *nter );
-		void addRaw( kBase *bse );
-
-		void addLoader( zutil::kFunctor< RVOID, kManager * > *ldr );
+		void addLoader( zutil::kIOFunctor< RVOID, kManager * > *ldr );
+		void addInitter( zutil::kNFunctor *ini );
 
 		bool isComplete() const;
 
-		void activateWrapped( file::kWrapped *wrp );
-		void removeWrapped( file::kWrapped *wrp );
+		void activateWrapped( file::kWrappedNode *wrp );
+		void removeWrapped( file::kWrappedNode *wrp );
 
 	private:
 
 		void wipeRemovals();
 
-		std::vector< kWrapped * > active;
-		std::vector< kWrapped * > removals;
+		std::vector< kWrappedNode * > active;
+		std::vector< kWrappedNode * > removals;
 
-		std::vector< kWrapped * > interfaces;
-		std::vector< kBase * > raws;
+		std::vector< zutil::kIOFunctor< RVOID, kManager * > * > loador;
+		std::vector< zutil::kIOFunctor< RVOID, kManager * > * >::iterator curl;
 
-		std::vector< zutil::kFunctor< RVOID, kManager * > * > loador;
-		std::vector< zutil::kFunctor< RVOID, kManager * > * >::iterator curl;
+		std::vector< zutil::kNFunctor * > inits;
 
 		bool completed;
 

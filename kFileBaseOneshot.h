@@ -29,29 +29,33 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KGRFXFONTPROP
-#define RETRO_KGRFXFONTPROP
+#ifndef RETRO_KFILEBASEONESHOT
+#define RETRO_KFILEBASEONESHOT
 
-#pragma warning( disable : 4786 )
+namespace file {
 
-namespace grfx {
-
-	class kFontPropBitmap;
+	class kBaseOneshot;
 
 }
 
-#include "kGrfxFontProp.h"
+#include "kFileBase.h"
 
-namespace grfx {
+namespace file {
 
-	class kFontPropBitmap : public kFontProp {
+	class kBaseOneshot : public kBase {
 	public:
 
-		virtual int getVerticalOffset() const = 0;
+		virtual void loadAll() = 0;
 
-		virtual void renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const = 0;
+		virtual void beginProgressive();
+		virtual void continueProgressive( int steps );
+		virtual void completeProgressive();
+		virtual void cancelProgressive();
 
-		virtual ~kFontPropBitmap();
+		virtual void unload() = 0;
+
+		kBaseOneshot( const std::string &fname );
+		virtual ~kBaseOneshot();
 
 		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
 	protected:  void chaindown( std::ostream &ostr ) const;

@@ -29,70 +29,48 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KFILEMODULEHANDLE
-#define RETRO_KFILEMODULEHANDLE
+#ifndef RETRO_KMGRFXFONTBOUNDARIES
+#define RETRO_KMGRFXFONTBOUNDARIES
 
-namespace file {
+namespace module {
 
-	template < typename kType > class kModuleHandle;
+	class kGrfxFontBoundaries;
 
 };
 
 #include "kFileModule.h"
-#include "kFileHandle.h"
-#include "kFileBaseNull.h"
-#include "kFileWrappedNode.h"
+#include "kGrfxFontBoundaries.h"
 
-namespace file {
+namespace module {
 
-	template < typename kType > class kModuleHandle : public kModule< kHandle< kType > > {
+	class kGrfxFontBoundaries : public file::kModule< grfx::font::kBoundaries > {
 	private:
 
 		virtual void specDat(
 				std::string *spath,
 				std::map<
 					std::string,		// string: the extension
-					zutil::kFunctor<	// the functor that creates the item that parses files
-						zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
+					zutil::kIOFunctor<	// the functor that creates the item that parses files
+						zutil::kIOFunctor< RVOID, file::kManager * > *,	// the thing that parses files - returns nothing,
 																// takes a manager, returns by pointer for
 																// polymorphism
-						std::pair< const char *, kModule< kHandle< kType > > * >
+						std::pair< const char *, file::kModule< grfx::font::kBoundaries > * >
 																// the file data - needs the filename and a pointer
 																// to what-to-register-with.
 					> *				// and it's a pointer itself for polymorphism, again.
 				> *assoc
-		) = 0;
+		);
 
-		virtual kHandle< kType > createNull();
-
-		virtual kType *createNullQuantity() = 0;
-
-	protected:
-
-		std::vector< file::kWrapped * > nullses;
+		virtual file::kHandle< grfx::font::kBoundaries > createNull();
 
 	public:
 
-		~kModuleHandle() {
-			for( std::vector< file::kWrapped * >::iterator itr = nullses.begin(); itr < nullses.end(); ++itr )
-				delete *itr;
-		};
-
-		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+		virtual void describe( std::ostream &ostr ) const;
 	protected:  void chaindown( std::ostream &ostr ) const;
 
 	};
 
-	template < typename kType > void kModuleHandle< kType >::describe( std::ostream &ostr ) const {
-		ostr << "unidentified modulehandle";
-		kModule< file::kHandle< kType > >::chaindown( ostr ); };
-	template < typename kType > void kModuleHandle< kType >::chaindown( std::ostream &ostr ) const {
-		kModule< file::kHandle< kType > >::chaindown( ostr ); };
-
-	template < typename kType > kHandle< kType > kModuleHandle< kType >::createNull() {
-		kWrapped *wr = new kWrappedNode( new kBaseNull() );
-		nullses.push_back( wr );
-		return kHandle< kType >( createNullQuantity(), wr ); };
+	extern kGrfxFontBoundaries fontbounds;
 
 };
 

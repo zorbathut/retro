@@ -41,7 +41,7 @@ namespace file {
 
 #include "kFileWrapped.h"
 
-#include "kFileBase.h"
+#include "kFileGeneratable.h"
 #include "butility.h"
 
 namespace file {
@@ -56,16 +56,12 @@ namespace file {
 
 	public:
 
-		virtual void init();
-
 		virtual void activate();
 		virtual void deactivate();
 		virtual void request( int ticks );
 		virtual void urgent();
 
 		virtual void tick();
-
-		virtual void deinit();
 
 		kWrappedNode( kBase *file );
 		virtual ~kWrappedNode();

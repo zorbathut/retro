@@ -29,50 +29,39 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KRECT
-#define RETRO_KRECT
+#ifndef RETRO_KGRFXFONTRENDERABLE
+#define RETRO_KGRFXFONTRENDERABLE
 
-#include "kPoint.h"
+namespace grfx {
 
-template < typename kPrecision > class kRect {
-public:
+	class kFontRenderable;
 
-	kPoint< kPrecision > ul;
-	kPoint< kPrecision > br;
+}
 
-	int height() const {
-		return br.y - ul.y; }
+#include "kGrfxFont.h"
+#include "kGrfxRenderable.h"
+#include "kGrfxFontBoundaries.h"
 
-	int width() const {
-		return br.x - ul.x; }
+namespace grfx {
 
-	int area() const {
-		return height() * width(); };
+	class kFontRenderable : public kFont {
+	public:
 
-	kRect( void ) { };
+		virtual const font::kBoundaries &getBounds() const = 0;
+		virtual const kRenderable &getRenderable() const = 0;
 
-	kRect( const kPoint< kPrecision > &in_ul, const kPoint< kPrecision > &in_br ) : ul( in_ul ), br( in_br ) { };
-	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_b ) : ul( in_l, in_u ), br( in_r, in_b ) { };
+		virtual int getVerticalOffset() const = 0;
 
-	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
+		virtual void renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const;
 
-	static kRect< kPrecision > makeBounds( kPoint< kPrecision > inp ) {
-		return kRect< kPrecision >( kPoint< kPrecision >( 0, 0 ), inp ); }
+		kFontRenderable();
+		virtual ~kFontRenderable();
+
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
+	};
 
 };
-
-template< typename kPrecision > kPoint< kPrecision > makeRect( const kPrecision &l, const kPrecision &u,
-															   const kPrecision &r, const kPrecision &d ) {
-	return kRect< kPrecision >( l, u, r, d ); };
-
-template < typename kPrecision >
-std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {
-	ostr << pt.ul << "-" << pt.br;
-	return ostr; };
-	// See comment in kPoint.h.
-
-template < typename kPrecLhs, typename kPrecRhs >
-bool operator==( const kRect< kPrecLhs > &lhs, const kRect< kPrecRhs > &rhs ) {
-	return lhs.ul == rhs.ul && lhs.br == rhs.br; };
 
 #endif

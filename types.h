@@ -32,26 +32,69 @@
 #ifndef RETRO_TYPES
 #define RETRO_TYPES
 
-typedef   signed short    INT16;
-typedef unsigned short   UINT16;
-typedef   signed int      INT32;
-typedef unsigned int     UINT32;
-typedef          __int64  INT64;
-typedef unsigned __int64 UINT64;
-// at least these lengths. does NOT guarantee that it's only this long.
+#if defined( _MSC_VER )
 
-typedef unsigned __int32 EXACTUINT32;
-typedef unsigned __int16 EXACTUINT16;
-typedef unsigned char	 BYTE;		// guaranteed unsigned
-// and these *do* guarantee that it's this long! whee.
+	typedef   signed short    INT16;
+	typedef unsigned short   UINT16;
+	typedef   signed int      INT32;
+	typedef unsigned int     UINT32;
+	typedef          __int64  INT64;
+	typedef unsigned __int64 UINT64;
+	// at least these lengths. does NOT guarantee that it's only this long.
 
-// GRRR.
-typedef void *RVOID;		// is void if compiler supports returning void in a function. else is something else.
-							// say, void*, for example
-#define FAKEVOIDRETURN
-#define RVOIDVAL NULL		// should be defined as nothing if it can really deal properly
+	typedef unsigned __int32 EXACTUINT32;
+	typedef unsigned __int16 EXACTUINT16;
+	typedef unsigned char	 BYTE;		// guaranteed unsigned
+	// and these *do* guarantee that it's this long! whee.
+
+	// GRRR.
+	#define FAKEVOIDRETURN 1
+	#define IOSTREAMHACK 1
+
+#elif defined( __GNUC__ )
+
+	typedef   signed short      INT16;
+	typedef unsigned short     UINT16;
+	typedef   signed int        INT32;
+	typedef unsigned int       UINT32;
+	typedef          long long  INT64;
+	typedef unsigned long long UINT64;
+	// at least these lengths. does NOT guarantee that it's only this long.
+
+	typedef unsigned long    EXACTUINT32;
+	typedef unsigned short   EXACTUINT16;
+	typedef unsigned char	 BYTE;		// guaranteed unsigned
+	// and these *do* guarantee that it's this long! whee.
+
+	#define FAKEVOIDRETURN 0
+	#define IOSTREAMHACK 0
+
+	// TODO: check version numbers here
+
+#else
+
+	#error Unknown platform, new types needed.
+
+#endif
 
 const int DEVUNIQUEIDSIZE = 16;
 const int KEYUNIQUEIDSIZE = 2;
+// TODO: figure out a better location for these!
+
+#if FAKEVOIDRETURN
+
+// RVOID is void if compiler supports returning void in a function. else it's something else, say, void*
+// RVOIDVAL is the value it should return.
+
+	#define RVOID void*	
+	#define RVOIDVAL NULL		// should be defined as nothing if it can really deal properly
+
+  #else
+
+	#define RVOID void
+	#define RVOIDVAL
+
+#endif
+
 
 #endif

@@ -29,50 +29,57 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KRECT
-#define RETRO_KRECT
+#include "kGrfxFontBoundariesFile.h"
 
-#include "kPoint.h"
+#include "minmax.h"
 
-template < typename kPrecision > class kRect {
-public:
+#include <fstream>
 
-	kPoint< kPrecision > ul;
-	kPoint< kPrecision > br;
+namespace grfx {
 
-	int height() const {
-		return br.y - ul.y; }
+	namespace font {
 
-	int width() const {
-		return br.x - ul.x; }
+		void kBoundariesFile::loadAll() {
 
-	int area() const {
-		return height() * width(); };
+			int c;
+			kBoundariesSpot dat;
+			int offs;
 
-	kRect( void ) { };
+			std::ifstream ifs( getFname().c_str() );
+			setup();
 
-	kRect( const kPoint< kPrecision > &in_ul, const kPoint< kPrecision > &in_br ) : ul( in_ul ), br( in_br ) { };
-	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_b ) : ul( in_l, in_u ), br( in_r, in_b ) { };
+			ifs >> offs;
+			
+			setVoffs( offs );
 
-	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
+			while( ifs >> c >> dat.bounds.ul.x >> dat.bounds.ul.y >> dat.bounds.br.x >> dat.bounds.br.y >> dat.offset.x >> dat.offset.y >> dat.spacing ) {
+				set( c, dat );
+			};
 
-	static kRect< kPrecision > makeBounds( kPoint< kPrecision > inp ) {
-		return kRect< kPrecision >( kPoint< kPrecision >( 0, 0 ), inp ); }
+			state = READY;
+
+		};
+
+		void kBoundariesFile::unload() {
+			destruct();
+
+			state = EMPTY;
+		
+		};
+
+		kBoundariesFile::kBoundariesFile( const std::string &fname ) :
+			file::kBaseOneshot( fname ) { };
+		kBoundariesFile::~kBoundariesFile() { };
+
+		// TODO: dehack.
+using file::kBaseOneshot;
+		void kBoundariesFile::describe( std::ostream &ostr ) const {
+			ostr << "boundaryfile";
+			kBaseOneshot::chaindown( ostr ); };
+
+		void kBoundariesFile::chaindown( std::ostream &ostr ) const {
+			kBaseOneshot::chaindown( ostr ); };
+
+	};
 
 };
-
-template< typename kPrecision > kPoint< kPrecision > makeRect( const kPrecision &l, const kPrecision &u,
-															   const kPrecision &r, const kPrecision &d ) {
-	return kRect< kPrecision >( l, u, r, d ); };
-
-template < typename kPrecision >
-std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {
-	ostr << pt.ul << "-" << pt.br;
-	return ostr; };
-	// See comment in kPoint.h.
-
-template < typename kPrecLhs, typename kPrecRhs >
-bool operator==( const kRect< kPrecLhs > &lhs, const kRect< kPrecRhs > &rhs ) {
-	return lhs.ul == rhs.ul && lhs.br == rhs.br; };
-
-#endif

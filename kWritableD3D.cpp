@@ -267,3 +267,16 @@ void kWritableD3DTexture::clear() {
 		}
 	}
 };
+
+// TODO: dehack.
+using grfx::kWritable;
+void kWritableD3D::describe( std::ostream &ostr ) const {
+	ostr << "D3D direct renderer" << std::endl;
+	kWritable::chaindown( ostr ); };
+
+void kWritableD3D::chaindown( std::ostream &ostr ) const {
+	ostr << " (*final* - D3D direct renderer)" << std::endl;
+	kWritable::chaindown( ostr ); };
+
+
+

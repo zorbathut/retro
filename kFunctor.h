@@ -48,13 +48,21 @@
 
 namespace zutil {
 
-	template < typename kReturn, typename kInput >						class kFunctor;
-	template < typename kReturn, typename kInput >						class kFunctorSimple;
-	template < typename kReturn, typename kInput, typename kTarget >	class kFunctorFull;
-	template < typename kReturn, typename kInput, typename kType >		class kFunctorFactory;
+	class kNFunctor;
+
+	template < typename kReturn, typename kInput >						class kIOFunctor;
+	template < typename kReturn, typename kInput >						class kIOFunctorSimple;
+	template < typename kReturn, typename kInput, typename kTarget >	class kIOFunctorFull;
+	template < typename kReturn, typename kInput, typename kType >		class kIOFunctorFactory;
+
+	class kNFunctor {
+	public:
+		virtual void operator()() = 0;
+		void go() { (*this)(); };
+	};
 
 	template < typename kReturnclass, typename kInputclass >
-	class kFunctor {
+	class kIOFunctor {
 	public:
 
 		virtual kReturnclass operator()( kInputclass inp ) = 0;
@@ -63,7 +71,7 @@ namespace zutil {
 	};
 
 	template < typename kReturnclass, typename kInputclass >
-	class kFunctorSimple : public kFunctor< kReturnclass, kInputclass > {
+	class kIOFunctorSimple : public kIOFunctor< kReturnclass, kInputclass > {
 	private:
 
 		kReturnclass (*fptr)( kInputclass );
@@ -72,12 +80,12 @@ namespace zutil {
 
 		virtual kReturnclass operator()( kInputclass inp );
 
-		kFunctorSimple( kReturnclass (*in_fptr)( kInputclass ) );
+		kIOFunctorSimple( kReturnclass (*in_fptr)( kInputclass ) );
 
 	};
 
 	template < typename kReturnclass, typename kInputclass, typename kTargetclass >
-	class kFunctorFull : public kFunctor< kReturnclass, kInputclass > {
+	class kIOFunctorFull : public kIOFunctor< kReturnclass, kInputclass > {
 	private:
 
 		kTargetclass	*tgc;
@@ -87,37 +95,40 @@ namespace zutil {
 
 		virtual kReturnclass operator()( kInputclass inp );
 
-		kFunctorFull( kTargetclass *in_tgc, kReturnclass (kTargetclass::*in_fptr)( kInputclass ) );
+		kIOFunctorFull( kTargetclass *in_tgc, kReturnclass (kTargetclass::*in_fptr)( kInputclass ) );
 
 	};
 
 	template < typename kReturn, typename kInput, typename kType >
-	class kFunctorFactory : public kFunctor< kReturn, kInput > {
+	class kIOFunctorFactory : public kIOFunctor< kReturn, kInput > {
 	public:
 
-		virtual kReturn operator()( kInput inp ) {
-			return new kType( inp ); };
+		virtual kReturn operator()( kInput inp );
 
 	};
 
 	template < typename kReturnclass, typename kInputclass >
-	kReturnclass kFunctorSimple< kReturnclass, kInputclass >::operator()( kInputclass inp ) {
+	kReturnclass kIOFunctorSimple< kReturnclass, kInputclass >::operator()( kInputclass inp ) {
 		return (*fptr)( inp ); }
 
 	template < typename kReturnclass, typename kInputclass >
-	kFunctorSimple< kReturnclass, kInputclass >::kFunctorSimple( kReturnclass (*in_fptr)( kInputclass ) ) {
+	kIOFunctorSimple< kReturnclass, kInputclass >::kIOFunctorSimple( kReturnclass (*in_fptr)( kInputclass ) ) {
 		fptr = in_fptr; }
 
 	template < typename kReturnclass, typename kInputclass, typename kTargetclass >
-	kReturnclass kFunctorFull< kReturnclass, kInputclass, kTargetclass >::operator()( kInputclass inp ) {
+	kReturnclass kIOFunctorFull< kReturnclass, kInputclass, kTargetclass >::operator()( kInputclass inp ) {
 		return tgc->*fptr( inp ); }
 
 	template < typename kReturnclass, typename kInputclass, typename kTargetclass >
-	kFunctorFull< kReturnclass, kInputclass, kTargetclass >::kFunctorFull(
+	kIOFunctorFull< kReturnclass, kInputclass, kTargetclass >::kIOFunctorFull(
 			kTargetclass *in_tgc, kReturnclass (kTargetclass::*in_fptr)( kInputclass ) ) {
 
 		tgc = in_tgc;
 		fptr = in_fptr; }
+
+	template < typename kReturnclass, typename kInputclass, typename kType >
+	kReturnclass kIOFunctorFactory< kReturnclass, kInputclass, kType >::operator()( kInputclass inp ) {
+		return new kType( inp ); };
 
 };
 

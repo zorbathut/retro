@@ -41,17 +41,18 @@ namespace file {
 
 };
 
-
 #include "kFileManager.h"
 #include "kFunctor.h"
 #include "butility.h"
 #include "errlog.h"
 #include "kDescribable.h"
+#include "kFileHandle.h"
 
 #include <map>
 #include <io.h>
 #include <string>
 #include <algorithm>
+#include <functional>
 
 namespace file {			// notes: virtual isn't ideal here. The item's type should
 							// be known at all times. However, it's easy to code, and
@@ -61,11 +62,12 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	template < typename kType > class kModule : public boost::noncopyable, public kDescribable {
 	public:
 
-		kType get( const char *id );
-		kType get( const std::string &id );
-		void generate( file::kManager *kfm );	// should only be called once, and attaches
+		kHandle< kType > get( const char *id );
+		kHandle< kType > get( const std::string &id );
+		void generate( kManager *kfm );	// should only be called once, and attaches
 
-		void add( const char *id, const kType &hnd );
+		void addKey( const std::string &id, const kHandle< kType > &hnd );
+		void addWrapped( kWrapped *wrp );
 
 		virtual ~kModule(); // might not be necessary, but it's safer this way.
 
@@ -78,8 +80,8 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 			std::string *spath,
 			std::map<
 				std::string,		// string: the extension
-				zutil::kFunctor<	// the functor that creates the item that parses files
-					zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
+				zutil::kIOFunctor<	// the functor that creates the item that parses files
+					zutil::kIOFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 															// takes a manager, returns by pointer for
 															// polymorphism
 					std::pair< const char *, kModule< kType > * >
@@ -89,7 +91,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 			> *assoc
 		) = 0;
 
-		virtual kType createNull( void ) = 0;
+		virtual kHandle< kType > createNull( void ) = 0;
 
 	private:
 
@@ -97,8 +99,8 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 			const std::string &path,
 			const std::map<
 				std::string,		// string: the extension
-				zutil::kFunctor<	// the functor that creates the item that parses files
-					zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
+				zutil::kIOFunctor<	// the functor that creates the item that parses files
+					zutil::kIOFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 															// takes a manager, returns by pointer for
 															// polymorphism
 					std::pair< const char *, kModule< kType > * >
@@ -109,16 +111,27 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 			kManager *target
 		);
 
-		std::map< std::string, kType > data;
+		std::map< std::string, kHandle< kType > > data;
+
+		std::vector< kWrapped * > wrps;
 
 	};
 
-	template < typename kType > kType kModule< kType >::get( const char *id ) {
+	template< typename kType > class kModuleStdfunctor : public zutil::kIOFunctor< RVOID, file::kManager * > {
+	public:
+		virtual RVOID operator()( file::kManager *inp ) = 0;
+		kModuleStdfunctor< kType >( std::pair< const char *, file::kModule< kType > * > ind );
+	protected:
+		std::string fname;
+		file::kModule< kType > *module;
+	}; // TODO: shift to IFunctor
+
+	template < typename kType > kHandle< kType > kModule< kType >::get( const char *id ) {
 		return get( std::string( id ) );
 	};
 
-	template < typename kType > kType kModule< kType >::get( const std::string &id ) {
-		std::map< std::string, kType >::const_iterator itr;
+	template < typename kType > kHandle< kType > kModule< kType >::get( const std::string &id ) {
+		std::map< std::string, kHandle< kType > >::const_iterator itr;
 		itr = data.find( id );
 		if( itr == data.end() ) {
 			g_errlog << "MODULE: Couldn't find item \"" << id << "\" in \"" << textdesc() << "\"" << std::endl;
@@ -134,8 +147,8 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 		std::map<
 			std::string,		// string: the extension
-			zutil::kFunctor<	// the functor that creates the item that parses files
-				zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
+			zutil::kIOFunctor<	// the functor that creates the item that parses files
+				zutil::kIOFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 														// takes a manager, returns by pointer for
 														// polymorphism
 				std::pair< const char *, kModule< kType > * >
@@ -146,8 +159,8 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 		std::map<
 			std::string,
-			zutil::kFunctor<
-				zutil::kFunctor< RVOID, kManager * > *,
+			zutil::kIOFunctor<
+				zutil::kIOFunctor< RVOID, kManager * > *,
 				std::pair< const char *, kModule< kType > * >
 			> *
 		>::iterator itr; // my mind, it's exploding again!
@@ -160,24 +173,26 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 	};
 
-	template < typename kType > void kModule< kType >::add( const char *id, const kType &hnd ) {
-		std::map< std::string, kType >::const_iterator itr;
-		std::string tmp = id;
-		itr = data.find( tmp );
+	template < typename kType > void kModule< kType >::addKey( const std::string &id, const kHandle< kType > &hnd ) {
+		std::map< std::string, kHandle< kType > >::const_iterator itr;
+		itr = data.find( id );
 		if( itr != data.end() ) {
-			g_errlog << "MODULE: \"" << tmp << "\" already exists as " << itr->second->textdesc() << ", replaced with " << hnd->textdesc() << std::endl;
+			g_errlog << "MODULE: \"" << id << "\" already exists as " << itr->second->textdesc() << ", replaced with " << hnd->textdesc() << std::endl;
 		} else {
 			g_errlog << "MODULE: \"" << textdesc() << "\" adding \"" << hnd.getHeld()->textdesc() << "\" as \"" << id << "\"" << std::endl;
 		}
-		data[ tmp ] = hnd;
+		data[ id ] = hnd;
 	};
+
+	template < typename kType > void kModule< kType >::addWrapped( kWrapped *wrp ) {
+		wrps.push_back( wrp ); };
 
 	template < typename kType > void kModule< kType >::stdGenerate(
 			const std::string &path,
 			const std::map<
 				std::string,		// string: the extension
-				zutil::kFunctor<	// the functor that creates the item that parses files
-					zutil::kFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
+				zutil::kIOFunctor<	// the functor that creates the item that parses files
+					zutil::kIOFunctor< RVOID, kManager * > *,	// the thing that parses files - returns nothing,
 															// takes a manager, returns by pointer for
 															// polymorphism
 					std::pair< const char *, kModule< kType > * >
@@ -201,8 +216,8 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 					std::transform( tstr.begin(), tstr.end(), tstr.begin(), std::ptr_fun< int, int >( tolower ) );
 					std::map<
 						std::string,
-						zutil::kFunctor<
-							zutil::kFunctor< RVOID, kManager * > *,
+						zutil::kIOFunctor<
+							zutil::kIOFunctor< RVOID, kManager * > *,
 							std::pair< const char *, kModule< kType > * >
 						> *
 					>::const_iterator itr = assoc.find( tstr );
@@ -234,7 +249,14 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 	template < typename kType > void kModule< kType >::chaindown( std::ostream &ostr ) const {
 		kDescribable::chaindown( ostr ); };
 
-	template < typename kType > kModule< kType >::~kModule() { };
+	template < typename kType > kModule< kType >::~kModule() {
+		for( std::vector< kWrapped * >::iterator itr = wrps.begin(); itr != wrps.end(); itr++ )
+			delete *itr;
+	};
+
+	template< typename kType > 
+	kModuleStdfunctor< kType >::kModuleStdfunctor< kType >( std::pair< const char *, file::kModule< kType > * > ind ) :
+		fname( ind.first ), module( ind.second ) { } ;
 
 };
 

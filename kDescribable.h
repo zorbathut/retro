@@ -51,6 +51,8 @@ public:
 	kOutputtoken textdesc() const;
 	virtual void describe( std::ostream &ostr ) const VAGUEDESC;
 
+	virtual ~kDescribable();
+
 protected:
 
 	void chaindown( std::ostream &ostr ) const;

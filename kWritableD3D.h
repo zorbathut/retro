@@ -59,7 +59,7 @@ public:
 	void clear();
 };
 
-class kWritableD3DDestructFunctor : public zutil::kFunctor< RVOID, const grfx::kRasterConst * > {
+class kWritableD3DDestructFunctor : public zutil::kIOFunctor< RVOID, const grfx::kRasterConst * > {
 public:
 
 	virtual RVOID operator()( const grfx::kRasterConst * inp );
@@ -89,6 +89,9 @@ public:
 
 	void start();
 	void end();
+
+	virtual void describe( std::ostream &ostr ) const;
+protected:  void chaindown( std::ostream &ostr ) const;
 
 private:
 

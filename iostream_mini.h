@@ -32,11 +32,19 @@
 #ifndef RETRO_IOSTREAM_MINI
 #define RETRO_IOSTREAM_MINI
 
+#if IOSTREAMHACK
+
 namespace std {	// used for including the ostream prototype without <iostream>, which
 				// is huge and unnecessary.
 	template<class _E> struct char_traits;
 	template<class _E, class _Tr = char_traits<_E> > class basic_ostream;
 	typedef basic_ostream<char, char_traits<char> > ostream;
 };
+
+#else
+
+#include <iostream>
+
+#endif
 
 #endif

@@ -29,50 +29,37 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KRECT
-#define RETRO_KRECT
+#ifndef RETRO_KGRFXRENDERABLEHSL
+#define RETRO_KGRFXRENDERABLEHSL
 
-#include "kPoint.h"
+namespace grfx {
 
-template < typename kPrecision > class kRect {
-public:
-
-	kPoint< kPrecision > ul;
-	kPoint< kPrecision > br;
-
-	int height() const {
-		return br.y - ul.y; }
-
-	int width() const {
-		return br.x - ul.x; }
-
-	int area() const {
-		return height() * width(); };
-
-	kRect( void ) { };
-
-	kRect( const kPoint< kPrecision > &in_ul, const kPoint< kPrecision > &in_br ) : ul( in_ul ), br( in_br ) { };
-	kRect( const kPrecision &in_l, const kPrecision &in_u, const kPrecision &in_r, const kPrecision &in_b ) : ul( in_l, in_u ), br( in_r, in_b ) { };
-
-	kRect( const kRect &kri ) : ul( kri.ul ), br( kri.br ) { };
-
-	static kRect< kPrecision > makeBounds( kPoint< kPrecision > inp ) {
-		return kRect< kPrecision >( kPoint< kPrecision >( 0, 0 ), inp ); }
+	class kRenderableHSL;
 
 };
 
-template< typename kPrecision > kPoint< kPrecision > makeRect( const kPrecision &l, const kPrecision &u,
-															   const kPrecision &r, const kPrecision &d ) {
-	return kRect< kPrecision >( l, u, r, d ); };
+#include "kGrfxRenderableFinite.h"
+#include "kGrfxWritable.h"
 
-template < typename kPrecision >
-std::ostream &operator<<( std::ostream &ostr, const kRect< kPrecision > &pt ) {
-	ostr << pt.ul << "-" << pt.br;
-	return ostr; };
-	// See comment in kPoint.h.
+namespace grfx {
 
-template < typename kPrecLhs, typename kPrecRhs >
-bool operator==( const kRect< kPrecLhs > &lhs, const kRect< kPrecRhs > &rhs ) {
-	return lhs.ul == rhs.ul && lhs.br == rhs.br; };
+	class kRenderableHSL : public kRenderableRaster, public file::kBase {
+	public:
+
+		virtual const kRasterConst *getRaster() const = 0;
+
+		virtual const kPoint< INT32 > &getDimensions() const;
+
+		virtual void renderTo( kWritable *target, const kPoint< INT32 > &pos ) const;
+		virtual void renderPartTo( kWritable *target, const kPoint< INT32 > &pos, const kRect< INT32 > &bounds ) const;
+
+		kRenderableHSL( 
+
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
+	};
+
+};
 
 #endif

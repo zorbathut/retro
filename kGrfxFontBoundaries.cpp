@@ -29,35 +29,64 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RETRO_KGRFXFONTPROP
-#define RETRO_KGRFXFONTPROP
+#include "kGrfxFontBoundaries.h"
 
-#pragma warning( disable : 4786 )
-
-namespace grfx {
-
-	class kFontProp;
-
-}
-
-#include "kGrfxFont.h"
+#include "errlog.h"
 
 namespace grfx {
 
-	class kFontProp : public kFont {
-	public:
+	namespace font {
 
-		virtual int getVerticalOffset() const = 0;
+		kBoundariesSpot::kBoundariesSpot( const kRect< INT32 > &in_bounds, const kPoint< INT32 > &in_offset, int in_spacing ) :
+			bounds( in_bounds ), offset( in_offset ), spacing( in_spacing ) { };
 
-		virtual void renderTextTo( kWritable *writ, const char *text, const kPoint< INT32 > &loc ) const = 0;
+		int kBoundaries::getVoffs() const {
+			return vOffs; }
 
-		virtual ~kFontProp();
+		const kBoundariesSpot &kBoundaries::getBound( char c ) const {
+			if( !dat[ c ].first )
+				g_errlog << "Unknown boundary " << int(c) << " attempted for " << textdesc() << std::endl;
+			return dat[ c ].second;
+		};
 
-		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
-	protected:  void chaindown( std::ostream &ostr ) const;
+		kBoundaries::kBoundaries() { };
+		kBoundaries::~kBoundaries() { };
+		
+		void kBoundaries::describe( std::ostream &ostr ) const {
+			ostr << "unidentified boundary";
+			kDescribable::chaindown( ostr ); };
+
+		void kBoundaries::chaindown( std::ostream &ostr ) const {
+			kDescribable::chaindown( ostr ); };
+
+		void kBoundaries::setVoffs( int nv ) {
+			vOffs = nv; };
+
+		void kBoundaries::setup() {
+			dat.resize( 256 ); };
+		void kBoundaries::destruct() {
+			dat.clear(); };
+
+		void kBoundaries::set( unsigned char c, const kBoundariesSpot &in_dat ) {
+#if EXTRACHECK
+			if( dat.size() != 256 ) {
+				g_errlog << "ERRCHECK: FONTBOUND: attempted before setup" << std::endl;
+				return;
+			}
+			if( c < 0 || c >= 256 ) {
+				g_errlog << "ERRCHECK: FONTBOUND: " << int( c ) << " out of range" << std::endl;
+				return;
+			}
+#endif
+			dat[ c ].first = true;
+			dat[ c ].second = in_dat; };
 
 	};
 
 };
 
-#endif
+namespace null {
+
+	grfx::font::kBoundaries fontboundaries;
+
+};

@@ -58,14 +58,10 @@ namespace grfx {
 
 		bool checkConsistency();	// evaluates to noop when not in debug, returns true
 
-		kColor();
+		kColor() { };				// this *should* auto-inline, but isn't. grrr.
 		kColor( const kColor &alt );
 		kColor( BYTE a, BYTE r, BYTE g, BYTE b );
 		kColor( EXACTUINT32 in_argb );
-
-		static kColor makeMultiply( BYTE a, BYTE r, BYTE g, BYTE b );
-		static kColor makeMultiply( EXACTUINT32 in_argb );
-		
 
 	};	// alpha and RGB are perfectly normal in every way.
 

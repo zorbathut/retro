@@ -36,15 +36,15 @@
 namespace grfx {
 
 
-	bool kColor::checkConsistency() {
+/*	bool kColor::checkConsistency() {
 #ifdef _DEBUG
 		return ( split.a + split.r <= 0xff ) && ( split.a + split.g <= 0xff ) && ( split.a + split.b <= 0xff );
 #else
 		return true;
 #endif
-	};
+	};*/
 
-	kColor::kColor() { };
+	//kColor::kColor() { };
 	kColor::kColor( const kColor &alt ) : argb( alt.argb ) { };
 	kColor::kColor( BYTE a, BYTE r, BYTE g, BYTE b ) { split.a = a; split.r = r; split.g = g; split.b = b; };
 	kColor::kColor( EXACTUINT32 in_argb ) : argb( in_argb ) { };	// todo: endian manipulation

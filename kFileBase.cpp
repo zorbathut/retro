@@ -35,16 +35,7 @@
 
 namespace file {
 
-	void kBase::init() { };
-
-	int kBase::getProgressiveResolution() const { return progres; };
-    int kBase::currentProgressive() const { return progcur; };
-	kBase::eState kBase::getState() const { return state; };
-    bool kBase::getFritz() const { return fritz; };
-
-	void kBase::deinit() { };
-
-	kBase::kBase( const char *infname ) : fname( infname ), state( EMPTY ), fritz( false ), progres( 0 ), progcur( 0 ) { };
+	kBase::kBase( const std::string &infname ) : fname( infname ) { };
 	kBase::~kBase() { };
 
 	const std::string &kBase::getFname() const {
@@ -56,6 +47,6 @@ namespace file {
 
 	void kBase::chaindown( std::ostream &ostr ) const {
 		ostr << " (" << fname << ")";
-		kDescribable::chaindown( ostr ); };
+		kGeneratable::chaindown( ostr ); };
 
 }
