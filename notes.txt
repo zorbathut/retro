@@ -1,0 +1,90 @@
+
+much of what's in here is obsolete or worse. Read at your own risk.
+
+turbo nutter bastard todo:
+
+some sort of lock for raws to make sure they don't get doublerequested (debug only)
+require all graphics to be returned! only keep track in debug. null function in release.
+(add this NOW, while I can)
+all those descriptions :P
+gfx engine mark 3 - run over 3d
+file engine mark 3 - set priorities for requests (muchmuch later)
+
+
+
+
+grfx process:
+
+you call render on a writable. Syntax is easier this way, so it's a non-virtual function. It does a callback to the
+renderable. This *is* a virtual function. Renderables do funky stuff, and this renderable does all the calls it
+considers necessary on the writable, without caring much *where* it's being done. No error checking.
+
+The writable processes all the instructions and does error-checking as necessary. However, for the raster writables,
+the raster is supposed to be able to handle all that, so it simply delegates. Rasters are meant to be safe. (is
+this a mistake?)
+
+Rasters need to do uberfast rendering, yes. that's their purpose. with *minimal* checking . . . should rasters
+be unsafe?
+
+yes. rasters are very back-end. the user shouldn't be playing with them at all directly.
+
+
+
+tulib - The Unnamed Library
+(tulip?)
+
+
+handle includes the associated hilevelfile and target, does the high-level stuff.
+
+hilevelfile OWNS a lolevelfile hook and sinker. can create handles. uses lolevelfile's state data.
+hilevelfile interface - this is what's stored and ticked. Has all but handle.
+
+Filemanager creates handle database with keywords.
+
+lolevelfile derives from target, has simple stuff (start, end, continue, cancel, dalloc, init). Contains state data.
+Contains other lolevelfiles too, which it can play with directly.
+
+lolevelfile interface:
+
+loadAll() - do it all, baybee.
+
+getProgressiveResolution() - how many steps
+beginProgressive()
+currentProgressive() - how many steps done
+continueProgressive() - pass it how many steps to do (failure states?)
+completeProgressive() - close. if it has steps left, it might not be in a valid state! But it's guaranteed to be unloadable.
+
+unload() - wipe all data, prepare for beginning again.
+
+base stuff interface
+
+
+hilevelfile interface:
+
+make handle
+
+activate
+deactivate
+request
+tick
+
+on creation, gets filemanager databank pointer - adds a handle with the appropriate keyword.
+(only exposed to filemanager)
+
+
+handle interface:
+
+activate
+deactivate
+request
+
+getdat
+
+(gotten from filemanager)
+
+
+filemanager junk - 
+preinit()
+getResolution()
+continueProgress() (with steps)
+complete() at the end

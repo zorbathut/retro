@@ -1,0 +1,20 @@
+Retro Game Library, version 0.0.0a. Yeah, it's not even up to 0.0.1 :)
+
+Things You'll Need To Know To Compile It:
+
+It requires libpng and zlib. It only directly connects to libpng at the moment - it'll expect it to be in libpng\ (it will #include png.h).
+It requires the DX8 SDK, and doesn't run on any other platform at the moment. It will, in theory.
+It's not guaranteed to compile on anything but MSVC++6. (guess what I use.) Later on I'll diversify it - I'm doing my best to keep it ANSI. There are bound to be mistakes.
+That's about it, really. If you're compiling with MSVC++6 you can probably just open the project and go from there. If you aren't, you'll have to run it from the datadog directory (don't ask why the name) because that's where its data files are, and a few of those are necessary in order to run, and at the moment, it'll crash without 'em. (This I'll change in the future also.)
+
+Things You'll Need To Know To Understand It:
+
+It's not commented. Basically. This will be changed also - I'll go through it once I have the nextgen graphics engine in and comment the whole thing. It'll suck, but I'll do it. At the moment, there's a lot of relics sitting around that are slated for destruction anyway, and I don't like documenting things that I'm just going to delete :P
+
+This Is Not Release Software! I don't guarantee it'll work. I don't guarantee the API won't change dramatically.
+
+This is under the BSD license. See LICENSE.txt.
+
+That's about it. Suggestions or comments are very very welcome. Go to http://www.sourceforge.net/projects/retro for latest news/release/forums/whatever.
+
+Please don't tell me that this library sucks, though. I *know*. I'm not billing this as the Ultimate Game Design Library - it's not even far enough along that I wouldn't feel dirty saying "Well, it's not mature yet." It's barely even alpha yet. Gimme a chance here :)
