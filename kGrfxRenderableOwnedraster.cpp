@@ -52,7 +52,7 @@ namespace grfx {
 	kRenderableOwnedraster::~kRenderableOwnedraster() { 
 		delete [] raster.getData(); };
 
-	void kRenderableOwnedraster::describe( std::ostream &ostr ) const VAGUEDESC {
+	void kRenderableOwnedraster::describe( std::ostream &ostr ) const {
 		ostr << "unidentified renderableOwnedraster";
 		kRenderableOwnedraster::chaindown( ostr ); };
 

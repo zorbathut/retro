@@ -1,0 +1,15 @@
+
+8/3/01
+changed the TIMESPACE #ifdef/#ifndefs to RETRO. (TIMESPACE is the name of the game I was
+planning to write, before I made the library standalone.)
+Added module descriptions
+
+8/12/01
+Added descriptions for everything else
+Added a system so the file manager no longer ticks on every wrapped, only the ones that need
+CPU power
+Changed semantics - request now increments the allocation count (meaning that it is no longer
+a no-op, it's equivalent to a delayed activate)
+Removed idletime deallocation - deallocation now happens immediately. This is a result of the
+semantics change, which is a result of the tick-only-on-necessary - idletime could be readded.
+Improved logging for allocation systems.

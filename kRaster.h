@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_KRASTER
-#define TIMESPACE_KRASTER
+#ifndef RETRO_KRASTER
+#define RETRO_KRASTER
 
 // semantics explanation: rasters are basically more complex pointers. Thus, things like
 // rendering are considered const, despite the fact that they change the *contained*

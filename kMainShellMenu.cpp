@@ -62,7 +62,7 @@ void kMainShellMenu::renderFrame( grfx::kWritable *target ) {
 
 kMainShellMenu::kMainShellMenu() : fin( module::finite.get( "gnarl" ) ),
 			fnt( module::font.get( "big" ) ) {
-	fin.activate();
+	fin.request( 600 );
 	fnt.activate();
 };
 

@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_KFILEMODULE
-#define TIMESPACE_KFILEMODULE
+#ifndef RETRO_KFILEMODULE
+#define RETRO_KFILEMODULE
 
 #pragma warning( disable : 4786 )
 
@@ -64,9 +64,10 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 
 		void add( const char *id, const kType &hnd );
 
-//		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
-
 		virtual ~kModule(); // might not be necessary, but it's safer this way.
+
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
 
 	private:
 
@@ -167,7 +168,7 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		if( itr != data.end() ) {
 			g_errlog << "\"" << id << "\" already exists as " << itr->second->textdesc() << ", replaced with " << hnd->textdesc() << std::endl;
 		} else {
-			g_errlog << "adding \"" << hnd.getHeld()->textdesc() << "\" as \"" << id << "\" to \"" << textdesc() << "\"" << std::endl;
+			g_errlog << "module \"" << textdesc() << "\": adding \"" << hnd.getHeld()->textdesc() << "\" as \"" << id << "\"" << std::endl;
 		}
 		data[ tmp ] = hnd;
 	};
@@ -228,6 +229,12 @@ namespace file {			// notes: virtual isn't ideal here. The item's type should
 		_findclose( handle );
 
 	};
+
+	template < class kType > void kModule< kType >::describe( std::ostream &ostr ) const {
+		ostr << "unidentified module";
+		kDescribable::chaindown( ostr ); };
+	template < class kType > void kModule< kType >::chaindown( std::ostream &ostr ) const {
+		kDescribable::chaindown( ostr ); };
 
 	template < class kType > kModule< kType >::~kModule() { };
 

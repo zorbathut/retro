@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_TYPES
-#define TIMESPACE_TYPES
+#ifndef RETRO_TYPES
+#define RETRO_TYPES
 
 typedef   signed short    INT16;
 typedef unsigned short   UINT16;

@@ -31,6 +31,9 @@
 
 #include "kFileManager.h"
 
+#include "errlog.h"
+#include <algorithm>
+
 namespace file {
 
 	void kManager::prepare( void ) {
@@ -58,8 +61,20 @@ namespace file {
 	};
 
 	void kManager::tick( void ) {
-		for( std::vector< kWrapped * >::iterator itr = interfaces.begin(); itr != interfaces.end(); ++itr )
-			(*itr)->tick();
+		for( std::vector< kWrapped * >::iterator titr = active.begin(); titr != active.end(); ++titr )
+			(*titr)->tick();
+
+		for( std::vector< kWrapped * >::iterator ritr = removals.begin(); ritr != removals.end(); ++ritr ) {
+			std::vector< kWrapped * >::iterator find = std::find( active.begin(), active.end(), *ritr );
+			if( find == active.end() )
+				g_errlog << "Couldn't find \"" << (*ritr)->textdesc() << "\" in activated list" << std::endl;
+			  else {
+				g_errlog << "Removing \"" << (*ritr)->textdesc() << "\" from activated list" << std::endl;
+				active.erase( find );
+			}
+		}
+		removals.clear();
+
 	};
 
 	kManager::kManager() : completed( false ) { };
@@ -88,6 +103,21 @@ namespace file {
 
 	bool kManager::isComplete() const {
 		return completed; };
+
+	void kManager::activateWrapped( file::kWrapped *wrp ) {
+		// TODO: remove this check
+		if( std::find( active.begin(), active.end(), wrp ) != active.end() ) {
+			g_errlog << "Already found \"" << wrp->textdesc() << "\" in activated list" << std::endl;
+		} else {
+			g_errlog << "Adding \"" << wrp->textdesc() << "\" to activated list" << std::endl;
+			active.push_back( wrp );
+		}
+	};
+
+	void kManager::removeWrapped( file::kWrapped *wrp ) {
+		g_errlog << "Adding removal for \"" << wrp->textdesc() << "\"" << std::endl;
+		removals.push_back( wrp );
+	};
 
 };
 

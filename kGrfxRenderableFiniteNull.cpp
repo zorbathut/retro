@@ -44,7 +44,7 @@ namespace grfx {
 
 	kRenderableFiniteNull::kRenderableFiniteNull() : dim( 1, 1 ) { };
 
-	void kRenderableFiniteNull::describe( std::ostream &ostr ) const VAGUEDESC {
+	void kRenderableFiniteNull::describe( std::ostream &ostr ) const {
 		ostr << "NULL renderableFinite";
 		kRenderableFiniteNull::chaindown( ostr ); };
 

@@ -37,7 +37,7 @@ namespace grfx {
 
 	kRenderable::~kRenderable() { };
 
-	void kRenderable::describe( std::ostream &ostr ) const VAGUEDESC {
+	void kRenderable::describe( std::ostream &ostr ) const {
 		ostr << "unidentified renderable";
 		kRenderable::chaindown( ostr ); };
 

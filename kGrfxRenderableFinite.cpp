@@ -35,7 +35,7 @@
 
 namespace grfx {
 
-	void kRenderableFinite::describe( std::ostream &ostr ) const VAGUEDESC {
+	void kRenderableFinite::describe( std::ostream &ostr ) const {
 		ostr << "unidentified renderableFinite";
 		kRenderableFinite::chaindown( ostr ); };
 

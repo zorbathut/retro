@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_KMGRFXRENDERABLEFINITERAW
-#define TIMESPACE_KMGRFXRENDERABLEFINITERAW
+#ifndef RETRO_KMGRFXRENDERABLEFINITERAW
+#define RETRO_KMGRFXRENDERABLEFINITERAW
 
 namespace module {
 
@@ -69,6 +69,11 @@ namespace module {
 		virtual file::kRawhandle< grfx::kRenderableFinite > createNull( void );
 
 		std::vector< file::kBase * > nulls;
+
+	public:
+
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
 
 	};
 

@@ -465,6 +465,10 @@ SOURCE=.\kMGrfxRenderableFiniteRaw.h
 # End Group
 # Begin Source File
 
+SOURCE=.\changelog.txt
+# End Source File
+# Begin Source File
+
 SOURCE=.\datadog\errlog.txt
 # End Source File
 # Begin Source File

@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_CONFIG
-#define TIMESPACE_CONFIG
+#ifndef RETRO_CONFIG
+#define RETRO_CONFIG
 
 static const int config_xmin = 600;
 static const int config_ymin = 400;

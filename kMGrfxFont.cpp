@@ -85,6 +85,17 @@ namespace module {
 	grfx::kFont *kGrfxFont::createNullQuantity() {
 		return &null::grfxFont; };
 
+	void kGrfxFont::describe( std::ostream &ostr ) const {
+		ostr << "font module (thrunch)";
+		/* file::kModuleHandle< grfx::kFont >::chaindown( ostr ); */ };
+		// little bugses :/
+		// TODO: fix up on upgrade.
+
+	void kGrfxFont::chaindown( std::ostream &ostr ) const {
+		ostr << " (*final*-font module) (thrunch)";
+		/*file::kModuleHandle< grfx::kFont >::chaindown( ostr );*/ };
+		// TODO: fix up on upgrade.
+
 	kGrfxFont font;
 
 	namespace fontFunctors {
@@ -102,7 +113,9 @@ namespace module {
 				std::getline( ifs, infname );
 				curfname = fname.get();
 				curfname += ":";
-				curfname += i;		// TODO: fix
+				char boof[ 20 ];
+				sprintf( boof, "%d", i );
+				curfname += boof;		// TODO: fix
 				grfx::kFontFile *dat = new grfx::kFontFile( curfname.c_str(), infname.c_str() );
 				file::kWrapped *wrp = new file::kWrapped( dat );
 				inp->addInterface( wrp );

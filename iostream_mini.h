@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_IOSTREAM_MINI
-#define TIMESPACE_IOSTREAM_MINI
+#ifndef RETRO_IOSTREAM_MINI
+#define RETRO_IOSTREAM_MINI
 
 namespace std {	// used for including the ostream prototype without <iostream>, which
 				// is huge and unnecessary.

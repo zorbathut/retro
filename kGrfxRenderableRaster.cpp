@@ -43,7 +43,7 @@ namespace grfx {
 */
 	kRenderableRaster::kRenderableRaster() { };
 
-	void kRenderableRaster::describe( std::ostream &ostr ) const VAGUEDESC {
+	void kRenderableRaster::describe( std::ostream &ostr ) const {
 		ostr << "unidentified renderableRaster";
 		kRenderableRaster::chaindown( ostr ); };
 

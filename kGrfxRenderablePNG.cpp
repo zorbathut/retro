@@ -273,13 +273,14 @@ namespace grfx {
 
 	};
 
-	void kRenderablePNG::describe( std::ostream &ostr ) const VAGUEDESC {
+	void kRenderablePNG::describe( std::ostream &ostr ) const {
 		ostr << "renderablePNG";
 		kRenderablePNG::chaindown( ostr ); };
 
 	void kRenderablePNG::chaindown( std::ostream &ostr ) const {
-		kBase::chaindown( ostr );
-		kRenderableOwnedraster::chaindown( ostr ); };
+		ostr << " (*final*-PNG)";
+		kRenderableOwnedraster::chaindown( ostr );
+		kBase::chaindown( ostr ); };
 
 	kOutputtoken kRenderablePNG::textdesc() const {
 		return kBase::textdesc(); };

@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_KCONTROLS
-#define TIMESPACE_KCONTROLS
+#ifndef RETRO_KCONTROLS
+#define RETRO_KCONTROLS
 
 class kControls;		// currently not in use whatsoever. it will be :P
 

@@ -30,8 +30,8 @@
    POSSIBILITY OF SUCH DAMAGE. */
 
 
-#ifndef TIMESPACE_KFILEWRAPPED
-#define TIMESPACE_KFILEWRAPPED
+#ifndef RETRO_KFILEWRAPPED
+#define RETRO_KFILEWRAPPED
 
 namespace file {
 
@@ -41,10 +41,11 @@ namespace file {
 
 #include "kFileBase.h"
 #include "butility.h"
+#include "kDescribable.h"
 
 namespace file {
 
-	class kWrapped : public boost::noncopyable {
+	class kWrapped : private boost::noncopyable, public kDescribable {
 	private:
 
 		kBase *file; // better derive from kBase . . .
@@ -67,140 +68,11 @@ namespace file {
 		kWrapped( kBase *file );
 		~kWrapped();
 
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
 	};
 
 };
 
-/*
-namespace file {
-
-	template < class kHeld > class kWrapped;
-
-}
-
-#include "kFileWrapinterface.h"
-
-#include "minmax.h"
-#include "errlog.h"
-
-namespace file {
-
-	template < class kHeld > class kWrapped : public kWrapinterface {
-	private:
-
-		kHeld *file; // better derive from kBase . . .
-
-		int activatecount;
-		int count;
-
-	public:
-
-		virtual void init();
-
-		kHandle< kHeld > getHandle();
-
-		virtual void activate();
-		virtual void deactivate();
-		virtual void request( int ticks );
-
-		virtual void tick();
-
-		virtual void deinit();
-
-		kWrapped( kHeld *in_file ); // OWNS this, and will delete it on deconstruction.
-		virtual ~kWrapped();
-
-	};
-
-	template < class kHeld > void kWrapped< kHeld >::init() {
-		file->init(); };
-
-	template < class kHeld > void kWrapped< kHeld >::deinit() {
-		file->deinit(); };
-
-	template < class kHeld > kHandle< kHeld > kWrapped< kHeld >::getHandle() {
-		return kHandle< kHeld >( file, this ); };
-
-	template < class kHeld > void kWrapped< kHeld >::activate() {
-		activatecount++;
-		switch( file->getState() ) {
-		case kHeld::EMPTY:
-			file->loadAll();
-			break;
-
-		case kHeld::LOADING:
-			file->continueProgressive( file->getProgressiveResolution() - file->currentProgressive() );
-			// dropthrough intentional
-
-		case kHeld::DONE:
-			file->completeProgressive();
-			break;
-
-		case kHeld::READY:
-			break;
-		}
-	};
-
-	template < class kHeld > void kWrapped< kHeld >::deactivate() {
-		activatecount--;
-		count = 0;
-	};
-
-	template < class kHeld > void kWrapped< kHeld >::request( int ticks ) {
-		switch( file->getState() ) {
-		case kHeld::EMPTY:
-			count = ticks;
-			file->beginProgressive();
-			break;
-
-		case kHeld::LOADING:
-			count = zutil::zmin( ticks, count );
-			break;
-
-		case kHeld::DONE:
-			break;
-
-		case kHeld::READY:
-			count = ticks;	// anti-idle.
-			break;
-		}
-	};
-
-	template < class kHeld > void kWrapped< kHeld >::tick() {
-		switch( file->getState() ) {
-		case kHeld::EMPTY:
-			break;
-
-		case kHeld::LOADING:
-			if( count <= 0 )
-				count = 1;
-			file->continueProgressive( ( file->getProgressiveResolution() - file->currentProgressive() ) / count );
-			count--;
-			break;
-
-		case kHeld::DONE:
-			file->completeProgressive();
-			break;
-
-		case kHeld::READY:
-			if( count-- < -( tickspersec * 10 ) && !activatecount ) // todo: add idletime
-				file->unload();
-			break;
-
-		default:
-			g_errlog << "Insane status for wrapped " << file->textdesc() << std::endl;
-			break;
-		}
-	};
-
-	template < class kHeld > kWrapped< kHeld >::kWrapped( kHeld *in_file ) : file( in_file ), activatecount( 0 ),
-			count( 0 ) { };
-	template < class kHeld > kWrapped< kHeld >::~kWrapped() {
-		if( activatecount != 0 )
-			g_errlog << "Incomplete decoupling for " << file->textdesc() << std::endl;
-		delete file;
-	};
-
-};
-*/
 #endif

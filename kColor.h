@@ -31,8 +31,8 @@
 
 #pragma warning( disable : 4786 )
 
-#ifndef TIMESPACE_KCOLOR
-#define TIMESPACE_KCOLOR
+#ifndef RETRO_KCOLOR
+#define RETRO_KCOLOR
 
 namespace grfx {
 

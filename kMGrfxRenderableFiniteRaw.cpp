@@ -93,6 +93,16 @@ namespace module {
 			delete *itr;
 	};	// sigh.
 
+	void kGrfxRenderableFiniteRaw::describe( std::ostream &ostr ) const {
+		ostr << "grfxRenderableFinite rawmodule (thrunch)";
+		/*file::kModuleRawhandle< grfx::kRenderableFinite >::chaindown( ostr );*/ };
+		// TODO: fix. upgrade.
+
+	void kGrfxRenderableFiniteRaw::chaindown( std::ostream &ostr ) const {
+		ostr << " (*final*-grfxRenderableFinite rawmodule) (thrunch)";
+		/*file::kModuleRawhandle< grfx::kRenderableFinite >::chaindown( ostr );*/ };
+		// TODO: fix. upgrade.
+
 	kGrfxRenderableFiniteRaw rawfinite;
 
 	namespace rawfiniteFunctors {

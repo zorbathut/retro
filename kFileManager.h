@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_KFILEMANAGER
-#define TIMESPACE_KFILEMANAGER
+#ifndef RETRO_KFILEMANAGER
+#define RETRO_KFILEMANAGER
 
 #pragma warning( disable : 4786 )
 
@@ -68,14 +68,20 @@ namespace file {
 		kManager();		// yep, you can make more than one. Not recommended tho. Like that'll stop ya.
 		~kManager();
 
-		void addInterface( file::kWrapped *nter );
-		void addRaw( file::kBase *bse );
+		void addInterface( kWrapped *nter );
+		void addRaw( kBase *bse );
 
 		void addLoader( zutil::kFunctor< RVOID, kManager * > *ldr );
 
 		bool isComplete() const;
 
+		void activateWrapped( file::kWrapped *wrp );
+		void removeWrapped( file::kWrapped *wrp );
+
 	private:
+
+		std::vector< kWrapped * > active;
+		std::vector< kWrapped * > removals;
 
 		std::vector< kWrapped * > interfaces;
 		std::vector< kBase * > raws;

@@ -85,6 +85,16 @@ namespace module {
 	grfx::kRenderableFinite *kGrfxRenderableFinite::createNullQuantity() {
 		return &null::grfxRenderableFinite; };
 
+	void kGrfxRenderableFinite::describe( std::ostream &ostr ) const {
+		ostr << "grfxRenderableFinite module (thrunch)";
+		/*file::kModuleHandle< grfx::kRenderableFinite >::chaindown( ostr );*/ };
+		// TODO: fix. upgrade.
+
+	void kGrfxRenderableFinite::chaindown( std::ostream &ostr ) const {
+		ostr << " (*final*-grfxRenderableFinite module) (thrunch)";
+		/*file::kModuleHandle< grfx::kRenderableFinite >::chaindown( ostr );*/ };
+		// TODO: fix. upgrade.
+
 	kGrfxRenderableFinite finite;
 
 	namespace finiteFunctors {

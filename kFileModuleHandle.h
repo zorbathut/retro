@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_KFILEMODULEHANDLE
-#define TIMESPACE_KFILEMODULEHANDLE
+#ifndef RETRO_KFILEMODULEHANDLE
+#define RETRO_KFILEMODULEHANDLE
 
 namespace file {
 
@@ -78,7 +78,16 @@ namespace file {
 				delete *itr;
 		};
 
+		virtual void describe( std::ostream &ostr ) const VAGUEDESC;
+	protected:  void chaindown( std::ostream &ostr ) const;
+
 	};
+
+	template < class kType > void kModuleHandle< kType >::describe( std::ostream &ostr ) const {
+		ostr << "unidentified modulehandle";
+		kModule< file::kHandle< kType > >::chaindown( ostr ); };
+	template < class kType > void kModuleHandle< kType >::chaindown( std::ostream &ostr ) const {
+		kModule< file::kHandle< kType > >::chaindown( ostr ); };
 
 	template < class kType > kHandle< kType > kModuleHandle< kType >::createNull() {
 		kWrapped *wr = new kWrapped( new kBaseNull() );

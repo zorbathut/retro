@@ -29,8 +29,8 @@
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef TIMESPACE_KMGRFXRENDERABLEFINITE
-#define TIMESPACE_KMGRFXRENDERABLEFINITE
+#ifndef RETRO_KMGRFXRENDERABLEFINITE
+#define RETRO_KMGRFXRENDERABLEFINITE
 
 namespace module {
 
@@ -63,6 +63,11 @@ namespace module {
 		);
 
 		virtual grfx::kRenderableFinite *createNullQuantity();
+
+	public:
+
+		virtual void describe( std::ostream &ostr ) const;
+	protected:  void chaindown( std::ostream &ostr ) const;
 
 	};
 
