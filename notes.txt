@@ -1,4 +1,31 @@
 
+TODOS:
+Move retro to its own namespace/directory
+Mouse capturing
+Full control system
+Add window name to config
+renderable/writable autocropper
+globalize kControls slightly more
+figure font reporting better
+particle effects
+color constants
+random-generators
+mixins and all the other render options
+improve file manager to automate better
+
+MODS:
+ticks - 1 in kWrapped - no - just make it autocomplete
+hslfont path in HSLfont module
+fontboundaries null needs to work properly
+ShutDownNow change to PostMessage
+template < typename kAlter > explicit kPoint< kPrecision >( const kPoint< kAlter > &alt ) : x( alt.x ), y( alt.y ) { };
+kFontHSLFilerb to kFontHSLHandle, make it take handles for init
+kHandle const dependent
+remove thrunchness
+try dehack
+
+
+
 much of what's in here is obsolete or worse. Read at your own risk.
 
 line 659 in the windows interface - needed to add due to problems with profiling

@@ -61,7 +61,7 @@ namespace grfx {
 			for( i = 0; i < steps; i++ ) {
 				const kColor *rdc = rdl;
 				kColor *wrc = wrl;
-				for( j = 0; j < rast->getDimensions().y; j++ ) {
+				for( j = 0; j < rast->getDimensions().x; j++ ) {
 					*wrc = cutil::HSLtoRGB( kColorHSL( rdc->argb ) * hsl );
 					wrc++;
 					rdc++;

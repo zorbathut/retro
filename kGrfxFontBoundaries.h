@@ -60,7 +60,7 @@ namespace grfx {
 			kPoint< INT32 > offset;
 			int spacing;
 
-			kBoundariesSpot() { };
+			kBoundariesSpot() : bounds( 0, 0, 0, 0 ), offset( 0, 0 ), spacing( 0 ) { };
 			kBoundariesSpot( const kRect< INT32 > &bounds, const kPoint< INT32 > &offset, int spacing );
 				
 		};
@@ -75,7 +75,7 @@ namespace grfx {
 			kBoundaries();
 			virtual ~kBoundaries();
 
-			virtual void describe( std::ostream &ostr ) const;
+			virtual void describe( std::ostream &ostr ) const VAGUEDESC;
 		protected:  void chaindown( std::ostream &ostr ) const;
 
 		protected:
@@ -93,12 +93,6 @@ namespace grfx {
 		};
 
 	};
-
-};
-
-namespace null {
-
-	extern grfx::font::kBoundaries fontboundaries;
 
 };
 

@@ -520,6 +520,12 @@
 					RelativePath=".\kGrfxFontBoundariesFile.h">
 				</File>
 				<File
+					RelativePath="kGrfxFontBoundariesNull.cpp">
+				</File>
+				<File
+					RelativePath="kGrfxFontBoundariesNull.h">
+				</File>
+				<File
 					RelativePath=".\kGrfxFontHSL.cpp">
 				</File>
 				<File

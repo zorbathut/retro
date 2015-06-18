@@ -32,6 +32,7 @@
 #include "kMGrfxFontBoundaries.h"
 
 #include "kGrfxFontBoundariesFile.h"
+#include "kGrfxFontBoundariesNull.h"
 #include "kFileUtil.h"
 #include "kFileBaseNull.h"
 

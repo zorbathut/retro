@@ -58,7 +58,7 @@ namespace grfx {
 
 		void kBoundaries::chaindown( std::ostream &ostr ) const {
 			kDescribable::chaindown( ostr ); };
-
+ 
 		void kBoundaries::setVoffs( int nv ) {
 			vOffs = nv; };
 
